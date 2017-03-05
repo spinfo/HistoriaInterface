@@ -6,8 +6,8 @@
 <ul>
     <li>ID: <?php echo $this->place->id ?></li>
     <li>Name: <?php echo $this->place->name ?></li>
-    <li>Latitude: <?php printf("%.6f", $this->place->lat) ?></li>
-    <li>Longitude: <?php printf("%.6f", $this->place->lon) ?></li>
+    <li>Latitude: <?php printf("%.6f", $this->place->coordinate->lat) ?></li>
+    <li>Longitude: <?php printf("%.6f", $this->place->coordinate->lon) ?></li>
 </ul>
 
 <form action=admin.php?<?php echo $this->action_params ?> method="post">

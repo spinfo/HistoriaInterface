@@ -7,9 +7,24 @@ include_once(dirname(__FILE__) . '/../user_rights_service.php');
 
 abstract class AbstractModel {
 
+    public $id = -1;
+
     public $created_at;
 
     public $updated_at;
+
+    abstract function is_valid();
+
+    public $messages = array();
+
+    protected function do_check($condition, $message) {
+        if($condition) {
+            unset($this->messages[$message]);
+        } else {
+            $this->messages[$message] = true;
+        }
+        return $condition;
+    }
 
 }
 
@@ -30,9 +45,6 @@ abstract class AbstractCollection {
 
     public $table;
 
-    // TODO: The coordinates table should have it's own collection
-    public $coordinates_table;
-
     protected $db;
 
     static function instance() {
@@ -40,8 +52,6 @@ abstract class AbstractCollection {
             static::$instance = new static;
             static::$instance->user_rights_service =
                 UserRightsService::instance();
-            static::$instance->coordinates_table =
-                DB::table_name("coordinates");
         }
         return static::$instance;
     }
@@ -53,14 +63,37 @@ abstract class AbstractCollection {
      * @param Object extending Model
      */
     protected function set_abstract_model_values($model, $db_row) {
+        $db_row = (object) $db_row;
+        $model->id = intval($db_row->id);
         $model->created_at = new \DateTime($db_row->created_at);
         $model->updated_at = new \DateTime($db_row->updated_at);
     }
 }
 
-class Place extends AbstractModel {
+class Coordinate extends AbstractModel {
 
-    public $id = -1;
+    public $lat = 0.0;
+
+    public $lon = 0.0;
+
+    public function is_valid() {
+        $this->do_check(!is_null($this->lat), 'latitude is null');
+        $this->do_check(!is_null($this->lon), 'longitude is null');
+
+        $condition = ($this->lat >= -90.0) && ($this->lat <= 90.0);
+        $this->do_check($condition,
+            "latitude not between -90 and 90: $this->lat");
+
+        $condition = ($this->lon >= -180.0) && ($this->lon <= 180.0);
+        $this->do_check($condition,
+            "longitude not between -180 and 180: $this->lon");
+
+        return (empty($this->messages));
+    }
+
+}
+
+class Place extends AbstractModel {
 
     public $user_id = -1;
 
@@ -68,13 +101,103 @@ class Place extends AbstractModel {
 
     public $coordinate_id = -1;
 
+    public $coordinate; // Coordinate object
+
     public $name = "";
 
-    public $lat = 0.0;
+    public function is_valid() {
+        $this->do_check(($this->user_id > 0), 'user_id <= 0');
+        $this->do_check(($this->area_id > 0), 'area_id <= 0');
+        $this->do_check(($this->coordinate_id > 0), 'coordinate_id <= 0');
 
-    public $lon = 0.0;
+        $coord_present = $this->do_check(
+            ($this->coordinate instanceof Coordinate),
+            'coordinate not present or of incorrect class');
+        if($coord_present && !$this->coordinate->is_valid()) {
+            foreach($this->coordinate->messages as $key => $val) {
+                $this->messages["coordinate: $key"] = true;
+            }
+        }
+
+        $this->do_check(!empty($this->name), 'name is empty');
+
+        return empty($this->messages);
+    }
 
 }
+
+
+final class Coordinates extends AbstractCollection {
+
+    protected static $instance = null;
+
+    public $table;
+
+    protected function __construct() {
+        $this->table = DB::table_name('coordinates');
+    }
+
+    public function get($id) {
+        $sql = "SELECT * FROM $this->table";
+        $row = DB::get($sql, array('id' => $id));
+
+        if(is_null($row)) {
+            return null;
+        } else {
+            return $this->instance_from_array($row);
+        }
+    }
+
+    public function save($coordinate) {
+        if(!$coordinate->is_valid()) {
+            return null;
+        }
+
+        $values = array(
+            'lat' => $coordinate->lat,
+            'lon' => $coordinate->lon
+        );
+
+        $id;
+        if (empty($coordinate->id) || $coordinate->id == DB::BAD_ID) {
+            $id = $this->db_insert($values);
+            $coordinate->id = $id;
+        } else {
+            DB::update($this->table, $coordinate->id, $values);
+            $id = $coordinate->id;
+        }
+        return $this->get($id);
+    }
+
+    public function delete($coordinate) {
+        $row_count = DB::delete($this->table, $coordinate->id);
+        if($row_count != 1) {
+            throw new \Exception(
+                "Error deleting coordinate: " . $coordinate->id . "\n");
+        }
+        $coordinate->id = null;
+        return $coordinate;
+    }
+
+    private function db_insert($coordinate_values) {
+        $coord_id = DB::insert($this->table, $coordinate_values);
+        if($coord_id == DB::BAD_ID) {
+            throw new \Exception(
+                "Could not insert coordinate: ". var_export($coordinate_values, true));
+        }
+        return $coord_id;
+    }
+
+    public function instance_from_array($row) {
+        $row = (object) $row;
+        $coord = new Coordinate();
+        $coord->lat = floatval($row->lat);
+        $coord->lon = floatval($row->lon);
+        $this->set_abstract_model_values($coord, $row);
+        return $coord;
+    }
+}
+
 
 final class Places extends AbstractCollection {
 
@@ -87,9 +210,10 @@ final class Places extends AbstractCollection {
     }
 
     private function select_sql() {
+        $coordinates_table = Coordinates::instance()->table;
         return "SELECT p.id, p.user_id, p.area_id, p.coordinate_id, p.name, c.lat, c.lon, p.created_at, p.updated_at
             FROM $this->table AS p
-            JOIN $this->coordinates_table AS c
+            JOIN $coordinates_table AS c
                 ON p.coordinate_id = c.id";
     }
 
@@ -118,6 +242,8 @@ final class Places extends AbstractCollection {
     }
 
     public function save($place) {
+        // place validity is checked in the insert/update functions (because
+        // coordinate might have to be created first.)
         $id;
         if (empty($place->id) || $place->id == DB::BAD_ID) {
             $id = $this->db_insert($place);
@@ -129,19 +255,16 @@ final class Places extends AbstractCollection {
     }
 
     private function db_insert($place) {
-        $coord = array(
-            'lat' => $place->lat,
-            'lon' => $place->lon
-        );
-        $coord_id = DB::insert($this->coordinates_table, $coord);
-        if($coord_id == DB::BAD_ID) {
-            throw new \Exception(
-                "Could not insert coordinate: ". var_export($coord, true));
+        $place->coordinate = Coordinates::instance()->save($place->coordinate);
+        $place->coordinate_id = $place->coordinate->id;
+
+        if(!$place->is_valid()) {
+            return null;
         }
 
         $place_values = array(
             'user_id' => $place->user_id,
-            'coordinate_id' => $coord_id,
+            'coordinate_id' => $place->coordinate_id,
             'area_id' => $place->area_id,
             'name' => $place->name
         );
@@ -150,16 +273,14 @@ final class Places extends AbstractCollection {
             throw new \Exception(
                 "Could not insert place: ". var_export($place_values, true));
         }
+        $place->id = $place_id;
         return $place_id;
     }
 
     // TODO: Some error handling, as transaction...
     private function db_update($place) {
-        $coord_values = array(
-            'lat' => $place->lat,
-            'lon' => $place->lon
-        );
-        DB::update($this->coordinates_table, $place->coordinate_id, $coord_values);
+        Coordinates::instance()->save($place->coordinate);
+
         $place_values = array(
             'user_id' => $place->user_id,
             'coordinate_id' => $place->coordinate_id,
@@ -173,15 +294,7 @@ final class Places extends AbstractCollection {
      * @return Place|null The deleted object if successful, else null
      */
     public function delete($place) {
-        if(empty($place->id) || empty($place->coordinate_id)) {
-            error_log("Cannot delete without id.");
-            return null;
-        }
-        $row_count = DB::delete($this->coordinates_table, $place->coordinate_id);
-        if($row_count != 1) {
-            throw new \Exception(
-                "Error deleting coordinate: " . $place->coordinate_id . "\n");
-        }
+        Coordinates::instance()->delete($place->coordinate);
 
         $row_count = DB::delete($this->table, $place->id);
         if($row_count != 1) {
@@ -205,6 +318,7 @@ final class Places extends AbstractCollection {
             $place = $this->instance_from_array($array);
         } else {
             $place = new Place();
+            $place->coordinate = new Coordinate();
         }
         return $place;
     }
@@ -227,6 +341,9 @@ final class Places extends AbstractCollection {
         $place->coordinate_id = intval($obj->coordinate_id);
         $place->area_id = intval($obj->area_id);
 
+        $place->coordinate = new Coordinate();
+        $place->coordinate->id = $place->coordinate_id;
+
         $this->update_values($place, $obj);
         $this->set_abstract_model_values($place, $obj);
 
@@ -245,8 +362,11 @@ final class Places extends AbstractCollection {
     public function update_values($place, $from_array) {
         $obj = (object) $from_array;
         $place->name = $obj->name;
-        $place->lat = floatval($obj->lat);
-        $place->lon = floatval($obj->lon);
+        if(empty($place->coordinate)) {
+            $place->coordinate = new Coordinate();
+        }
+        $place->coordinate->lat = floatval($obj->lat);
+        $place->coordinate->lon = floatval($obj->lon);
     }
 }
 

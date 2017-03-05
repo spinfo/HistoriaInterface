@@ -58,10 +58,18 @@ class PlacesController extends Controller {
         if(!empty($place_params)) {
             $place = $places->create($place_params);
             $place->user_id = UserRightsService::instance()->user_id();
-            $place = $places->save($place);
-
-            MessageService::instance()->add_success("Ort erstellt!");
-            self::redirect($route_params->edit_place($place->id));
+            // TODO: crotch, to be removed on area integration
+            $place->area_id = 1;
+            $result = $places->save($place);
+            if(empty($result)) {
+                MessageService::instance()->add_error("Ort nicht erstellt.");
+                foreach($place->messages as $key => $val) {
+                    MessageService::instance()->add_error("place: $key");
+                }
+            } else {
+                MessageService::instance()->add_success("Ort erstellt!");
+                self::redirect($route_params->edit_place($place->id));
+            }
         } else {
             $view = self::create_bad_request_view("Ungültiger Input");
         }

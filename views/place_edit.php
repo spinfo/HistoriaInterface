@@ -8,11 +8,11 @@
     </div>
     <div>
         <label for="shtm_lat">Lat:</label>
-        <input type="text" id="shtm_lat" name="shtm_place[lat]" value="<?php printf("%.6f", $this->place->lat) ?>">
+        <input type="text" id="shtm_lat" name="shtm_place[lat]" value="<?php printf("%.6f", $this->place->coordinate->lat) ?>">
     </div>
     <div>
         <label for="shtm_lon">Lon:</label>
-        <input type="text" id="shtm_lon" name="shtm_place[lon]" value="<?php printf("%.6f", $this->place->lon) ?>">
+        <input type="text" id="shtm_lon" name="shtm_place[lon]" value="<?php printf("%.6f", $this->place->coordinate->lon) ?>">
     </div>
 
     <div class="button">

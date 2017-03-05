@@ -17,8 +17,8 @@
         <tr>
             <td><?php echo $place->id ?></td>
             <td><?php echo $place->name ?></td>
-            <td><?php echo $place->lat ?></td>
-            <td><?php echo $place->lon ?></td>
+            <td><?php echo $place->coordinate->lat ?></td>
+            <td><?php echo $place->coordinate->lon ?></td>
             <td>
                 <?php if($this->user_service->user_may_edit_place($place)): ?>
                     <a href="?<?php echo $this->route_params->edit_place($place->id) ?>">Bearbeiten</a>
