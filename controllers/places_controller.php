@@ -1,15 +1,16 @@
 <?php
 namespace SmartHistoryTourManager;
 
-require_once( dirname(__FILE__) . '/controller.php');
+require_once( dirname(__FILE__) . '/abstract_controller.php');
 require_once( dirname(__FILE__) . '/../views/view.php');
-require_once( dirname(__FILE__) . '/../models/models.php');
+require_once( dirname(__FILE__) . '/../models/places.php');
+require_once( dirname(__FILE__) . '/../models/place.php');
 require_once( dirname(__FILE__) . '/../resource_helpers.php');
 require_once( dirname(__FILE__) . '/../user_rights_service.php');
 require_once( dirname(__FILE__) . '/../message_service.php');
 
 
-class PlacesController extends Controller {
+class PlacesController extends AbstractController {
 
     // defines accepted parameters for a place
     const PLACE_PARAMS = array(

@@ -4,7 +4,7 @@ namespace SmartHistoryTourManager;
 /**
  * A class to wrap methods used by all controllers.
  */
-abstract class Controller {
+abstract class AbstractController {
 
     protected static function wrap_in_page_view($content_view) {
         return new View(ViewHelper::page_wrapper_view(), array(

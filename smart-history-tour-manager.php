@@ -15,7 +15,9 @@ License: All rights reserved. This is not free software (for now).
 include_once(dirname(__FILE__) . '/resource_helpers.php');
 include_once(dirname(__FILE__) . '/user_rights_service.php');
 include_once(dirname(__FILE__) . '/message_service.php');
-include_once(dirname(__FILE__) . '/models/models.php');
+include_once(dirname(__FILE__) . '/models/areas.php');
+include_once(dirname(__FILE__) . '/models/coordinates.php');
+include_once(dirname(__FILE__) . '/models/places.php');
 include_once(dirname(__FILE__) . '/db.php');
 
 /**
@@ -42,7 +44,7 @@ function shtm_install() {
     // lat/lon data type chosen according to:
     //      http://stackoverflow.com/a/25120203/1879728
     //      http://mysql.rjweb.org/doc.php/latlng
-    $table_name = Places::instance()->coordinates_table;
+    $table_name = Coordinates::instance()->table;
     $coordinates_sql = "CREATE TABLE $table_name (
         id bigint NOT NULL AUTO_INCREMENT,
         lat decimal(8,6) NOT NULL,
@@ -105,13 +107,13 @@ function shtm_create_test_data() {
         "lat" => 51.188801,
         "lon" => 6.794488
     );
-    $coord1_id = DB::insert(Areas::instance()->coordinates_table, $values);
+    $coord1_id = DB::insert(Coordinates::instance()->table, $values);
 
     $values = array(
         "lat" => 51.188801,
         "lon" => 6.794488
     );
-    $coord2_id = DB::insert(Areas::instance()->coordinates_table, $values);
+    $coord2_id = DB::insert(Coordinates::instance()->table, $values);
 
     $values = array(
         "coordinate1_id" => $coord1_id,
