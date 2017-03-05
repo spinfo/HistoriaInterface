@@ -1,0 +1,11 @@
+mysql_server = "localhost"
+mysql_user = "wordpress"
+mysql_pass = ""
+mysql_db = "wordpress"
+
+wp_url = "http://localhost"
+
+places_table = "wp_shtm_places"
+
+tour_creator_prefix = "/wp-admin/admin.php?page=shtm_tour_creator"
+tour_publisher_prefix = "/wp-admin/admin.php?page=shtm_tour_publisher"
