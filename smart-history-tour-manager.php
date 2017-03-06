@@ -13,7 +13,7 @@ License: All rights reserved. This is not free software (for now).
 
 
 include_once(dirname(__FILE__) . '/resource_helpers.php');
-include_once(dirname(__FILE__) . '/user_rights_service.php');
+include_once(dirname(__FILE__) . '/user_service.php');
 include_once(dirname(__FILE__) . '/message_service.php');
 include_once(dirname(__FILE__) . '/models/areas.php');
 include_once(dirname(__FILE__) . '/models/coordinates.php');
@@ -101,7 +101,7 @@ function shtm_install() {
 
 function shtm_create_test_data() {
 
-    $user_rights_service = UserRightsService::instance();
+    $user_service = UserService::instance();
 
     $values = array(
         "lat" => 51.188801,
@@ -123,7 +123,7 @@ function shtm_create_test_data() {
     $area_id = DB::insert(Areas::instance()->table, $values);
 
     $values = array(
-        "user_id" => $user_rights_service->user_id(),
+        "user_id" => $user_service->user_id(),
         "area_id" => $area_id,
         "name" => "HHU-Campus 3",
         "lat" => 51.188801,

@@ -1,13 +1,19 @@
 <?php
 namespace SmartHistoryTourManager;
 
+require_once(dirname(__FILE__) . '/db.php');
+
 /**
  * This is a wrapper around wordpress' current user (a WP_User object). It
  * determines access and update rights based on wordpress roles and cpabilities.
  */
-class UserRightsService {
+class UserService {
 
-    // a WP_User object
+    // the key used to set the current users chosen area in the wordpress user
+    // settings
+    const CURRENT_AREA_KEY = "shtm_current_area";
+
+    // a WP_User object or 0 if no user is logged in, cf. wp_get_current_user()
     private $user;
 
     // the wp-roles that are interesting for us
@@ -64,6 +70,52 @@ class UserRightsService {
         return ($this->is_admin() || ($this->user_id() == $place->id));
     }
 
+    /**
+     * Sets the area for the current user. (Uses the wordpress user settings.)
+     *
+     * @return bool     To indicate success/failure
+     */
+    public function set_current_area_id($id) {
+        if(!is_int($id)) {
+            throw new \Exception("Area id must be present and int value.");
+            return false;
+        }
+        $result = false;
+        if(!empty($this->current_user)) {
+            $result = set_user_setting(self::CURRENT_AREA_KEY, strval($id));
+            if(is_null($result) || !$result) {
+                throw new \Exception("Failed to set current area for user.");
+                $result = false;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Gets the current area id for the current user.
+     * (Uses the wordpress user settings)
+     *
+     * @return int    The area id if successful, else DB::BAD_ID
+     */
+    public function get_current_area_id() {
+        $id = get_user_setting(self::CURRENT_AREA_KEY, DB::BAD_ID);
+        if(!is_numerich($id)) {
+            return DB::BAD_ID;
+        }
+        return intval($id);
+    }
+
+    /**
+     * Returns the id of the currently logged in user or DB::BAD_ID if no user
+     * is logged in.
+     */
+    public function user_id() {
+        if(empty($this->user)) {
+            return DB::BAD_ID;
+        }
+        return intval($this->user->ID);
+    }
+
     private function get_roles($id = null) {
         $roles = array();
         if (isset($id)) {
@@ -75,10 +127,6 @@ class UserRightsService {
             $roles = $this->user->roles;
         }
         return $roles;
-    }
-
-    public function user_id() {
-        return $this->user->ID;
     }
 
 }

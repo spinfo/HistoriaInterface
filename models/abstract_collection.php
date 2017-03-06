@@ -1,7 +1,7 @@
 <?php
 namespace SmartHistoryTourManager;
 
-require_once(dirname(__FILE__) . '/../user_rights_service.php');
+require_once(dirname(__FILE__) . '/../user_service.php');
 
 /**
  * A wrapper for model collections. Ensures that all model collections are
@@ -15,15 +15,15 @@ abstract class AbstractCollection {
     // Every child should implement its own $table like this:
     // public $table = DB::table_name('str');
 
-    protected $user_rights_service;
+    protected $user_service;
 
     public $table;
 
     static function instance() {
         if (static::$instance == null) {
             static::$instance = new static;
-            static::$instance->user_rights_service =
-                UserRightsService::instance();
+            static::$instance->user_service =
+                UserService::instance();
         }
         return static::$instance;
     }

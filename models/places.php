@@ -26,7 +26,7 @@ final class Places extends AbstractCollection {
     }
 
     public function list($offset, $limit) {
-        $where = $this->user_rights_service->access_conditions();
+        $where = $this->user_service->access_conditions();
         $rows = DB::list($this->select_sql(), $where, $offset, $limit);
 
         $places = array();

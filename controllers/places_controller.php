@@ -6,7 +6,7 @@ require_once( dirname(__FILE__) . '/../views/view.php');
 require_once( dirname(__FILE__) . '/../models/places.php');
 require_once( dirname(__FILE__) . '/../models/place.php');
 require_once( dirname(__FILE__) . '/../resource_helpers.php');
-require_once( dirname(__FILE__) . '/../user_rights_service.php');
+require_once( dirname(__FILE__) . '/../user_service.php');
 require_once( dirname(__FILE__) . '/../message_service.php');
 
 
@@ -29,7 +29,7 @@ class PlacesController extends AbstractController {
         $view = new View(ViewHelper::index_places_view(),
             array(
                 'route_params' => RouteParams::instance(),
-                'user_service' => UserRightsService::instance(),
+                'user_service' => UserService::instance(),
                 'places_list' => $places_list
             )
         );
@@ -58,7 +58,7 @@ class PlacesController extends AbstractController {
         $view = null;
         if(!empty($place_params)) {
             $place = $places->create($place_params);
-            $place->user_id = UserRightsService::instance()->user_id();
+            $place->user_id = UserService::instance()->user_id();
             // TODO: crotch, to be removed on area integration
             $place->area_id = 1;
             $result = $places->save($place);
@@ -81,7 +81,7 @@ class PlacesController extends AbstractController {
     public static function edit() {
         $places = Places::instance();
         $route_params = RouteParams::instance();
-        $user_service = UserRightsService::instance();
+        $user_service = UserService::instance();
 
         $view;
         $id = $route_params->get_id_value();
@@ -140,7 +140,7 @@ class PlacesController extends AbstractController {
     public static function delete() {
         $places = Places::instance();
         $route_params = RouteParams::instance();
-        $user_service = UserRightsService::instance();
+        $user_service = UserService::instance();
 
         $id = $route_params->get_id_value();
         $place = $places->get($id);
@@ -164,7 +164,7 @@ class PlacesController extends AbstractController {
     public static function destroy() {
         $places = Places::instance();
         $route_params = RouteParams::instance();
-        $user_service = UserRightsService::instance();
+        $user_service = UserService::instance();
 
         $id = $route_params->get_id_value();
         $place = $places->get($id);
