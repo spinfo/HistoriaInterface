@@ -38,7 +38,7 @@ final class Places extends AbstractCollection {
     }
 
     public function get($id) {
-        $where = array('p.id' => $id);
+        $where = array("p.id" => $id);
         $row = DB::get($this->select_sql(), $where);
 
         if(is_null($row)) {
@@ -59,6 +59,9 @@ final class Places extends AbstractCollection {
             $this->db_update($place);
             $id = $place->id;
         }
+        if($id == DB::BAD_ID) {
+            throw new \Exception("Error saving place.");
+        }
         return $this->get($id);
     }
 
@@ -67,7 +70,7 @@ final class Places extends AbstractCollection {
         $place->coordinate_id = $place->coordinate->id;
 
         if(!$place->is_valid()) {
-            return null;
+            return DB::BAD_ID;
         }
 
         $place_values = array(

@@ -1,247 +1,11 @@
 <?php
-namespace SmartHistoryTourCreator;
+namespace SmartHistoryTourManager;
 
-require_once( dirname(__FILE__) . '/mycurl.php');
-
-
-class TestHelper {
-
-    public $config;
-
-    private $mysqli;
-
-    public function __construct() {
-        // Parse the test config from a file into an object
-        $this->config = (object) parse_ini_file(dirname(__FILE__) . '/test.config');
-        $this->mysqli = $this->setup_mysqli();
-    }
-
-    private function setup_mysqli() {
-        // A mysql connection to check data
-        $mysqli = new \mysqli(
-            $this->config->mysql_server, $this->config->mysql_user,
-            $this->config->mysql_pass, $this->config->mysql_db);
-
-        if ($mysqli->connect_errno) {
-            echo "Failed to connect to MySQL: ("
-                . $mysqli->connect_errno . ") " . $mysqli->connect_error;
-            exit(1);
-        }
-        return $mysqli;
-    }
-
-    // sets up a url for the tour creator admin page
-    public function tc_url($controller, $action, $id = null) {
-        $url = $this->config->wp_url . $this->config->tour_creator_prefix;
-        $url .= '&shtm_c=' . $controller;
-        $url .= '&shtm_a=' . $action;
-        if(isset($id)) {
-            $url .= '&shtm_id=' . $id;
-        }
-        return $url;
-    }
-
-    public function random_str($length = 10) {
-        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $characters_length = strlen($characters);
-        $random_string = '';
-        for ($i = 0; $i < $length; $i++) {
-            $random_string .= $characters[rand(0, $characters_length - 1)];
-        }
-        return $random_string;
-    }
-
-    public function random_float($min = 1, $max = 10) {
-        $mul = 0;
-        while($mul == 0) {
-            $mul = rand($min, $max);
-        }
-        return (mt_rand() / mt_getrandmax()) * $mul;
-    }
-
-
-    public function db_highest_id($table_name) {
-        $sql = "SELECT id FROM $table_name ORDER BY id DESC LIMIT 0,1";
-        $result = $this->mysqli->query($sql);
-        if(!$result) {
-            echo "ERROR: Failed db query: $sql\n";
-            exit(1);
-        }
-        $result_arr = $result->fetch_array();
-        if(empty($result_arr) || !isset($result_arr[0])) {
-            echo "ERROR: Retrieved empty result: $sql\n";
-            exit(1);
-        }
-        return $result_arr[0];
-    }
-
-}
-
-
-/**
- * A class to use for connections to a wordpress page. Handles the login and
- * basic testing.
- */
-class WPTestConnection {
-
-    private static $login_path = '/wp-login.php';
-
-    private $user;
-
-    private $pass;
-
-    private $wp_url;
-
-    private $cookie_dir;
-
-    private $mycurl;
-
-    // A DomXPath representation of the last result
-    private $result;
-
-    public $tests_passed;
-    public $tests_failed;
-
-    public function __construct($user, $pass, $wp_url, $cookie_dir = '/tmp') {
-        $this->user = $user;
-        $this->pass = $pass;
-        $this->wp_url = $wp_url;
-
-        // setup the curl tool to use for the connection
-        $this->mycurl = new mycurl($this->wp_url);
-
-        // setup the cookie file to be specific to the user we will log in as
-        $this->cookie_file = $cookie_dir . '/cookie-wptestconnection-' . $user;
-        $this->mycurl->setCookieFileLocation($this->cookie_file);
-
-        // login the user
-        $this->login();
-
-        // setup some numbers to count failed and passed tests
-        $this->tests_passed = 0;
-        $this->tests_failed = 0;
-    }
-
-    public function __destruct() {
-        // remove the cookie file on destruction to ensure a fresh login on
-        // object creation
-        unlink($this->cookie_file);
-
-    }
-
-    private function login() {
-        $url = $this->wp_url . self::$login_path;
-        $post_data = array(
-            'log' => $this->user,
-            'pwd' => $this->pass,
-            'wp-submit' => 'Log+In'
-        );
-
-        $this->mycurl->setPost($post_data);
-        $this->mycurl->createCurl($url);
-
-        if ($this->mycurl->getHttpStatus() < 400) {
-            $this->log_ok("Status ok for user login: " . $this->user);
-        } else {
-            $this->log_error("Could not log in");
-        }
-    }
-
-    private function log($msg = '') {
-        echo $msg . ' - ' . $this->mycurl->_url . ' (' . $this->mycurl->getHttpStatus() . ")\n";
-    }
-
-    private function log_ok($msg = '') {
-        $this->log('OK: ' . $msg);
-    }
-
-    private function log_error($msg = '') {
-        $this->log('ERROR: ' . $msg);
-    }
-
-    public function note_pass($msg) {
-        $this->tests_passed += 1;
-        $this->log_ok($msg);
-    }
-
-    public function note_fail($msg) {
-        $this->tests_failed += 1;
-        $this->log_error($msg);
-    }
-
-    public function report() {
-        $total = $this->tests_passed + $this->tests_failed;
-        echo "Passed $this->tests_passed/$total ($this->user)\n";
-    }
-
-    // retrieves the given url and checks if the http status matches the
-    // expected status
-    public function test_fetch($url, $post, $expected_status, $msg) {
-        // unset the last page loaded
-        $this->result = null;
-
-        // set or unset post parameters as needed (if post is null this will
-        // be a GET request)
-        if(isset($post)) {
-            $this->mycurl->setPost($post);
-        } else {
-            $this->mycurl->removePost();
-        }
-
-        // setting _url is not strictly necessary, but makes for easier logging
-        // later
-        $this->mycurl->_url = $url;
-        $this->mycurl->createCurl($url);
-        if($this->mycurl->getHttpStatus() == $expected_status) {
-            $this->note_pass($msg);
-        } else {
-            $this->note_fail($msg);
-        }
-
-        // parse the result into a DomXPath object to examine it later
-        $this->setup_dom_xpath_result($this->mycurl->__tostring());
-    }
-
-    private function setup_dom_xpath_result($html_str) {
-        // (errors/warnings while loading the dom are suppresed)
-        libxml_use_internal_errors(true);
-        $doc = new \DomDocument;
-        $doc->loadHTML($html_str);
-        $this->result = new \DomXPath($doc);
-    }
-
-    /**
-     * Tests for the existence of xpath nodes in a result retrieved earlier.
-     * Fails if the node amount retrieved does not match the expected count.
-     * (Disregards node count if set to null.)
-     */
-    public function ensure_xpath($xpath, $expected_node_count, $msg) {
-        if(!isset($this->result)) {
-            $this->note_fail("No document to test: " . $msg);
-            return;
-        }
-
-        $nodes = $this->result->query($xpath);
-
-        if(is_null($expected_node_count)) {
-            if($nodes->length <= 0) {
-                $this->note_fail($msg . " (No nodes found for: '$xpath'.)");
-                return;
-            }
-        } else {
-            if($nodes->length != $expected_node_count) {
-                $this->note_fail($msg . " (Expected $expected_node_count node(s), got $nodes->length on '$xpath'.)");
-                return;
-            }
-        }
-
-        $this->note_pass($msg);
-    }
-
-}
-
-
-
+require_once(dirname(__FILE__) . '/mycurl.php');
+require_once(dirname(__FILE__) . '/test_helper.php');
+require_once(dirname(__FILE__) . '/test_case.php');
+require_once(dirname(__FILE__) . '/wp_test_connection.php');
+require_once(dirname(__FILE__) . '/areas_test.php');
 
 // performs tests common for normal pages retrieved by a simple GET
 function test_simple_page($test_connection, $page_type) {
@@ -299,8 +63,9 @@ function test_success_message($test_connection, $contained_text, $page_type) {
 
 
 // ACTUAL TESTING
-// make the test helper
+// make the test helper and load the wordpress envrionment for the test
 $helper = new TestHelper();
+require_once($helper->config->wp_load_script);
 // get instances of test connections
 $admin_test = new WPTestConnection('test-admin', 'test-admin',
     $helper->config->wp_url);
@@ -445,10 +210,14 @@ $admin_test->ensure_xpath("//table[@id='shtm_place_index']", 1,
 test_success_message($admin_test, "Ort gelöscht", "place destruction");
 
 
+// Run the unit test for areas
+$areas_unit_test = new AreasTest();
+$areas_unit_test->do_test();
 
 // Report totals for all tests done
 $admin_test->report();
 $contributor_test->report();
+$areas_unit_test->report();
 
 
 ?>

@@ -11,7 +11,7 @@
  *      - add function mycurl->removePost()
  */
 
-namespace SmartHistoryTourCreator;
+namespace SmartHistoryTourManager;
 
 class mycurl {
      protected $_useragent = 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1';

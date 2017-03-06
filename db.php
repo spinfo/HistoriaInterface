@@ -51,7 +51,7 @@ class DB {
         global $wpdb;
         $result = $wpdb->update($table_name, $values, array('id' => $id));
         if($result == false) {
-            error_log("DB: Error updating ${type}: ${id}.");
+            error_log("DB: Error updating ${table_name}: ${id}.");
         }
     }
 
@@ -62,7 +62,7 @@ class DB {
         global $wpdb;
         $result = $wpdb->insert($table_name, $values);
         if($result == false) {
-            error_log("DB: Error inserting ${type}.");
+            error_log("DB: Error inserting into ${table_name}.");
             return self::BAD_ID;
         }
         return $wpdb->insert_id;
@@ -107,14 +107,27 @@ class DB {
         }
 
         $clause = "WHERE ";
+        $args = array();
         foreach($where_conditions as $key => $value) {
-            $clause .= "${key} = ${value}";
+            $placeholder = "";
+            if(is_int($value)) {
+                $placeholder = "%d";
+            } else if(is_string($value)) {
+                $placeholder = "%s";
+            } else if(is_float($value)) {
+                $placeholder ="%f";
+            } else {
+                throw new \Exception("DB: Bad value in WHERE of unknown type.");
+            }
+
+            $clause .= "$key = $placeholder";
+            $args[] = $value;
             $i -= 1;
             if($i != 0) {
                 $clause .= " AND ";
             }
         }
-        return $clause;
+        return self::prepare($clause, $args);
     }
 
 }

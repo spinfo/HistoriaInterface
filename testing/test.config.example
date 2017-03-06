@@ -4,6 +4,7 @@ mysql_pass = ""
 mysql_db = "wordpress"
 
 wp_url = "http://localhost"
+wp_load_script = "/var/www/wordpress/wp-load.php"
 
 places_table = "wp_shtm_places"
 

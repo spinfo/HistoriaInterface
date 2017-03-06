@@ -1,6 +1,8 @@
 <?php
 namespace SmartHistoryTourManager;
 
+require_once(dirname(__FILE__) . '/../user_rights_service.php');
+
 /**
  * A wrapper for model collections. Ensures that all model collections are
  * singleton classes.

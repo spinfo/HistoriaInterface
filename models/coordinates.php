@@ -43,6 +43,9 @@ final class Coordinates extends AbstractCollection {
             DB::update($this->table, $coordinate->id, $values);
             $id = $coordinate->id;
         }
+        if($id == DB::BAD_ID) {
+            throw new \Exception("Error saving area.");
+        }
         return $this->get($id);
     }
 
