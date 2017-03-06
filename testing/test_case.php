@@ -41,7 +41,12 @@ class TestCase {
 
     public function report() {
         $total = $this->tests_passed + $this->tests_failed;
-        echo "Passed $this->tests_passed/$total ($this->name)\n";
+        if($this->tests_failed == 0) {
+            $status = "OK";
+        } else {
+            $status = "with errors";
+        }
+        echo "Passed $status: $this->tests_passed/$total - $this->name\n";
     }
 
     public function assert($condition, $message) {

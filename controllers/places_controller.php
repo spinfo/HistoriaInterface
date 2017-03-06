@@ -5,6 +5,7 @@ require_once( dirname(__FILE__) . '/abstract_controller.php');
 require_once( dirname(__FILE__) . '/../views/view.php');
 require_once( dirname(__FILE__) . '/../models/places.php');
 require_once( dirname(__FILE__) . '/../models/place.php');
+require_once( dirname(__FILE__) . '/../models/areas.php');
 require_once( dirname(__FILE__) . '/../resource_helpers.php');
 require_once( dirname(__FILE__) . '/../user_service.php');
 require_once( dirname(__FILE__) . '/../message_service.php');
@@ -23,14 +24,19 @@ class PlacesController extends AbstractController {
 
     public static function index() {
         $places = Places::instance();
+        $areas = Areas::instance();
+        $user_service = UserService::instance();
 
         $places_list = $places->list(0, 10);
+        $areas_list = $areas->list_simple();
 
         $view = new View(ViewHelper::index_places_view(),
             array(
                 'route_params' => RouteParams::instance(),
                 'user_service' => UserService::instance(),
-                'places_list' => $places_list
+                'places_list' => $places_list,
+                'areas_list' => $areas_list,
+                'current_area_id' => $user_service->get_current_area_id(),
             )
         );
         self::wrap_in_page_view($view)->render();
@@ -59,8 +65,12 @@ class PlacesController extends AbstractController {
         if(!empty($place_params)) {
             $place = $places->create($place_params);
             $place->user_id = UserService::instance()->user_id();
-            // TODO: crotch, to be removed on area integration
-            $place->area_id = 1;
+            $current_area_id = UserService::instance()->get_current_area_id();
+            if($current_area_id != DB::BAD_ID) {
+                $place->area_id = 1;
+            } else {
+                throw new \Exception("Some area should always be selected.");
+            }
             $result = $places->save($place);
             if(empty($result)) {
                 MessageService::instance()->add_error("Ort nicht erstellt.");

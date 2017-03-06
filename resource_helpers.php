@@ -10,6 +10,7 @@ class RouteParams {
     private static $key_controller = 'shtm_c';
     private static $key_action = 'shtm_a';
     private static $key_id = 'shtm_id';
+    private static $key_back_params = 'shtm_back_params';
 
     private function __construct() {}
 
@@ -82,6 +83,23 @@ class RouteParams {
         ));
     }
 
+    public function set_current_area($id = null) {
+        return $this->params($this->set_current_area_params($id));
+    }
+
+    public function set_current_area_params($id = null) {
+        $values = array(
+            self::$key_controller => 'area',
+            self::$key_action => 'set_current_area',
+            // encode the current params as back url
+            self::$key_back_params => urlencode(self::instance()->params())
+        );
+        if(!empty($id)) {
+            $values[self::$key_id] = $id;
+        }
+        return array_merge($_GET, $values);
+    }
+
     public function get_controller_value() {
         return $_GET[self::$key_controller];
     }
@@ -92,6 +110,10 @@ class RouteParams {
 
     public function get_id_value() {
         return $_GET[self::$key_id];
+    }
+
+    public function get_back_params_value() {
+        return $_GET[self::$key_back_params];
     }
 }
 

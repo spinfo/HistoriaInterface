@@ -35,6 +35,13 @@ abstract class AbstractController {
         return $view;
     }
 
+    protected static function create_view_with_exception($exception, $status = 400) {
+        MessageService::instance()->add_error($exception->getMessage());
+        self::status_header($status);
+        $view = new View(ViewHelper::empty_view(), null);
+        return $view;
+    }
+
     protected static function status_header($status_code, $description = '') {
         // just pass to the wordpress-function
         status_header($status_code, $description);

@@ -204,6 +204,17 @@ function shtm_render_tour_creator() {
                     break;
             }
             break;
+        case 'area':
+            require_once( dirname(__FILE__) . '/controllers/areas_controller.php');
+            switch($action) {
+                case 'set_current_area':
+                    AreasController::set_current_area();
+                    break;
+                default:
+                    error_log("Missing action for area controller.");
+                    break;
+            }
+            break;
         default:
             require_once( dirname(__FILE__) . '/controllers/places_controller.php');
             PlacesController::index();

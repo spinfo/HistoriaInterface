@@ -2,6 +2,7 @@
 namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/abstract_collection.php');
+require_once(dirname(__FILE__) . '/area.php');
 require_once(dirname(__FILE__) . '/coordinates.php');
 require_once(dirname(__FILE__) . '/../db.php');
 

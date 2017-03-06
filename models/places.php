@@ -27,6 +27,12 @@ final class Places extends AbstractCollection {
 
     public function list($offset, $limit) {
         $where = $this->user_service->access_conditions();
+
+        $current_area_id = $this->user_service->get_current_area_id();
+        if($current_area_id != DB::BAD_ID) {
+            $where['area_id'] = $current_area_id;
+        }
+
         $rows = DB::list($this->select_sql(), $where, $offset, $limit);
 
         $places = array();

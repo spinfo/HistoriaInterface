@@ -2,6 +2,7 @@
 namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/../user_service.php');
+require_once(dirname(__FILE__) . '/../db.php');
 
 /**
  * A wrapper for model collections. Ensures that all model collections are
@@ -39,6 +40,24 @@ abstract class AbstractCollection {
         $model->id = intval($db_row->id);
         $model->created_at = new \DateTime($db_row->created_at);
         $model->updated_at = new \DateTime($db_row->updated_at);
+    }
+
+    /**
+     * Returns the numerically first id from the collection's table.
+     *
+     * @return int  The id or DB::BAD_ID if none was found.
+     */
+    public function first_id() {
+        return DB::first_id($this->table);
+    }
+
+    /**
+     * Checks if an id is present in the collection's table.
+     *
+     * @return bool true if  result was found else false.
+     */
+    public function valid_id($id) {
+        return DB::valid_id($this->table, $id);
     }
 }
 

@@ -11,6 +11,44 @@ class DB {
 
     const BAD_ID = -1;
 
+    /**
+     * Returns the first id for the table in question.
+     * NOTE: Since this is used only for internal functionality, the table name
+     * is NOT sanitized.
+     *
+     * @return int  The id in question or DB::BAD_ID if the table is empty.
+     */
+    public static function first_id($table) {
+        $sql = "SELECT id FROM $table ORDER BY id ASC LIMIT 0,1";
+
+        global $wpdb;
+        $result = $wpdb->query($sql);
+
+        if(empty($result)) {
+            return self::BAD_ID;
+        } else {
+            return $result;
+        }
+    }
+
+    /**
+     * Checks if an id is present in the provided table.
+     * NOTE: Since this is used only for internal functionality, the table name
+     * is NOT sanitized.
+     *
+     * @return bool true if  result was found else false.
+     */
+    public static function valid_id($table, $id) {
+        $sql = "SELECT 1 FROM $table";
+        $result = self::get($sql, array('id' => $id));
+
+        if(empty($result)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     public static function list($select_sql, $where, $offset, $limit) {
         $sql = $select_sql . " ";
         $sql .= self::where_clause($where);

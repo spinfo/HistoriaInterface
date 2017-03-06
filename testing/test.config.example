@@ -7,6 +7,7 @@ wp_url = "http://localhost"
 wp_load_script = "/var/www/wordpress/wp-load.php"
 
 places_table = "wp_shtm_places"
+areas_table = "wp_shtm_areas"
 
 tour_creator_prefix = "/wp-admin/admin.php?page=shtm_tour_creator"
 tour_publisher_prefix = "/wp-admin/admin.php?page=shtm_tour_publisher"

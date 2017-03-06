@@ -2,6 +2,7 @@
 namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/db.php');
+require_once(dirname(__FILE__) . '/models/areas.php');
 
 /**
  * This is a wrapper around wordpress' current user (a WP_User object). It
@@ -70,6 +71,10 @@ class UserService {
         return ($this->is_admin() || ($this->user_id() == $place->id));
     }
 
+    public function is_logged_in() {
+        return !empty($this->user);
+    }
+
     /**
      * Sets the area for the current user. (Uses the wordpress user settings.)
      *
@@ -77,14 +82,16 @@ class UserService {
      */
     public function set_current_area_id($id) {
         if(!is_int($id)) {
-            throw new \Exception("Area id must be present and int value.");
+            throw new UserServiceException(
+                "Area id must be present and int value, is: $id.");
             return false;
         }
         $result = false;
-        if(!empty($this->current_user)) {
+        if(!empty($this->user)) {
             $result = set_user_setting(self::CURRENT_AREA_KEY, strval($id));
-            if(is_null($result) || !$result) {
-                throw new \Exception("Failed to set current area for user.");
+            if(empty($result)) {
+                throw new UserServiceException(
+                    "Failed to set current area for user.");
                 $result = false;
             }
         }
@@ -99,8 +106,18 @@ class UserService {
      */
     public function get_current_area_id() {
         $id = get_user_setting(self::CURRENT_AREA_KEY, DB::BAD_ID);
-        if(!is_numerich($id)) {
-            return DB::BAD_ID;
+        if(!is_numeric($id)) {
+            throw new UserServiceException(
+                "Bad value in setting: current_area_id.");
+        }
+        if($id == DB::BAD_ID || !Areas::instance()->valid_id($id)) {
+            $id = Areas::instance()->first_id();
+            error_log("--- f: $id");
+            if($id == DB::BAD_ID) {
+                throw new UserServiceException("Cannot set default area id.");
+            } else {
+                $this->set_current_area_id($id);
+            }
         }
         return intval($id);
     }
@@ -130,5 +147,7 @@ class UserService {
     }
 
 }
+
+class UserServiceException extends \Exception {}
 
 ?>

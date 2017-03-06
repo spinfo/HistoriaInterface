@@ -13,7 +13,7 @@ class AreasTest extends TestCase {
 
     public function __construct() {
         parent::__construct();
-        $this->name = 'unit-test-areas';
+        $this->name = 'Areas Unit Test';
     }
 
     public function test_create() {

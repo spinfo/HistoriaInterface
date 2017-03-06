@@ -24,8 +24,8 @@ class WPTestConnection extends TestCase {
     // A DomXPath representation of the last result
     private $result;
 
-    public function __construct($user, $pass, $wp_url, $cookie_dir = '/tmp') {
-        $this->name = $user;
+    public function __construct($test_name, $user, $pass, $wp_url, $cookie_dir = '/tmp') {
+        $this->name = $test_name;
         $this->user = $user;
         $this->pass = $pass;
         $this->wp_url = $wp_url;
@@ -43,12 +43,12 @@ class WPTestConnection extends TestCase {
         // setup some numbers to count failed and passed tests
         $this->tests_passed = 0;
         $this->tests_failed = 0;
+
+        parent::__construct();
     }
 
     public function __destruct() {
-        // remove the cookie file on destruction to ensure a fresh login on
-        // object creation
-        unlink($this->cookie_file);
+        $this->invalidate_login();
     }
 
     // this overwrites the parent log function to log url and http status
@@ -71,6 +71,13 @@ class WPTestConnection extends TestCase {
             $this->log_ok("Status ok for user login: " . $this->user);
         } else {
             $this->log_error("Could not log in");
+        }
+    }
+
+    // destroy the cookie file to invalidate the session
+    public function invalidate_login() {
+        if(file_exists($this->cookie_file)) {
+            unlink($this->cookie_file);
         }
     }
 
