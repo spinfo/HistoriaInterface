@@ -18,6 +18,8 @@ include_once(dirname(__FILE__) . '/message_service.php');
 include_once(dirname(__FILE__) . '/models/areas.php');
 include_once(dirname(__FILE__) . '/models/coordinates.php');
 include_once(dirname(__FILE__) . '/models/places.php');
+include_once(dirname(__FILE__) . '/models/mapstops.php');
+include_once(dirname(__FILE__) . '/models/tours.php');
 include_once(dirname(__FILE__) . '/db.php');
 
 /**
@@ -46,7 +48,7 @@ function shtm_install() {
     //      http://mysql.rjweb.org/doc.php/latlng
     $table_name = Coordinates::instance()->table;
     $coordinates_sql = "CREATE TABLE $table_name (
-        id bigint NOT NULL AUTO_INCREMENT,
+        id bigint(20) NOT NULL AUTO_INCREMENT,
         lat decimal(8,6) NOT NULL,
         lon decimal(9,6) NOT NULL,
         created_at timestamp DEFAULT now(),
@@ -57,9 +59,9 @@ function shtm_install() {
     // sql for the areas table
     $table_name = Areas::instance()->table;
     $areas_sql = "CREATE TABLE $table_name (
-        id bigint NOT NULL AUTO_INCREMENT,
-        coordinate1_id bigint NOT NULL,
-        coordinate2_id bigint NOT NULL,
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        coordinate1_id bigint(20) NOT NULL,
+        coordinate2_id bigint(20) NOT NULL,
         name varchar(512) NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
@@ -69,21 +71,60 @@ function shtm_install() {
     // sql for the places table
     $table_name = Places::instance()->table;
     $places_sql = "CREATE TABLE $table_name (
-        id bigint NOT NULL AUTO_INCREMENT,
-        user_id bigint NOT NULL,
-        coordinate_id bigint NOT NULL,
-        area_id bigint NOT NULL,
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        user_id bigint(20) NOT NULL,
+        coordinate_id bigint(20) NOT NULL,
+        area_id bigint(20) NOT NULL,
+        name varchar(512) NOT NULL,
+        created_at timestamp DEFAULT now(),
+        updated_at timestamp DEFAULT now() ON UPDATE now(),
+        PRIMARY KEY  (id),
+        KEY shtm_places_user_id (user_id),
+        KEY shtm_places_area_id (area_id)
+    ) $charset_collate;";
+
+    // sql for the tours table (stub)
+    $table_name = Tours::instance()->table;
+    $tours_sql = "CREATE TABLE $table_name (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
         name varchar(512) NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id)
     ) $charset_collate;";
 
+    // sql for the mapstop table
+    $table_name = Mapstops::instance()->table;
+    $mapstops_sql = "CREATE TABLE $table_name (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        tour_id bigint(20) NOT NULL,
+        place_id bigint(20) NOT NULL,
+        name varchar(512) NOT NULL,
+        description text NOT NULL,
+        created_at timestamp DEFAULT now(),
+        updated_at timestamp DEFAULT now() ON UPDATE now(),
+        PRIMARY KEY  (id),
+        KEY shtm_mapstops_tour_id (tour_id),
+        KEY shtm_mapstops_place_id (place_id)
+    ) $charset_collate;";
+
+    // sql for joining posts on mapstops
+    $table_name = Mapstops::instance()->join_posts_table;
+    $mapstops_to_posts_sql = "CREATE TABLE $table_name (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        mapstop_id bigint(20) NOT NULL,
+        post_id bigint(20) NOT NULL,
+        created_at timestamp DEFAULT now(),
+        updated_at timestamp DEFAULT now() ON UPDATE now(),
+        PRIMARY KEY  (id),
+        KEY shtm_mapstops_to_posts (mapstop_id, post_id)
+    ) $charset_collate;";
+
     // collect queries
-    $queries = [];
-    $queries[] = $coordinates_sql;
-    $queries[] = $areas_sql;
-    $queries[] = $places_sql;
+    $queries = array(
+        $coordinates_sql, $areas_sql, $places_sql, $tours_sql,
+        $mapstops_sql, $mapstops_to_posts_sql
+    );
 
     // do the table update
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -99,6 +140,8 @@ function shtm_install() {
     add_option('shtm_db_version', $shtm_db_version);
 }
 
+// This is meant for testing
+// TODO: remove after testing
 function shtm_create_test_data() {
 
     $user_service = UserService::instance();
@@ -131,11 +174,44 @@ function shtm_create_test_data() {
     );
     $place = Places::instance()->create($values);
     Places::instance()->save($place);
+
+    // use id values of posts that come with default wordpress install
+    // (use only thos that have a title)
+    $post_ids = array(1,2,3,4,5,6,7,8,10,11,12,19,20,21);
+
+    // Make some dummy tours to work with
+    for($i = 0; $i < 3; $i++) {
+        $values = array('name' => "Tour$i");
+        $tour_id = DB::insert(Tours::instance()->table, $values);
+
+        // Make two mapstops for each tour
+        for($j = 0; $j < 2; $j++) {
+            $values = array(
+                'tour_id' => $tour_id,
+                'place_id' => $place->id,
+                'name' => "Mapstop no. $j (t: $tour_id)",
+                'description' => "Desc for mapstop no. $j (t: $tour_id)"
+            );
+            $mapstop_id = DB::insert(Mapstops::instance()->table, $values);
+
+            // link each mapstop to two tours
+            for($k = 0; $k < 2; $k++) {
+                $values = array(
+                    'mapstop_id' => $mapstop_id,
+                    'post_id' => array_shift($post_ids)
+                );
+                DB::insert(Mapstops::instance()->join_posts_table, $values);
+            }
+        }
+    }
+
+
 }
 
 register_activation_hook(__FILE__, 'SmartHistoryTourManager\shtm_install');
 register_activation_hook(__FILE__, 'SmartHistoryTourManager\shtm_create_test_data');
 
+// TODO: Write a hook after post delete to disjoin from mapstop
 
 /**
  * TOUR CREATOR
