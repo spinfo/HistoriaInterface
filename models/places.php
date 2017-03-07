@@ -71,7 +71,7 @@ final class Places extends AbstractCollection {
         return $this->get($id);
     }
 
-    private function db_insert($place) {
+    protected function db_insert($place) {
         $place->coordinate = Coordinates::instance()->save($place->coordinate);
         $place->coordinate_id = $place->coordinate->id;
 
@@ -95,7 +95,7 @@ final class Places extends AbstractCollection {
     }
 
     // TODO: Some error handling, as transaction...
-    private function db_update($place) {
+    protected function db_update($place) {
         $place->coordinate = Coordinates::instance()->save($place->coordinate);
         $place->coordinate_id = $place->coordinate->id;
 
@@ -115,7 +115,7 @@ final class Places extends AbstractCollection {
     /**
      * @return Place|null The deleted object if successful, else null
      */
-    public function delete($place) {
+    protected function db_delete($place) {
         Coordinates::instance()->delete($place->coordinate);
 
         $row_count = DB::delete($this->table, $place->id);

@@ -3,6 +3,7 @@ namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/abstract_collection.php');
 require_once(dirname(__FILE__) . '/../db.php');
+require_once(dirname(__FILE__) . '/../logging.php');
 
 final class Coordinates extends AbstractCollection {
 
@@ -30,42 +31,64 @@ final class Coordinates extends AbstractCollection {
             return null;
         }
 
+        $id;
+        if (empty($coordinate->id) || $coordinate->id == DB::BAD_ID) {
+            $id = $this->db_insert($coordinate);
+        } else {
+            $this->db_update($coordinate);
+            $id = $coordinate->id;
+        }
+        if($id == DB::BAD_ID) {
+            throw new \Exception("Error saving coordinate.");
+        }
+        return $this->get($id);
+    }
+
+    protected function db_delete($coordinate) {
+        $row_count = DB::delete($this->table, $coordinate->id);
+        if($row_count != 1) {
+            throw new DB_Exception(
+                "Error deleting coordinate: " . $coordinate->id . "\n");
+        }
+        $coordinate->id = DB::BAD_ID;
+        return $coordinate;
+    }
+
+    protected function db_insert($coordinate) {
+        if ($coordinate->id > 0) {
+            throw new DB_Exception("Cannot insert with existing id");
+        }
+
         $values = array(
             'lat' => $coordinate->lat,
             'lon' => $coordinate->lon
         );
 
-        $id;
-        if (empty($coordinate->id) || $coordinate->id == DB::BAD_ID) {
-            $id = $this->db_insert($values);
-            $coordinate->id = $id;
-        } else {
-            DB::update($this->table, $coordinate->id, $values);
-            $id = $coordinate->id;
+        $coordinate->id = DB::insert($this->table, $values);
+        if($coordinate->id == DB::BAD_ID) {
+            throw new DB_Exception(
+                "Could not insert coordinate: $coordinate->id");
         }
-        if($id == DB::BAD_ID) {
-            throw new \Exception("Error saving area.");
-        }
-        return $this->get($id);
+        return $coordinate->id;
     }
 
-    public function delete($coordinate) {
-        $row_count = DB::delete($this->table, $coordinate->id);
-        if($row_count != 1) {
-            throw new \Exception(
-                "Error deleting coordinate: " . $coordinate->id . "\n");
+    protected function db_update($coordinate) {
+        if(!$coordinate->is_valid()) {
+            debug_log("Cannot insert coordinate. Messages:");
+            $coordinate->debug_log_messages();
+            return null;
         }
-        $coordinate->id = null;
+
+        $values = array(
+            'lat' => $coordinate->lat,
+            'lon' => $coordinate->lon
+        );
+
+        $result = DB::update($this->table, $coordinate->id, $values);
+        if(!$result) {
+            debug_log("Could not update coordinate: $coordinate->id");
+        }
         return $coordinate;
-    }
-
-    private function db_insert($coordinate_values) {
-        $coord_id = DB::insert($this->table, $coordinate_values);
-        if($coord_id == DB::BAD_ID) {
-            throw new \Exception(
-                "Could not insert coordinate: ". var_export($coordinate_values, true));
-        }
-        return $coord_id;
     }
 
     public function instance_from_array($row) {

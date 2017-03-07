@@ -59,6 +59,27 @@ abstract class AbstractCollection {
     public function valid_id($id) {
         return DB::valid_id($this->table, $id);
     }
+
+    // delegates the update to a child function
+    public function update($model) {
+        return $this->db_update($model);
+    }
+
+    // delegates the insert to a child function
+    public function insert($model) {
+        return $this->db_insert($model);
+    }
+
+    // delegates the delete to a child function
+    public function delete($model) {
+        return $this->db_delete($model);
+    }
+
+    abstract protected function db_update($model);
+
+    abstract protected function db_insert($model);
+
+    abstract protected function db_delete($model);
 }
 
 ?>

@@ -1,6 +1,8 @@
 <?php
 namespace SmartHistoryTourManager;
 
+require_once(dirname(__FILE__) . '/../logging.php');
+
 abstract class AbstractModel {
 
     public $id = -1;
@@ -34,6 +36,12 @@ abstract class AbstractModel {
             foreach($coordinate->messages as $msg => $val) {
                 $this->messages["$name: $msg"] = true;
             }
+        }
+    }
+
+    public function debug_log_messages() {
+        foreach($this->messages as $msg => $bool) {
+            debug_log($msg);
         }
     }
 }

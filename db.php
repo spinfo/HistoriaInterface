@@ -9,6 +9,8 @@ class DB {
 
     private static $prefix = 'shtm_';
 
+    private static $transaction_running = false;
+
     const BAD_ID = -1;
 
     /**
@@ -91,6 +93,7 @@ class DB {
         if($result == false) {
             error_log("DB: Error updating ${table_name}: ${id}.");
         }
+        return $result;
     }
 
     /**
@@ -132,6 +135,34 @@ class DB {
         return $wpdb->prepare($sql, $args);
     }
 
+    public static function start_transaction() {
+        if(self::$transaction_running) {
+            throw new TransactionException("Transaction already running.");
+        }
+        global $wpdb;
+        $result = $wpdb->query("START TRANSACTION");
+        self::$transaction_running = true;
+    }
+
+    public static function commit_transaction() {
+        if(!self::$transaction_running) {
+            throw new TransactionException("No transaction to commit.");
+        }
+        global $wpdb;
+        $result = $wpdb->query("COMMIT");
+        self::$transaction_running = false;
+    }
+
+    public static function rollback_transaction() {
+        if(!self::$transaction_running) {
+            throw new TransactionException("No transaction to rollback.");
+        }
+        global $wpdb;
+        $wpdb->query("ROLLBACK");
+        // TODO: Check if there is a way to check wpdbs status on a transaction
+        self::$transaction_running = false;
+    }
+
     public static function table_name($type) {
         global $wpdb;
         return $wpdb->prefix . self::$prefix . $type;
@@ -170,5 +201,9 @@ class DB {
 
 }
 
+class DB_Exception extends \Exception {}
+
+// does not extend DB_Exception to not be easily caught
+class TransactionException extends \Exception {}
 
 ?>

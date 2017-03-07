@@ -17,6 +17,12 @@ class Mapstops extends AbstractCollection {
         $this->join_posts_table = DB::table_name('mapstops_to_posts');
     }
 
+    protected function db_insert($mapstop) {}
+
+    protected function db_update($mapstop) {}
+
+    protected function db_delete($mapstop) {}
+
 }
 
 ?>

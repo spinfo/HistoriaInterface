@@ -6,6 +6,7 @@ require_once(dirname(__FILE__) . '/../models/area.php');
 require_once(dirname(__FILE__) . '/../models/coordinate.php');
 require_once(dirname(__FILE__) . '/test_helper.php');
 require_once(dirname(__FILE__) . '/test_case.php');
+require_once(dirname(__FILE__) . '/../db.php');
 
 class AreasTest extends TestCase {
 
@@ -99,10 +100,129 @@ class AreasTest extends TestCase {
         $this->test_area_values($area, $new_area, "old object of updated area");
     }
 
+    public function test_transaction_update() {
+        // variables for tables to use for convenience
+        $table = Areas::instance()->table;
+        $coord_table = Coordinates::instance()->table;
+
+        // pick an area to test
+        $area = $this->areas[0];
+
+        // save area values for later comparison
+        $coord2_id = $area->coordinate2_id;
+        $area_id = $area->id;
+
+        // invalidate id of one coordinate to test that the transaction fails
+        $area->coordinate2->id = DB::BAD_ID;
+
+        // change area's and coordinate's values to simulate that an update
+        // would be neccessary
+        $old_name = $area->name;
+        $area->name = "$area->name (test_transaction failed if this is saved.)";
+        $old_lat = $area->coordinate1->lat;
+        $area->coordinate1->lat =
+            $old_lat < 89.0 ? ($old_lat + 1) : ($old_lat -1);
+
+        $exception_thrown = false;
+        try {
+            $result_id = Areas::instance()->save($area);
+        } catch (DB_Exception $e) {
+            $exception_thrown = true;
+        }
+
+        $this->assert($exception_thrown,
+            "Should throw exception on bad update.");
+        $this->assert(is_null($result_id) || $result_id == DB::BAD_ID,
+            "Should return null or error value on bad update.");
+
+        $clean_area = Areas::instance()->get($area->id);
+        $clean_coord = Coordinates::instance()->get($area->coordinate1->id);
+        $this->assert($clean_area->name == $old_name,
+            "Should not have updated name on bad update.");
+        $this->assert($clean_coord->lat == $old_lat,
+            "Should not have updated lat of coord on bad update");
+
+        // restore the previous state
+        $area->coordinate2->id = $coord2_id;
+        $area->coordinate2_id = $coord2_id;
+        $area->name = $old_name;
+    }
+
+    public function test_transaction_insert() {
+        // variables for tables to use for convenience
+        $table = Areas::instance()->table;
+        $coord_table = Coordinates::instance()->table;
+
+        $area = $this->make_area();
+
+        // invalidating one coordinate should stop any insert
+        $area->coordinate2->lat = null;
+
+        // save id values and attempt the insert
+        $last_area = $this->helper->db_highest_id($table);
+        $last_coord = $this->helper->db_highest_id($coord_table);
+        $exception_thrown = false;
+        try {
+            $result = Areas::instance()->save($area);
+        } catch (DB_Exception $e) {
+            $exception_thrown = true;
+        }
+
+        $this->assert($exception_thrown,
+            "Should throw exception on bad insert.");
+        $this->assert(is_null($result) || $result == DB::BAD_ID,
+            "Should return null or error value on bad insert.");
+        $this->assert($last_area == $this->helper->db_highest_id($table),
+            "No area should have been added to table on bad insert.");
+        $this->assert($last_coord == $this->helper->db_highest_id($coord_table),
+            "No coordinate should have been added to table on bad insert.");
+
+        $this->assert_invalid_id($area->id, "area");
+        $this->assert_invalid_id($area->coordinate1->id, "coordinate1");
+        $this->assert_invalid_id($area->coordinate1_id, "coordinate1_id");
+        $this->assert_invalid_id($area->coordinate2->id, "coordinate2");
+        $this->assert_invalid_id($area->coordinate2_id, "coordinate2_id");
+    }
+
+    public function test_transaction_delete() {
+        // variables for tables to use for convenience
+        $table = Areas::instance()->table;
+        $coord_table = Coordinates::instance()->table;
+
+        // pick an area to test
+        $area = $this->areas[1];
+
+        // save area values for later comparison
+        $coord2_id = $area->coordinate2_id;
+        $area_id = $area->id;
+
+        // invalidate id of one coordinate to test that the transaction fails
+        $area->coordinate2->id = DB::BAD_ID;
+
+        // save id values and attempt the delete
+        $last_area = $this->helper->db_highest_id($table);
+        $last_coord = $this->helper->db_highest_id($coord_table);
+        Areas::instance()->delete($area);
+
+        $this->assert(is_null($result) || $result == DB::BAD_ID,
+            "Should return null or error value on bad delete.");
+        $this->assert($last_area == $this->helper->db_highest_id($table),
+            "No area should have been removed on bad delete.");
+        $this->assert($last_coord == $this->helper->db_highest_id($coord_table),
+            "No coordinate should have been removed on bad delete.");
+
+        // restore the previous state
+        $area->coordinate2->id = $coord2_id;
+        $area->coordinate2_id = $coord2_id;
+        $area->id = $area_id;
+    }
+
     public function test_delete() {
         // all areas created earlier
         $this->assert(count($this->areas) > 0,
-            "There should be areas to delete in the test case.");
+            "There should be at least one area to delete in the test case.");
+
+        // delete all remaining areas normally here
         foreach($this->areas as $area) {
             $id = $area->id;
             $coord1_id = $area->coordinate1_id;
@@ -144,6 +264,9 @@ class AreasTest extends TestCase {
         $this->test_get();
         $this->test_list_simple();
         $this->test_update();
+        $this->test_transaction_update();
+        $this->test_transaction_insert();
+        $this->test_transaction_delete();
         $this->test_delete();
     }
 
@@ -178,6 +301,12 @@ class AreasTest extends TestCase {
                 $this->log("\t${msg}");
             }
         }
+    }
+
+    private function assert_invalid_id($id, $name) {
+        $result = $this->assert($id < 1 || $id == DB::BAD_ID,
+            "Should have invalid id for $name");
+        return $result;
     }
 
     private function make_area() {

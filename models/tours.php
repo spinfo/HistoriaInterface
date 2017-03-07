@@ -14,6 +14,12 @@ class Tours extends AbstractCollection {
         $this->table = DB::table_name('tours');
     }
 
+    protected function db_insert($tour) {}
+
+    protected function db_update($tour) {}
+
+    protected function db_delete($tour) {}
+
 }
 
 ?>
