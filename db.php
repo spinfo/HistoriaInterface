@@ -1,6 +1,8 @@
 <?php
 namespace SmartHistoryTourManager;
 
+require_once(dirname(__FILE__) . '/logging.php');
+
 /**
  * This provides sanitizing of sql queris as well as their execution.
  * (The class should care about the form but not about the content of queries.)
@@ -61,7 +63,7 @@ class DB {
         $result = $wpdb->get_results($query);
 
         if(empty($result)) {
-            error_log("DB: Could not retrieve list with: $query");
+            debug_log("DB: Could not retrieve list with: $query");
         }
 
         return $result;
@@ -76,11 +78,11 @@ class DB {
         $result = $wpdb->get_results($query);
 
         if(empty($result)) {
-            error_log("DB: Could not retrieve object with: $query");
+            debug_log("DB: Could not retrieve object with: $query");
             return null;
         } else if(count($result) != 1) {
             $count = count($result);
-            error_log("DB: Bad result count: $count for: $query).");
+            debug_log("DB: Bad result count: $count for: $query).");
             return null;
         }
 
@@ -91,7 +93,7 @@ class DB {
         global $wpdb;
         $result = $wpdb->update($table_name, $values, array('id' => $id));
         if($result == false) {
-            error_log("DB: Error updating ${table_name}: ${id}.");
+            debug_log("DB: Error updating ${table_name}: ${id}.");
         }
         return $result;
     }
@@ -103,7 +105,7 @@ class DB {
         global $wpdb;
         $result = $wpdb->insert($table_name, $values);
         if($result == false) {
-            error_log("DB: Error inserting into ${table_name}.");
+            debug_log("DB: Error inserting into ${table_name}.");
             return self::BAD_ID;
         }
         return $wpdb->insert_id;
@@ -116,9 +118,9 @@ class DB {
         global $wpdb;
         $result = $wpdb->delete($table_name, array('id' => $id));
         if($result == false) {
-            error_log("DB: Error deleting ${type} with id: ${id}");
+            debug_log("DB: Error deleting ${type} with id: ${id}");
         } else if ($result != 1) {
-            error_log("DB: Wrong row count on delete: $result (${type}, ${id})");
+            debug_log("DB: Wrong row count on delete: $result (${type}, ${id})");
         }
         return $result;
     }
