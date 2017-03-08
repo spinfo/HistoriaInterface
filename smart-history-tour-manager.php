@@ -11,17 +11,6 @@ Author URI: http://www.example.com
 License: All rights reserved. This is not free software (for now).
 */
 
-
-include_once(dirname(__FILE__) . '/resource_helpers.php');
-include_once(dirname(__FILE__) . '/user_service.php');
-include_once(dirname(__FILE__) . '/message_service.php');
-include_once(dirname(__FILE__) . '/models/areas.php');
-include_once(dirname(__FILE__) . '/models/coordinates.php');
-include_once(dirname(__FILE__) . '/models/places.php');
-include_once(dirname(__FILE__) . '/models/mapstops.php');
-include_once(dirname(__FILE__) . '/models/tours.php');
-include_once(dirname(__FILE__) . '/db.php');
-
 /**
  * INSTALLATION/ACTIVATION
  */
@@ -31,6 +20,13 @@ global $shtm_db_version;
 $shtm_db_version = '0.1';
 
 function shtm_install() {
+    // require these here because they are not always all relevant
+    require_once(dirname(__FILE__) . '/models/areas.php');
+    require_once(dirname(__FILE__) . '/models/coordinates.php');
+    require_once(dirname(__FILE__) . '/models/places.php');
+    require_once(dirname(__FILE__) . '/models/mapstops.php');
+    require_once(dirname(__FILE__) . '/models/tours.php');
+
     // get the table name prefix for tables as well as the default charset
     // from wp, add our name to the prefix
     global $wpdb;
@@ -143,6 +139,13 @@ function shtm_install() {
 // This is meant for testing
 // TODO: remove after testing
 function shtm_create_test_data() {
+    require_once(dirname(__FILE__) . '/models/areas.php');
+    require_once(dirname(__FILE__) . '/models/coordinates.php');
+    require_once(dirname(__FILE__) . '/models/places.php');
+    require_once(dirname(__FILE__) . '/models/mapstops.php');
+    require_once(dirname(__FILE__) . '/models/tours.php');
+    require_once(dirname(__FILE__) . '/user_service.php');
+    require_once(dirname(__FILE__) . '/db.php');
 
     $user_service = UserService::instance();
 
@@ -244,6 +247,7 @@ function shtm_setup_tour_creator() {
 }
 
 function shtm_render_tour_creator() {
+    require_once(dirname(__FILE__) . '/resource_helpers.php');
 
     $route_params = RouteParams::instance();
 
@@ -319,6 +323,8 @@ add_action('init', 'SmartHistoryTourManager\do_output_buffer');
 
 // use session data to pass messages to the user on redirection
 function check_session_messages() {
+    require_once(dirname(__FILE__) . '/message_service.php');
+
     if(!session_id()) {
         session_start();
     }
