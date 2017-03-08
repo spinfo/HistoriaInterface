@@ -60,19 +60,48 @@ abstract class AbstractCollection {
         return DB::valid_id($this->table, $id);
     }
 
-    // delegates the update to a child function
+    /**
+     * This will just delegate to the collection's db_update() function.
+     *
+     * @return bool|mixed   false on error, else undefined
+     *                      (Result of DB::update()).
+     */
     public function update($model) {
         return $this->db_update($model);
     }
 
-    // delegates the insert to a child function
+    /**
+     * This performs basic checking and delegates the insert to a child
+     * method.
+     *
+     * @return int  The inserted id or DB::BAD_ID on error
+     */
     public function insert($model) {
-        return $this->db_insert($model);
+        if(empty($model->id) || $model->id == DB::BAD_ID) {
+            return $this->db_insert($model);
+        } else {
+            $msg = "Can't insert to $this->table with existing id: $model->id";
+            debug_log($msg);
+            return DB::BAD_ID;
+        }
     }
 
-    // delegates the delete to a child function
+    /**
+     * Performs basic checking on the input model, then delegates the
+     *
+     * @return object|null  The deleted model with id values set to DB::BAD_ID
+     *                      on success or null on error.
+     *
+     * @throws DB_Exception If the delete fails.
+     */
     public function delete($model) {
-        return $this->db_delete($model);
+        if(empty($model->id) || $model->id == DB::BAD_ID) {
+            throw new DB_Exception(
+                "Can't delete from $this->table without id value.");
+            return null;
+        } else {
+            return $this->db_delete($model);
+        }
     }
 
     /**
@@ -95,6 +124,8 @@ abstract class AbstractCollection {
      *
      * @return object|null  The deleted model with id values set to DB::BAD_ID
      *                      on success or null on error
+     *
+     * @throws DB_Exception If the delete fails.
      */
     abstract protected function db_delete($model);
 }

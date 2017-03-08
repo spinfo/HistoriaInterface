@@ -55,10 +55,6 @@ final class Coordinates extends AbstractCollection {
     }
 
     protected function db_insert($coordinate) {
-        if ($coordinate->id > 0) {
-            throw new DB_Exception("Cannot insert with existing id");
-        }
-
         $values = array(
             'lat' => $coordinate->lat,
             'lon' => $coordinate->lon
