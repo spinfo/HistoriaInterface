@@ -9,5 +9,10 @@ wp_load_script = "/var/www/wordpress/wp-load.php"
 places_table = "wp_shtm_places"
 areas_table = "wp_shtm_areas"
 
+test_user_admin_name = "test-admin"
+test_user_admin_pass = ""
+test_user_contributor_name = "test-contributor"
+test_user_contributor_pass = ""
+
 tour_creator_prefix = "/wp-admin/admin.php?page=shtm_tour_creator"
 tour_publisher_prefix = "/wp-admin/admin.php?page=shtm_tour_publisher"

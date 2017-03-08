@@ -1,11 +1,21 @@
 <?php
 namespace SmartHistoryTourManager;
 
-require_once(dirname(__FILE__) . '/mycurl.php');
+const SHTM_ENV_TEST = true;
+
+// make the test helper and load the wordpress envrionment
 require_once(dirname(__FILE__) . '/test_helper.php');
+$helper = new TestHelper();
+require_once($helper->config->wp_load_script);
+// hook to log all queries
+add_filter('query', 'SmartHistoryTourManager\debug_log_query');
+
+require_once(dirname(__FILE__) . '/mycurl.php');
 require_once(dirname(__FILE__) . '/test_case.php');
 require_once(dirname(__FILE__) . '/wp_test_connection.php');
 require_once(dirname(__FILE__) . '/areas_test.php');
+require_once(dirname(__FILE__) . '/places_test.php');
+require_once(dirname(__FILE__) . '/../logging.php');
 
 // performs tests common for normal pages retrieved by a simple GET
 function test_simple_page($test_connection, $page_type) {
@@ -63,9 +73,7 @@ function test_success_message($test_connection, $contained_text, $page_type) {
 
 
 // ACTUAL TESTING
-// make the test helper and load the wordpress envrionment for the test
-$helper = new TestHelper();
-require_once($helper->config->wp_load_script);
+
 // get instances of test connections
 $admin_test = new WPTestConnection('Places API Test (admin)',
     'test-admin', 'test-admin', $helper->config->wp_url);
@@ -253,13 +261,17 @@ function test_set_current_area($test_con, $name) {
         "Should still have marked the valid area on bad input as selected for $name.");
 }
 
-
 test_set_current_area($admin_test, "admin");
 test_set_current_area($contributor_test, "contributor");
 
+// Unit test for places
+$places_unit_test = new PlacesTest();
+$test_cases[] = $places_unit_test;
+$places_unit_test->do_test();
 
 
 // Report totals for all tests done
+echo "---" . PHP_EOL;
 foreach($test_cases as $test_case) {
     $test_case->report();
 }

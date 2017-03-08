@@ -98,6 +98,10 @@ class TestHelper {
             return true;
         }
     }
+
+    public function get_test_user() {
+        return get_user_by('login', $this->config->test_user_admin_name);
+    }
 }
 
 ?>

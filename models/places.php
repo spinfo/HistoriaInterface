@@ -69,16 +69,19 @@ final class Places extends AbstractCollection {
             $id = $place->id;
         }
         if($id == DB::BAD_ID) {
-            throw new \Exception("Error saving place.");
+            throw new DB_Exception("Error saving place.");
         }
         return $this->get($id);
     }
 
     protected function db_insert($place) {
+        DB::start_transaction();
+
         $place->coordinate = Coordinates::instance()->save($place->coordinate);
         $place->coordinate_id = $place->coordinate->id;
 
         if(!$place->is_valid()) {
+            $this->rollback_insert($place);
             return DB::BAD_ID;
         }
 
@@ -90,21 +93,37 @@ final class Places extends AbstractCollection {
         );
         $place_id = DB::insert($this->table, $place_values);
         if($place_id == DB::BAD_ID) {
-            throw new \Exception(
+            $this->rollback_insert($place);
+            throw new DB_Exception(
                 "Could not insert place: ". var_export($place_values, true));
+        } else {
+            DB::commit_transaction();
         }
         $place->id = $place_id;
         return $place_id;
     }
 
+    private function rollback_insert($place) {
+        $place->id = DB::BAD_ID;
+        $place->coordinate_id = DB::BAD_ID;
+        if(!empty($place->coordinate)) {
+            $place->coordinate->id = DB::BAD_ID;
+        }
+        DB::rollback_transaction();
+    }
+
     // TODO: Some error handling, as transaction...
     protected function db_update($place) {
-        $place->coordinate = Coordinates::instance()->save($place->coordinate);
-        $place->coordinate_id = $place->coordinate->id;
+        DB::start_transaction();
 
-        if(!$place->is_valid()) {
+        $coord_save = Coordinates::instance()->update($place->coordinate);
+
+        if(!$coord_save || !$place->is_valid()) {
+            debug_log("Failed to update invalid place.");
+            DB::rollback_transaction();
             return null;
         }
+        $place->coordinate_id = $place->coordinate->id;
 
         $place_values = array(
             'user_id' => $place->user_id,
@@ -112,21 +131,41 @@ final class Places extends AbstractCollection {
             'area_id' => $place->area_id,
             'name' => $place->name
         );
-        DB::update($this->table, $place->id, $place_values);
+        $result = DB::update($this->table, $place->id, $place_values);
+        if(!$result) {
+            DB::rollback_transaction();
+        } else {
+            DB::commit_transaction();
+        }
+        return $result;
     }
 
     /**
-     * @return Place|null The deleted object if successful, else null
+     * @return Place|null The deleted object if successful, else null.
      */
     protected function db_delete($place) {
-        Coordinates::instance()->delete($place->coordinate);
+        DB::start_transaction();
+
+        try {
+            Coordinates::instance()->delete($place->coordinate);
+        } catch (DB_Exception $e) {
+            DB::rollback_transaction();
+            // rethrow to indicate the mistaken delete
+            throw $e;
+        }
 
         $row_count = DB::delete($this->table, $place->id);
         if($row_count != 1) {
-            throw new \Exception("Error deleting place: " . $place->id . "\n");
+            DB::rollback_transaction();
+            // reset the value that might have been destroyed on coordinate delete
+            $place->coordinate->id = $place->coordinate_id;
+            throw new DB_Exception("Error deleting place: " . $place->id . "\n");
+        } else {
+            DB::commit_transaction();
+            $place->id = null;
+            $place->coordinate_id = DB::BAD_ID;
+            return $place;
         }
-        $place->id = null;
-        return $place;
     }
 
     /**

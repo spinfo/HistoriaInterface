@@ -93,7 +93,7 @@ class DB {
         global $wpdb;
         $result = $wpdb->update($table_name, $values, array('id' => $id));
         if($result == false) {
-            debug_log("DB: Error updating ${table_name}: ${id}.");
+            debug_log("DB: Error updating ${table_name} for id: '${id}'.");
         }
         return $result;
     }
@@ -188,7 +188,7 @@ class DB {
             } else if(is_float($value)) {
                 $placeholder ="%f";
             } else {
-                throw new \Exception("DB: Bad value in WHERE of unknown type.");
+                throw new DB_Exception("DB: Bad value in WHERE of unknown type.");
             }
 
             $clause .= "$key = $placeholder";

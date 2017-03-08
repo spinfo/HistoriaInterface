@@ -121,18 +121,16 @@ class Areas extends AbstractCollection {
     protected function db_update($area) {
         DB::start_transaction();
 
-        $id = $area->coordinate1->id;
-        $area->coordinate1 = Coordinates::instance()->update($area->coordinate1);
-        $area->coordinate1_id = $area->coordinate1->id;
-        $area->coordinate2 = Coordinates::instance()->update($area->coordinate2);
-        $area->coordinate2_id = $area->coordinate2->id;
+        $c1_save = Coordinates::instance()->update($area->coordinate1);
+        $c2_save = Coordinates::instance()->update($area->coordinate2);
 
-        if(!$area->is_valid()) {
-            debug_log("Failed to update invalid area. Messages:");
-            $area->debug_log_messages();
+        if(!$c1_save || !$c2_save || !$area->is_valid()) {
+            debug_log("Failed to update invalid area.");
             DB::rollback_transaction();
             return null;
         }
+        $area->coordinate1_id = $area->coordinate1->id;
+        $area->coordinate2_id = $area->coordinate2->id;
 
         $area_values = array(
             'coordinate1_id' => $area->coordinate1_id,
@@ -157,7 +155,7 @@ class Areas extends AbstractCollection {
         } catch (DB_Exception $e) {
             debug_log("Aborting area delete: Failed to delete coordinate.");
             $this->rollback_delete($area);
-            return $area;
+            return null;
         }
 
         $row_count = DB::delete($this->table, $area->id);
@@ -169,8 +167,8 @@ class Areas extends AbstractCollection {
             $area->coordinate2_id = DB::BAD_ID;
             $area->id = null;
             DB::commit_transaction();
+            return $area;
         }
-        return $area;
     }
 
     private function instance_from_array($row) {

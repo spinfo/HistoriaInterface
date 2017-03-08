@@ -58,5 +58,11 @@ class TestCase {
         return $condition;
     }
 
+    public function assert_invalid_id($id, $name) {
+        $result = $this->assert($id < 1 || $id == DB::BAD_ID,
+            "Should have invalid id for $name");
+        return $result;
+    }
+
 }
 

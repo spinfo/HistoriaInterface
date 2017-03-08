@@ -100,7 +100,7 @@ class AreasTest extends TestCase {
         $this->test_area_values($area, $new_area, "old object of updated area");
     }
 
-    public function test_transaction_update() {
+    public function test_transactional_update() {
         // variables for tables to use for convenience
         $table = Areas::instance()->table;
         $coord_table = Coordinates::instance()->table;
@@ -108,35 +108,28 @@ class AreasTest extends TestCase {
         // pick an area to test
         $area = $this->areas[0];
 
-        // save area values for later comparison
+        // save values for later comparison
         $coord2_id = $area->coordinate2_id;
         $area_id = $area->id;
+        $old_name = $area->name;
+        $old_lat = $area->coordinate1->lat;
 
         // invalidate id of one coordinate to test that the transaction fails
         $area->coordinate2->id = DB::BAD_ID;
 
         // change area's and coordinate's values to simulate that an update
         // would be neccessary
-        $old_name = $area->name;
-        $area->name = "$area->name (test_transaction failed if this is saved.)";
-        $old_lat = $area->coordinate1->lat;
+        $area->name = "$area->name (test transaction failed if this is saved.)";
         $area->coordinate1->lat =
             $old_lat < 89.0 ? ($old_lat + 1) : ($old_lat -1);
 
-        $exception_thrown = false;
-        try {
-            $result_id = Areas::instance()->save($area);
-        } catch (DB_Exception $e) {
-            $exception_thrown = true;
-        }
+        $result = Areas::instance()->update($area);
 
-        $this->assert($exception_thrown,
-            "Should throw exception on bad update.");
-        $this->assert(is_null($result_id) || $result_id == DB::BAD_ID,
-            "Should return null or error value on bad update.");
+        $this->assert($result == false, "Should return false on bad update.");
 
         $clean_area = Areas::instance()->get($area->id);
         $clean_coord = Coordinates::instance()->get($area->coordinate1->id);
+
         $this->assert($clean_area->name == $old_name,
             "Should not have updated name on bad update.");
         $this->assert($clean_coord->lat == $old_lat,
@@ -148,7 +141,7 @@ class AreasTest extends TestCase {
         $area->name = $old_name;
     }
 
-    public function test_transaction_insert() {
+    public function test_transactional_insert() {
         // variables for tables to use for convenience
         $table = Areas::instance()->table;
         $coord_table = Coordinates::instance()->table;
@@ -184,7 +177,7 @@ class AreasTest extends TestCase {
         $this->assert_invalid_id($area->coordinate2_id, "coordinate2_id");
     }
 
-    public function test_transaction_delete() {
+    public function test_transactional_delete() {
         // variables for tables to use for convenience
         $table = Areas::instance()->table;
         $coord_table = Coordinates::instance()->table;
@@ -203,6 +196,8 @@ class AreasTest extends TestCase {
         $last_area = $this->helper->db_highest_id($table);
         $last_coord = $this->helper->db_highest_id($coord_table);
         Areas::instance()->delete($area);
+
+        // TODO: this doesn't work, need to check for the exact row...
 
         $this->assert(is_null($result) || $result == DB::BAD_ID,
             "Should return null or error value on bad delete.");
@@ -264,9 +259,9 @@ class AreasTest extends TestCase {
         $this->test_get();
         $this->test_list_simple();
         $this->test_update();
-        $this->test_transaction_update();
-        $this->test_transaction_insert();
-        $this->test_transaction_delete();
+        $this->test_transactional_update();
+        $this->test_transactional_insert();
+        $this->test_transactional_delete();
         $this->test_delete();
     }
 
@@ -301,12 +296,6 @@ class AreasTest extends TestCase {
                 $this->log("\t${msg}");
             }
         }
-    }
-
-    private function assert_invalid_id($id, $name) {
-        $result = $this->assert($id < 1 || $id == DB::BAD_ID,
-            "Should have invalid id for $name");
-        return $result;
     }
 
     private function make_area() {

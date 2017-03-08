@@ -88,7 +88,7 @@ final class Coordinates extends AbstractCollection {
         if(!$result) {
             debug_log("Could not update coordinate: $coordinate->id");
         }
-        return $coordinate;
+        return $result;
     }
 
     public function instance_from_array($row) {

@@ -75,10 +75,27 @@ abstract class AbstractCollection {
         return $this->db_delete($model);
     }
 
+    /**
+     * Child implements this to update the model.
+     *
+     * @return bool|mixed   false on error, else undefined
+     *                      (Result of DB::update()).
+     */
     abstract protected function db_update($model);
 
+    /**
+     * Child implements this to insert a new model
+     *
+     * @return int  The inserted id or DB::BAD_ID on error
+     */
     abstract protected function db_insert($model);
 
+    /**
+     * Child implements this to delete a model
+     *
+     * @return object|null  The deleted model with id values set to DB::BAD_ID
+     *                      on success or null on error
+     */
     abstract protected function db_delete($model);
 }
 
