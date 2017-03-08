@@ -62,7 +62,7 @@ function shtm_install() {
         id bigint(20) NOT NULL AUTO_INCREMENT,
         coordinate1_id bigint(20) NOT NULL,
         coordinate2_id bigint(20) NOT NULL,
-        name varchar(512) NOT NULL,
+        name text NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id)
@@ -75,7 +75,7 @@ function shtm_install() {
         user_id bigint(20) NOT NULL,
         coordinate_id bigint(20) NOT NULL,
         area_id bigint(20) NOT NULL,
-        name varchar(512) NOT NULL,
+        name text NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id),
@@ -87,7 +87,7 @@ function shtm_install() {
     $table_name = Tours::instance()->table;
     $tours_sql = "CREATE TABLE $table_name (
         id bigint(20) NOT NULL AUTO_INCREMENT,
-        name varchar(512) NOT NULL,
+        name text NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id)
@@ -99,7 +99,7 @@ function shtm_install() {
         id bigint(20) NOT NULL AUTO_INCREMENT,
         tour_id bigint(20) NOT NULL,
         place_id bigint(20) NOT NULL,
-        name varchar(512) NOT NULL,
+        name text NOT NULL,
         description text NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
