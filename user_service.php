@@ -112,7 +112,6 @@ class UserService {
         }
         if($id == DB::BAD_ID || !Areas::instance()->valid_id($id)) {
             $id = Areas::instance()->first_id();
-            error_log("--- f: $id");
             if($id == DB::BAD_ID) {
                 throw new UserServiceException("Cannot set default area id.");
             } else {

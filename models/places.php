@@ -29,7 +29,10 @@ final class Places extends AbstractCollection {
         $where = $this->user_service->access_conditions();
 
         $current_area_id = $this->user_service->get_current_area_id();
-        if($current_area_id != DB::BAD_ID) {
+        if($current_area_id == DB::BAD_ID) {
+            throw new \Exception(
+                "bad current area id. This should never happen.");
+        } else {
             $where['area_id'] = $current_area_id;
         }
 
