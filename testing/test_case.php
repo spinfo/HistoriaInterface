@@ -18,7 +18,7 @@ class TestCase {
 
     // may be overwritten by child to implement different logging
     protected function log($msg = '') {
-        echo $msg . "\n";
+        echo $msg . PHP_EOL;
     }
 
     protected function log_ok($msg = '') {
@@ -46,7 +46,7 @@ class TestCase {
         } else {
             $status = "with errors";
         }
-        echo "Passed $status: $this->tests_passed/$total - $this->name\n";
+        echo "Passed $status: $this->tests_passed/$total - $this->name" . PHP_EOL;
     }
 
     public function assert($condition, $message) {

@@ -162,7 +162,7 @@ class Areas extends AbstractCollection {
         $row_count = DB::delete($this->table, $area->id);
         if($row_count != 1) {
             $this->rollback_delete($area);
-            throw new DB_Exception("Error deleting area: " . $area->id . "\n");
+            throw new DB_Exception("Error deleting area: $area->id");
         } else {
             $area->coordinate1_id = DB::BAD_ID;
             $area->coordinate2_id = DB::BAD_ID;

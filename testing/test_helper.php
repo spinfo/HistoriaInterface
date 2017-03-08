@@ -74,12 +74,12 @@ class TestHelper {
         $sql = "SELECT id FROM $table_name ORDER BY id DESC LIMIT 0,1";
         $result = $this->mysqli->query($sql);
         if(!$result) {
-            echo "ERROR: Failed db query: $sql\n";
+            echo "ERROR: Failed db query: $sql" . PHP_EOL;
             exit(1);
         }
         $result_arr = $result->fetch_array();
         if(empty($result_arr) || !isset($result_arr[0])) {
-            echo "ERROR: Retrieved empty result: $sql\n";
+            echo "ERROR: Retrieved empty result: $sql" . PHP_EOL;
             exit(1);
         }
         return $result_arr[0];

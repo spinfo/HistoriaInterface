@@ -53,7 +53,7 @@ class WPTestConnection extends TestCase {
 
     // this overwrites the parent log function to log url and http status
     protected function log($msg = '') {
-        echo $msg . ' - ' . $this->mycurl->_url . ' (' . $this->mycurl->getHttpStatus() . ")\n";
+        echo $msg . ' - ' . $this->mycurl->_url . ' (' . $this->mycurl->getHttpStatus() . ')' . PHP_EOL;
     }
 
     private function login() {

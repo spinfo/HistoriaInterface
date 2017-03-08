@@ -48,7 +48,7 @@ final class Coordinates extends AbstractCollection {
         $row_count = DB::delete($this->table, $coordinate->id);
         if($row_count != 1) {
             throw new DB_Exception(
-                "Error deleting coordinate: " . $coordinate->id . "\n");
+                "Error deleting coordinate: $coordinate->id");
         }
         $coordinate->id = DB::BAD_ID;
         return $coordinate;

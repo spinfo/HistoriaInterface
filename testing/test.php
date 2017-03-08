@@ -252,7 +252,6 @@ function test_set_current_area($test_con, $name) {
         "Should have marked the right area as selected for $name.");
 
     $bad_id = $helper->db_highest_id($helper->config->areas_table) + 1;
-    echo $bad_id . "\n";
     $url = $helper->tc_url('area', 'set_current_area', $bad_id, 'page=shtm_tour_creator');
 
     $test_con->test_fetch($url, null, 200,
