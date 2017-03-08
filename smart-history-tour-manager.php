@@ -113,7 +113,8 @@ function shtm_install() {
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id),
-        KEY shtm_mapstops_to_posts (mapstop_id, post_id)
+        KEY shtm_mapstops_to_posts (mapstop_id, post_id),
+        UNIQUE shtm_mapstop_unique_post (post_id)
     ) $charset_collate;";
 
     // collect queries
