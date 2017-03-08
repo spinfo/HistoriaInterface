@@ -100,74 +100,119 @@ class AreasTest extends TestCase {
         $this->test_area_values($area, $new_area, "old object of updated area");
     }
 
-    public function test_transactional_update() {
-        // variables for tables to use for convenience
-        $table = Areas::instance()->table;
-        $coord_table = Coordinates::instance()->table;
-
+    public function test_transactional_update_and_delete() {
         // pick an area to test
         $area = $this->areas[0];
 
-        // save values for later comparison
-        $coord2_id = $area->coordinate2_id;
-        $area_id = $area->id;
-        $old_name = $area->name;
-        $old_lat = $area->coordinate1->lat;
+        // invalidate one coordinate and test
+        $id = $area->coordinate1->id;
+        $area->coordinate1->id = null;
+        $this->check_invalid_update($area, $area->id, "invalid coordinate1");
+        $this->check_invalid_delete($area,
+            $area->id, $id, $area->coordinate2->id, "invalid coordinate1");
+        $area->coordinate1->id = $id;
 
-        // invalidate id of one coordinate to test that the transaction fails
-        $area->coordinate2->id = DB::BAD_ID;
+        // invalidate the other coordinate and test again
+        $id = $area->coordinate2->id;
+        $area->coordinate2->id = null;
+        $this->check_invalid_update($area, $area->id, "invalid coordinate2");
+        $this->check_invalid_delete($area,
+            $area->id, $area->coordinate1->id, $id, "invalid coordinate2");
+        $area->coordinate2->id = $id;
 
+        // invalidate the area and test again
+        $id = $area->id;
+        $area->id = null;
+        $this->check_invalid_update($area, $id, "invalid area");
+        $this->check_invalid_delete($area, $id, $area->coordinate1->id,
+            $area->coordinate2->id, "invalid coordinate2");
+        $area->id = $id;
+    }
+
+    private function check_invalid_update($area, $area_id, $test_name) {
         // change area's and coordinate's values to simulate that an update
         // would be neccessary
-        $area->name = "$area->name (test transaction failed if this is saved.)";
-        $area->coordinate1->lat =
-            $old_lat < 89.0 ? ($old_lat + 1) : ($old_lat -1);
+        $name = $area->name;
+        $lat1 = $area->coordinate1->lat;
+        $lat2 = $area->coordinate2->lat;
+        $area->name = "$area->name (test failed if this is saved)";
+        $area->coordinate1->lat = $lat1 < 89.0 ? ($lat1 + 1) : ($lat1 -1);
+        $area->coordinate2->lat = $lat2 < 89.0 ? ($lat2 + 1) : ($lat2 -1);
 
         $result = Areas::instance()->update($area);
 
-        $this->assert($result == false, "Should return false on bad update.");
+        $this->assert($result == false,
+            "Should return false on bad update ($test_name).");
 
-        $clean_area = Areas::instance()->get($area->id);
-        $clean_coord = Coordinates::instance()->get($area->coordinate1->id);
+        $clean_area = Areas::instance()->get($area_id);
 
-        $this->assert($clean_area->name == $old_name,
-            "Should not have updated name on bad update.");
-        $this->assert($clean_coord->lat == $old_lat,
-            "Should not have updated lat of coord on bad update");
+        $this->assert($clean_area->name == $name,
+            "Should not have updated name on bad update ($test_name).");
+        $this->assert($clean_area->coordinate1->lat == $lat1,
+            "Should not have updated lat of coord on bad update ($test_name)");
 
         // restore the previous state
-        $area->coordinate2->id = $coord2_id;
-        $area->coordinate2_id = $coord2_id;
-        $area->name = $old_name;
+        $area->name = $name;
+        $area->coordinate1->lat = $lat1;
+        $area->coordinate2->lat = $lat2;
     }
 
-    public function test_transactional_insert() {
-        // variables for tables to use for convenience
-        $table = Areas::instance()->table;
-        $coord_table = Coordinates::instance()->table;
-
-        $area = $this->make_area();
-
-        // invalidating one coordinate should stop any insert
-        $area->coordinate2->lat = null;
-
-        // save id values and attempt the insert
-        $last_area = $this->helper->db_highest_id($table);
-        $last_coord = $this->helper->db_highest_id($coord_table);
+    private function check_invalid_delete($area, $area_id, $coord1_id, $coord2_id, $test_name) {
+        // attempt the delete
         $exception_thrown = false;
         try {
-            $result = Areas::instance()->save($area);
-        } catch (DB_Exception $e) {
+            Areas::instance()->delete($area);
+        } catch(DB_Exception $e) {
             $exception_thrown = true;
         }
 
         $this->assert($exception_thrown,
-            "Should throw exception on bad insert.");
+            "Should throw exception on bad area delete ($test_name).");
+        $this->assert(is_null($result),
+            "Should return null or error value on bad delete ($test_name).");
+        $this->assert(DB::valid_id($this->table, $area_id),
+            "The area should not have been removed on bad delete ($test_name).");
+        $this->assert(DB::valid_id($this->coord_table, $coord1_id),
+            "Coordinate 1 should not have been removed on bad delete ($test_name).");
+        $this->assert(DB::valid_id($this->coord_table, $coord2_id),
+            "Coordinate 1 should not have been removed on bad delete ($test_name).");
+    }
+
+    public function test_transactional_insert() {
+        $area = $this->make_area();
+
+        // invalidate one coordinate and test
+        $lat = $area->coordinate2->lat;
+        $area->coordinate2->lat = null;
+        $this->check_invalid_insert($area);
+        $area->coordinate2->lat = $lat;
+
+        // invalidate the other coordinate and test
+        $lat = $area->coordinate1->lat;
+        $area->coordinate1->lat = null;
+        $this->check_invalid_insert($area);
+        $area->coordinate1->lat = $lat;
+
+        // invalidate the area and test
+        $name = $area->name;
+        $area->name = null;
+        $this->check_invalid_insert($area);
+        $area->name = $name;
+    }
+
+    private function check_invalid_insert($area) {
+        // save id values and attempt the insert
+        $last_area = $this->helper->db_highest_id($this->table);
+        $last_coord = $this->helper->db_highest_id($this->coord_table);
+
+        // attempt the insert
+        $result = Areas::instance()->insert($area);
+
         $this->assert(is_null($result) || $result == DB::BAD_ID,
             "Should return null or error value on bad insert.");
-        $this->assert($last_area == $this->helper->db_highest_id($table),
+        $this->assert($last_area == $this->helper->db_highest_id($this->table),
             "No area should have been added to table on bad insert.");
-        $this->assert($last_coord == $this->helper->db_highest_id($coord_table),
+        $this->assert($last_coord == $this->helper->db_highest_id($this->coord_table),
             "No coordinate should have been added to table on bad insert.");
 
         $this->assert_invalid_id($area->id, "area");
@@ -175,41 +220,6 @@ class AreasTest extends TestCase {
         $this->assert_invalid_id($area->coordinate1_id, "coordinate1_id");
         $this->assert_invalid_id($area->coordinate2->id, "coordinate2");
         $this->assert_invalid_id($area->coordinate2_id, "coordinate2_id");
-    }
-
-    public function test_transactional_delete() {
-        // variables for tables to use for convenience
-        $table = Areas::instance()->table;
-        $coord_table = Coordinates::instance()->table;
-
-        // pick an area to test
-        $area = $this->areas[1];
-
-        // save area values for later comparison
-        $coord2_id = $area->coordinate2_id;
-        $area_id = $area->id;
-
-        // invalidate id of one coordinate to test that the transaction fails
-        $area->coordinate2->id = DB::BAD_ID;
-
-        // save id values and attempt the delete
-        $last_area = $this->helper->db_highest_id($table);
-        $last_coord = $this->helper->db_highest_id($coord_table);
-        Areas::instance()->delete($area);
-
-        // TODO: this doesn't work, need to check for the exact row...
-
-        $this->assert(is_null($result) || $result == DB::BAD_ID,
-            "Should return null or error value on bad delete.");
-        $this->assert($last_area == $this->helper->db_highest_id($table),
-            "No area should have been removed on bad delete.");
-        $this->assert($last_coord == $this->helper->db_highest_id($coord_table),
-            "No coordinate should have been removed on bad delete.");
-
-        // restore the previous state
-        $area->coordinate2->id = $coord2_id;
-        $area->coordinate2_id = $coord2_id;
-        $area->id = $area_id;
     }
 
     public function test_delete() {
@@ -241,28 +251,34 @@ class AreasTest extends TestCase {
             $this->assert(!$this->helper->db_has_row($coord_table, $coord2_id),
                 "coordinate2 should not be present after area delete.");
 
-            $this->assert($result->id <= 0,
+            $this->assert_invalid_id($result->id,
                 "Delete should return area without id.");
-            $this->assert($result->coordinate1_id <= 0,
+            $this->assert_invalid_id($result->coordinate1_id,
                 "Delete should return area without coordinate1_id.");
-            $this->assert($result->coordinate2_id <= 0,
+            $this->assert_invalid_id($result->coordinate2_id,
                 "Delete should return area without coordinate2_id.");
-            $this->assert($result->coordinate1->id <= 0,
+            $this->assert_invalid_id($result->coordinate1->id,
                 "Delete should return area's coordinate1 without id.");
-            $this->assert($result->coordinate2->id <= 0,
+            $this->assert_invalid_id($result->coordinate2->id,
                 "Delete should return area's coordinate2 without id.");
         }
     }
 
     public function do_test() {
+        $this->setup();
+
         $this->test_create();
         $this->test_get();
         $this->test_list_simple();
         $this->test_update();
-        $this->test_transactional_update();
+        $this->test_transactional_update_and_delete();
         $this->test_transactional_insert();
-        $this->test_transactional_delete();
         $this->test_delete();
+    }
+
+    private function setup() {
+        $this->table = Areas::instance()->table;
+        $this->coord_table = Coordinates::instance()->table;
     }
 
     private function test_coordinate_values($got, $expected, $name) {

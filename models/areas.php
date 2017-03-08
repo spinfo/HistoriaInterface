@@ -155,6 +155,7 @@ class Areas extends AbstractCollection {
         } catch (DB_Exception $e) {
             debug_log("Aborting area delete: Failed to delete coordinate.");
             $this->rollback_delete($area);
+            throw $e;
             return null;
         }
 
