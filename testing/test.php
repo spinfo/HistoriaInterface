@@ -8,13 +8,14 @@ require_once(dirname(__FILE__) . '/test_helper.php');
 $helper = new TestHelper();
 require_once($helper->config->wp_load_script);
 // hook to log all queries
-add_filter('query', 'SmartHistoryTourManager\debug_log_query');
+// add_filter('query', 'SmartHistoryTourManager\debug_log_query');
 
 require_once(dirname(__FILE__) . '/mycurl.php');
 require_once(dirname(__FILE__) . '/test_case.php');
 require_once(dirname(__FILE__) . '/wp_test_connection.php');
 require_once(dirname(__FILE__) . '/areas_test.php');
 require_once(dirname(__FILE__) . '/places_test.php');
+require_once(dirname(__FILE__) . '/mapstops_test.php');
 require_once(dirname(__FILE__) . '/../logging.php');
 
 // performs tests common for normal pages retrieved by a simple GET
@@ -267,6 +268,11 @@ test_set_current_area($contributor_test, "contributor");
 $places_unit_test = new PlacesTest();
 $test_cases[] = $places_unit_test;
 $places_unit_test->do_test();
+
+// Unit test for mapstops
+$mapstops_unit_test = new MapstopsTest();
+$test_cases[] = $mapstops_unit_test;
+$mapstops_unit_test->do_test();
 
 
 // Report totals for all tests done

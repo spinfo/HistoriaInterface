@@ -52,6 +52,15 @@ abstract class AbstractCollection {
     }
 
     /**
+     * Returns the numerically last id from the collection's table.
+     *
+     * @return int  The id or DB::BAD_ID if none was found.
+     */
+    public function last_id() {
+        return DB::last_id($this->table);
+    }
+
+    /**
      * Checks if an id is present in the collection's table.
      *
      * @return bool true if  result was found else false.
@@ -61,13 +70,37 @@ abstract class AbstractCollection {
     }
 
     /**
+     * Fetches the model from the database (delegates to collection->db_get())
+     * and returns it or null on error.
+     *
+     * @return object|null  The model fetched or null on error
+     */
+    public function get($id) {
+        if(!is_int($id)) {
+            throw new \Exception("id is not an int: $id");
+        }
+
+        $row = $this->db_get($id);
+
+        if(!empty($row)) {
+            return $this->instance_from_array($row);
+        }
+        return null;
+    }
+
+    /**
      * This will just delegate to the collection's db_update() function.
      *
      * @return bool|mixed   false on error, else undefined
-     *                      (Result of DB::update()).
+     *                      (mostly the result of DB::update()).
      */
     public function update($model) {
-        return $this->db_update($model);
+       if(empty($model->id) || $model->id == DB::BAD_ID) {
+            debug_log("Can't update model with bad id: '$model->id'");
+            return false;
+        } else {
+            return $this->db_update($model);
+        }
     }
 
     /**

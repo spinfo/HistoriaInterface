@@ -28,11 +28,23 @@ class DB {
         global $wpdb;
         $result = $wpdb->query($sql);
 
-        if(empty($result)) {
-            return self::BAD_ID;
-        } else {
-            return $result;
-        }
+        return (empty($result)) ? self::BAD_ID : $result;
+    }
+
+    /**
+     * Returns the last id for the table in question.
+     * NOTE: Since this is used only for internal functionality, the table name
+     * is NOT sanitized.
+     *
+     * @return int  The id in question or DB::BAD_ID if the table is empty.
+     */
+    public static function last_id($table) {
+        $sql = "SELECT id FROM $table ORDER BY id DESC LIMIT 0,1";
+
+        global $wpdb;
+        $result = $wpdb->query($sql);
+
+        return (empty($result)) ? self::BAD_ID : $result;
     }
 
     /**
@@ -40,7 +52,7 @@ class DB {
      * NOTE: Since this is used only for internal functionality, the table name
      * is NOT sanitized.
      *
-     * @return bool true if  result was found else false.
+     * @return bool true if result was found else false.
      */
     public static function valid_id($table, $id) {
         $sql = "SELECT 1 FROM $table";
@@ -69,12 +81,9 @@ class DB {
         return $result;
     }
 
-    public static function get($select_sql, $where = array()) {
-        $sql = $select_sql . " ";
-        $sql .= self::where_clause($where);
-
+    // Method to retrieve a single object, expects a sanitized query as input.
+    private static function _get($query) {
         global $wpdb;
-        $query = self::prepare($sql);
         $result = $wpdb->get_results($query);
 
         if(empty($result)) {
@@ -85,8 +94,38 @@ class DB {
             debug_log("DB: Bad result count: $count for: $query).");
             return null;
         }
-
         return $result[0];
+    }
+
+    /**
+     * Retrieves a single object from the database. Builds a where clause
+     * from the specified conditions and appends it to the selection sql to
+     * achieve that.
+     *
+     * @return array|null   The table row as an associative array or null on
+     *                      failure.
+     *
+     * @throws DB_Exception If a value in the where conditions is of an unknown
+     *                      tpye (not int, float, string or array)
+     */
+    public static function get($select_sql, $where = array()) {
+        $sql = $select_sql . " ";
+        $sql .= self::where_clause($where);
+
+        $query = self::prepare($sql);
+
+        return self::_get($query);
+    }
+
+    /**
+     * Retrieves a single object from the database. Replaces placeholders in
+     * the query with the supplied arguments.
+     *
+     * @return array|null   The table row as an associative array or null on
+     *                      failure.
+     */
+    public static function get_by_query($query, $args) {
+        return self::_get(self::prepare($query, $args));
     }
 
     public static function update($table_name, $id, $values) {
@@ -112,19 +151,30 @@ class DB {
     }
 
     /**
-     * @return int|false The number of rows updated, or false on error.
+     * @return int|false The number of rows updated (1), or false on error.
      */
-    public static function delete($table_name, $id) {
-        global $wpdb;
-        $result = $wpdb->delete($table_name, array('id' => $id));
-        if($result == false) {
-            debug_log("DB: Error deleting ${type} with id: ${id}");
-        } else if ($result != 1) {
-            debug_log("DB: Wrong row count on delete: $result (${type}, ${id})");
+    public static function delete_single($table_name, $id) {
+        $result = self::delete($table_name, array('id' => $id));
+        if ($result != 1) {
+            debug_log(
+                "DB: Wrong row count on delete: $result ($table_name, $id).");
+            return false;
         }
         return $result;
     }
 
+    /**
+     * @return int|false The number of rows updated, or false on error.
+     */
+    public static function delete($table_name, $where) {
+        global $wpdb;
+        $result = $wpdb->delete($table_name, $where);
+        if($result == false) {
+            debug_log(
+                "DB: Error deleting from $table_name with clause: '$where'.");
+        }
+        return $result;
+    }
     /**
      * A wrapper around wpdb->prepare(). Here just used to insert variables into
      * sql in a sane manner.
@@ -170,35 +220,66 @@ class DB {
         return $wpdb->prefix . self::$prefix . $type;
     }
 
+    /**
+     * Builds a where clause for an sql query using the conditions array. 
+     *
+     * @param  $where_conditions    An array of conditions, eg.
+     *                                  ['id' => 3, 'name' => 'test']
+     *                              values must be of type int, float, string or
+     *                              a sub array of those.
+     *
+     * @return string   A full where clause with the secified conditions joined
+     *                  by AND, e.g. "id = 3 AND name = 'test'"
+     *
+     * @throws  DB_Exception    If a value in the conditions is of an unknown
+     *                          type (neither int, float, str, array).
+     */
     public static function where_clause($where_conditions) {
-        $i = count($where_conditions);
-
-        if($i == 0) {
+        // return empty string if there are no condition to build
+        if(empty($where_conditions)) {
             return "";
         }
 
-        $clause = "WHERE ";
+        // equality strings with placeholders for values , e.g. 'id = %d'
+        $equals = array();
+        // arguments that will be mapped to the placeholders
         $args = array();
         foreach($where_conditions as $key => $value) {
-            $placeholder = "";
-            if(is_int($value)) {
-                $placeholder = "%d";
-            } else if(is_string($value)) {
-                $placeholder = "%s";
-            } else if(is_float($value)) {
-                $placeholder ="%f";
+            if(is_array($value)) {
+                // treat each value in the array as a single condition
+                foreach($value as $value_elem) {
+                    $equals[] = self::equals_str($key, $value_elem);
+                    $args[] = $value_elem;
+                }
             } else {
-                throw new DB_Exception("DB: Bad value in WHERE of unknown type.");
-            }
+                // build an equality string from the key value pair
+                $equals[] = self::equals_str($key, $value);
+                $args[] = $value;
 
-            $clause .= "$key = $placeholder";
-            $args[] = $value;
-            $i -= 1;
-            if($i != 0) {
-                $clause .= " AND ";
             }
         }
+        // glue the equals strings together
+        $clause = 'WHERE ' . implode(' AND ', $equals);
+
+        // return the string with placeholders replaced and values sanitized
         return self::prepare($clause, $args);
+    }
+
+    // builds an equality condition used in an sql WHERE clause, e.g. 'id = %d'
+    // placeholders for int, float and string values are supported
+    // throws a DB_Exception if the type of $values is otherwise
+    private static function equals_str($key, $value) {
+        $placeholder = null;
+        if(is_int($value)) {
+            $placeholder = "%d";
+        } else if(is_string($value)) {
+            $placeholder = "%s";
+        } else if(is_float($value)) {
+            $placeholder ="%f";
+        } else {
+            throw new DB_Exception("DB: Bad value in WHERE of unknown type.");
+        }
+        return "$key = $placeholder";
     }
 
 }

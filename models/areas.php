@@ -127,7 +127,7 @@ class Areas extends AbstractCollection {
         if(!$c1_save || !$c2_save || !$area->is_valid()) {
             debug_log("Failed to update invalid area.");
             DB::rollback_transaction();
-            return null;
+            return false;
         }
         $area->coordinate1_id = $area->coordinate1->id;
         $area->coordinate2_id = $area->coordinate2->id;
@@ -159,7 +159,7 @@ class Areas extends AbstractCollection {
             return null;
         }
 
-        $row_count = DB::delete($this->table, $area->id);
+        $row_count = DB::delete_single($this->table, $area->id);
         if($row_count != 1) {
             $this->rollback_delete($area);
             throw new DB_Exception("Error deleting area: $area->id");
@@ -190,7 +190,7 @@ class Areas extends AbstractCollection {
         return $area;
     }
 
-    public function update_values($area, $array) {
+    private function update_values($area, $array) {
         $array = (object) $array;
 
         $area->name = strval($array->name);

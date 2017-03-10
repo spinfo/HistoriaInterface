@@ -98,8 +98,8 @@ final class Places extends AbstractCollection {
                 "Could not insert place: ". var_export($place_values, true));
         } else {
             DB::commit_transaction();
+            $place->id = $place_id;
         }
-        $place->id = $place_id;
         return $place_id;
     }
 
@@ -154,7 +154,7 @@ final class Places extends AbstractCollection {
             throw $e;
         }
 
-        $row_count = DB::delete($this->table, $place->id);
+        $row_count = DB::delete_single($this->table, $place->id);
         if($row_count != 1) {
             DB::rollback_transaction();
             // reset the value that might have been destroyed on coordinate delete

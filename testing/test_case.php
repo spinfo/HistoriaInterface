@@ -2,6 +2,7 @@
 namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/test_helper.php');
+require_once(dirname(__FILE__) . '/../db.php');
 
 class TestCase {
 
@@ -26,7 +27,7 @@ class TestCase {
     }
 
     protected function log_error($msg = '') {
-        $this->log('ERROR: ' . $msg);
+        $this->log('---> ERROR: ' . $msg);
     }
 
     public function note_pass($msg) {
@@ -62,6 +63,21 @@ class TestCase {
         $result = $this->assert($id < 1 || $id == DB::BAD_ID,
             "Should have invalid id for $name");
         return $result;
+    }
+
+    public function assert_valid_model($model, $table, $test_name) {
+        $this->assert(DB::valid_id($table, $model->id),
+            "Should have valid id ($test_name).");
+        $this->assert($model->created_at instanceof \DateTime,
+            "Should have a creation datetime ($test_name).");
+        $this->assert($model->updated_at instanceof \DateTime,
+            "Should have a update datetime ($test_name).");
+
+        if(!$this->assert($model->is_valid(), "Should be valid ($test_name).")) {
+            foreach($model->messages as $msg => $bool) {
+                $this->log("\t" . $msg);
+            }
+        }
     }
 
 }

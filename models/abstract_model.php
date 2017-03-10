@@ -41,7 +41,7 @@ abstract class AbstractModel {
 
     public function debug_log_messages() {
         foreach($this->messages as $msg => $bool) {
-            debug_log($msg);
+            debug_log("invalid: " . $msg);
         }
     }
 }
