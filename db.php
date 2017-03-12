@@ -65,7 +65,7 @@ class DB {
         }
     }
 
-    public static function list($select_sql, $where, $offset, $limit) {
+    public static function list($select_sql, $where, $offset = 0, $limit = PHP_INT_MAX) {
         $sql = $select_sql . " ";
         $sql .= self::where_clause($where);
         $sql .= " LIMIT %d, %d";
@@ -138,7 +138,7 @@ class DB {
     }
 
     /**
-     * @return int The id of the new obj.
+     * @return int The id of the new obj of DB::BAD_ID on failure.
      */
     public static function insert($table_name, $values) {
         global $wpdb;

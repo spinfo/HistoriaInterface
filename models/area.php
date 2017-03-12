@@ -29,3 +29,5 @@ class Area extends AbstractModel {
     }
 
 }
+
+?>

@@ -16,6 +16,7 @@ require_once(dirname(__FILE__) . '/wp_test_connection.php');
 require_once(dirname(__FILE__) . '/areas_test.php');
 require_once(dirname(__FILE__) . '/places_test.php');
 require_once(dirname(__FILE__) . '/mapstops_test.php');
+require_once(dirname(__FILE__) . '/tours_test.php');
 require_once(dirname(__FILE__) . '/../logging.php');
 
 // performs tests common for normal pages retrieved by a simple GET
@@ -273,6 +274,11 @@ $places_unit_test->do_test();
 $mapstops_unit_test = new MapstopsTest();
 $test_cases[] = $mapstops_unit_test;
 $mapstops_unit_test->do_test();
+
+// Unit test for tours
+$tours_unit_test = new ToursTest();
+$test_cases[] = $tours_unit_test;
+$tours_unit_test->do_test();
 
 
 // Report totals for all tests done

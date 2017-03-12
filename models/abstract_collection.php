@@ -110,6 +110,10 @@ abstract class AbstractCollection {
      * @return int  The inserted id or DB::BAD_ID on error
      */
     public function insert($model) {
+        if(is_null($model)) {
+            debug_log("Attempt to insert null model into $this->table.");
+            return DB::BAD_ID;
+        }
         if(empty($model->id) || $model->id == DB::BAD_ID) {
             return $this->db_insert($model);
         } else {

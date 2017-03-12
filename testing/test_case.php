@@ -8,8 +8,8 @@ class TestCase {
 
     public $name;
 
-    public $tests_passed;
-    public $tests_failed;
+    public $tests_passed = 0;
+    public $tests_failed = 0;
 
     public $helper;
 

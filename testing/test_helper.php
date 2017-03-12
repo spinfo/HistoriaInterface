@@ -65,8 +65,12 @@ class TestHelper {
         $coordinate = new Coordinate();
         // coordinates should have a precision of 6 decimal points
         $coordinate->lat = floatval(sprintf("%.6f", $this->random_float(-90, 90)));
-        $coordinate->lon = floatval(sprintf("%.6f", $this->random_float(-90, 90)));
+        $coordinate->lon = floatval(sprintf("%.6f", $this->random_float(-180, 180)));
         return $coordinate;
+    }
+
+    public function random_julian() {
+        return floatval(sprintf("%.6f", $this->random_float(0, 2457824)));
     }
 
 

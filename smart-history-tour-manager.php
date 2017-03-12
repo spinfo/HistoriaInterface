@@ -79,11 +79,35 @@ function shtm_install() {
         KEY shtm_places_area_id (area_id)
     ) $charset_collate;";
 
-    // sql for the tours table (stub)
+    // sql for the tours table
+    // NOTE:
+    //  - tag_when_start and tag_when_end are julian dates (with fraction of day)
+    //    (end is empty if this is an instant and not a duration)
     $table_name = Tours::instance()->table;
     $tours_sql = "CREATE TABLE $table_name (
         id bigint(20) NOT NULL AUTO_INCREMENT,
-        name text NOT NULL,
+        area_id bigint(20) NOT NULL,
+        user_id bigint(20) NOT NULL,
+        name TEXT DEFAULT '',
+        intro TEXT DEFAULT '',
+        type ENUM('round-tour', 'tour') NOT NULL,
+        walk_length INT NOT NULL DEFAULT 0,
+        duration INT NOT NULL DEFAULT 0,
+        tag_what TEXT DEFAULT '',
+        tag_where TEXT DEFAULT '',
+        tag_when_start DECIMAL(13,6) NOT NULL DEFAULT 0.0,
+        tag_when_end DECIMAL(13,6),
+        accessibility TEXT DEFAULT '',
+        created_at timestamp DEFAULT now(),
+        updated_at timestamp DEFAULT now() ON UPDATE now(),
+        PRIMARY KEY  (id)
+    ) $charset_collate;";
+
+    $table_name = Tours::instance()->join_coordinates_table;
+    $tours_to_coordinates_sql = "CREATE TABLE $table_name (
+        id bigint(20) NOT NULL AUTO_INCREMENT,
+        tour_id bigint(20) NOT NULL,
+        coordinate_id bigint(20) NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id)
@@ -120,18 +144,12 @@ function shtm_install() {
     // collect queries
     $queries = array(
         $coordinates_sql, $areas_sql, $places_sql, $tours_sql,
-        $mapstops_sql, $mapstops_to_posts_sql
+        $tours_to_coordinates_sql, $mapstops_sql, $mapstops_to_posts_sql
     );
 
     // do the table update
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     $messages = dbDelta($queries);
-
-    // use syslog here, because an error might have occured, but we cannot
-    // really error_log(), because we do not know for sure as dbDelta() only
-    // returns messages
-    syslog(LOG_DEBUG, "SHTM on wordpress: tables created on activation: "
-        . var_export($messages, true));
 
     // fix db version number to current version in options
     add_option('shtm_db_version', $shtm_db_version);
@@ -162,6 +180,7 @@ function shtm_create_test_data() {
     );
     $coord2_id = DB::insert(Coordinates::instance()->table, $values);
 
+    // Make the test area
     $values = array(
         "coordinate1_id" => $coord1_id,
         "coordinate2_id" => $coord2_id,
@@ -183,10 +202,35 @@ function shtm_create_test_data() {
     // (use only thos that have a title)
     $post_ids = array(1,2,3,4,5,6,7,8,10,11,12,19,20,21);
 
-    // Make some dummy tours to work with
+    // Make tours to work with
     for($i = 0; $i < 3; $i++) {
-        $values = array('name' => "Tour$i");
+        $values = array(
+            'area_id' => $area_id,
+            'user_id' => $user_service->user_id(),
+            'name' => "Tour$i",
+            'intro' => "Intro to Tour$i",
+            'type' => (($i % 2 == 1) ? 'round-tour' : 'tour'),
+            'walk_length' => ($i * 110),
+            'duration' => ($i * 11),
+            'tag_what' => "tag-what-tour-$i",
+            'tag_where' => "tag-where-tour-$i",
+            'tag_when_start' => (2457824.21294 + $i),
+            'tag_when_end' => (($i % 2 == 0) ? (2457824.21294 + $i + 30) : null),
+            'accessibility' => 'barrierefrei'
+        );
         $tour_id = DB::insert(Tours::instance()->table, $values);
+
+        // for each tour make between 2 and 15 coordinates and link them
+        $n = rand(2, 15);
+        for($j = 0; $j < $n; $j++) {
+            $values = array( "lat" => 51.188801, "lon" => 6.794488 );
+            $coord_id = DB::insert(Coordinates::instance()->table, $values);
+            $values = array(
+                'tour_id' => $tour_id,
+                'coordinate_id' => $coord_id
+            );
+            DB::insert(Tours::instance()->join_coordinates_table, $values);
+        }
 
         // Make two mapstops for each tour
         for($j = 0; $j < 2; $j++) {
