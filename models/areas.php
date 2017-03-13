@@ -65,23 +65,6 @@ class Areas extends AbstractCollection {
         }
     }
 
-    public function save($area) {
-        $id;
-        if (empty($area->id) || $area->id == DB::BAD_ID) {
-            $id = $this->db_insert($area);
-        } else {
-            if(!$this->db_update($area)) {
-                $id = DB::BAD_ID;
-            } else {
-                $id = $area->id;
-            }
-        }
-        if($id == DB::BAD_ID) {
-            throw new DB_Exception("Error saving area.");
-        }
-        return $this->get($id);
-    }
-
     protected function db_insert($area) {
         DB::start_transaction();
 

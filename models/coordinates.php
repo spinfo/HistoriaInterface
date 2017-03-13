@@ -26,24 +26,6 @@ final class Coordinates extends AbstractCollection {
         }
     }
 
-    public function save($coordinate) {
-        if(!$coordinate->is_valid()) {
-            return null;
-        }
-
-        $id;
-        if (empty($coordinate->id) || $coordinate->id == DB::BAD_ID) {
-            $id = $this->db_insert($coordinate);
-        } else {
-            $this->db_update($coordinate);
-            $id = $coordinate->id;
-        }
-        if($id == DB::BAD_ID) {
-            throw new \Exception("Error saving coordinate.");
-        }
-        return $this->get($id);
-    }
-
     protected function db_delete($coordinate) {
         $row_count = DB::delete_single($this->table, $coordinate->id);
         if($row_count != 1) {
@@ -55,6 +37,11 @@ final class Coordinates extends AbstractCollection {
     }
 
     protected function db_insert($coordinate) {
+        if(!$coordinate->is_valid()) {
+            debug_log("Not inserting invalid coordinate. Messages:");
+            $coordinate->debug_log_messages();
+            return DB::BAD_ID;
+        }
         $values = array(
             'lat' => $coordinate->lat,
             'lon' => $coordinate->lon
@@ -70,9 +57,9 @@ final class Coordinates extends AbstractCollection {
 
     protected function db_update($coordinate) {
         if(!$coordinate->is_valid()) {
-            debug_log("Cannot insert coordinate. Messages:");
+            debug_log("Cannot update coordinate. Messages:");
             $coordinate->debug_log_messages();
-            return null;
+            return false;
         }
 
         $values = array(

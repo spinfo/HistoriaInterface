@@ -58,22 +58,6 @@ final class Places extends AbstractCollection {
         }
     }
 
-    public function save($place) {
-        // place validity is checked in the insert/update functions (because
-        // coordinate might have to be created first.)
-        $id;
-        if (empty($place->id) || $place->id == DB::BAD_ID) {
-            $id = $this->db_insert($place);
-        } else {
-            $this->db_update($place);
-            $id = $place->id;
-        }
-        if($id == DB::BAD_ID) {
-            throw new DB_Exception("Error saving place.");
-        }
-        return $this->get($id);
-    }
-
     protected function db_insert($place) {
         DB::start_transaction();
 

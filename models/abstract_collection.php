@@ -89,6 +89,38 @@ abstract class AbstractCollection {
     }
 
     /**
+     * Either inserts or updates the given model, based on whether it already
+     * has a valid id or not.
+     *
+     * @return object|null  The saved model on success eles null.
+     */
+    public function save($model) {
+        // validity is checked in the insert/update functions (because
+        // other objects might have to be created first.)
+        $id;
+        try {
+            if(empty($model->id) || $model->id == DB::BAD_ID) {
+                $id = $this->db_insert($model);
+                if($id == DB::BAD_ID) {
+                    debug_log("Error inserting model.");
+                    return null;
+                }
+            } else {
+                $result = $this->db_update($model);
+                if($result == false) {
+                    debug_log("Error updating model.");
+                    return null;
+                }
+                $id = $model->id;
+            }
+        } catch(DB_Exception $e) {
+            debug_log("Error saving model: " . $e->getMessage());
+        }
+        // Return a fresh copy from the database
+        return $this->get($id);
+    }
+
+    /**
      * This will just delegate to the collection's db_update() function.
      *
      * @return bool|mixed   false on error, else undefined
@@ -140,6 +172,8 @@ abstract class AbstractCollection {
             return $this->db_delete($model);
         }
     }
+
+    // abstract protected function db_get($id)
 
     /**
      * Child implements this to update the model.
