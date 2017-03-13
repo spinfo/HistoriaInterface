@@ -7,6 +7,11 @@ namespace SmartHistoryTourManager;
 abstract class AbstractController {
 
     protected static function wrap_in_page_view($content_view) {
+        if(is_null($content_view)) {
+            $content_view = new View(ViewHelper::empty_view(), null);
+            debug_log('Trying to wrap empty view in page.');
+        }
+
         return new View(ViewHelper::page_wrapper_view(), array(
             'content' => $content_view,
             'message_service' => MessageService::instance(),
