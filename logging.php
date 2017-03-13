@@ -1,24 +1,42 @@
 <?php
 namespace SmartHistoryTourManager;
 
-const DEBUG_LOG_FILE = '/tmp/wp-shtm-debug.log';
+class Logging {
 
-function log_to_file($msg, $path) {
-    file_put_contents($path, $msg, FILE_APPEND | LOCK_EX);
+    const DEBUG_LOG_FILE = '/tmp/wp-shtm-debug.log';
+
+    const TO_FILE = 0;
+    const TO_STDOUT = 1;
+
+    private static $output = self::TO_FILE;
+
+    public static function set_output($output) {
+        self::$output = $output;
+    }
+
+    public static function debug_log($msg, $prefix = null) {
+        if(is_null($prefix)) {
+            $prefix = "DEBUG";
+        }
+
+        $msg = "$prefix: $msg" . PHP_EOL;
+
+        if(self::$output == self::TO_STDOUT) {
+            echo $msg;
+        } else {
+            self::log_to_file($msg, self::DEBUG_LOG_FILE);
+        }
+    }
+
+    private static function log_to_file($msg, $path) {
+        file_put_contents($path, $msg, FILE_APPEND | LOCK_EX);
+    }
+
 }
 
+// convenience function to call the debug log withot Logging class
 function debug_log($msg, $prefix = null) {
-    if(is_null($prefix)) {
-        $prefix = "DEBUG";
-    }
-
-    $msg = "$prefix: $msg" . PHP_EOL;
-
-    if(SHTM_ENV_TEST) {
-        echo $msg;
-    } else {
-        log_to_file($msg, DEBUG_LOG_FILE);
-    }
+    Logging::debug_log($msg, $prefix);
 }
 
 // this can be hooked into wordpress' wpdb query to log all db queries

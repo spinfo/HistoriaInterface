@@ -1,8 +1,6 @@
 <?php
 namespace SmartHistoryTourManager;
 
-const SHTM_ENV_TEST = true;
-
 // make the test helper and load the wordpress envrionment
 require_once(dirname(__FILE__) . '/test_helper.php');
 $helper = new TestHelper();
@@ -18,6 +16,9 @@ require_once(dirname(__FILE__) . '/places_test.php');
 require_once(dirname(__FILE__) . '/mapstops_test.php');
 require_once(dirname(__FILE__) . '/tours_test.php');
 require_once(dirname(__FILE__) . '/../logging.php');
+
+// redirect debug log to std out
+Logging::set_output(Logging::TO_STDOUT);
 
 // performs tests common for normal pages retrieved by a simple GET
 function test_simple_page($test_connection, $page_type) {
@@ -288,4 +289,5 @@ foreach($test_cases as $test_case) {
 }
 
 
+define('SHTM_ENV_TEST', true);
 ?>
