@@ -8,7 +8,7 @@ require_once(dirname(__FILE__) . '/../models/tours.php');
 class ToursTest extends TestCase {
 
     public function test_create() {
-        $tour = $this->make_tour();
+        $tour = $this->helper->make_tour();
 
         $id_before = $this->helper->db_highest_id($this->table);
         $result = Tours::instance()->insert($tour);
@@ -28,7 +28,7 @@ class ToursTest extends TestCase {
 
     public function test_bad_create() {
         // make tour invalidate the last coordinate
-        $tour = $this->make_tour();
+        $tour = $this->helper->make_tour();
         $tour->coordinates[count($tour->coordinates) - 1]->lat = null;
 
         // attempt the insert
@@ -65,28 +65,6 @@ class ToursTest extends TestCase {
         $this->join_table = Tours::instance()->join_coordinates_table;
         $this->coords_table = Coordinates::instance()->table;
         $this->tours = array();
-    }
-
-    private function make_tour() {
-        $tour = new Tour();
-        $tour->area_id = Areas::instance()->first_id();
-        $tour->user_id = $this->helper->get_test_user()->ID;
-        $tour->name = 'Tour Test Name ' . $this->helper->random_str();
-        $tour->intro = 'Tour Test Intro ' . $this->helper->random_str();
-        $tour->type = (rand(0,1) == 0) ? 'round-tour' : 'tour';
-        $tour->walk_length = rand(0, 2000);
-        $tour->duration = rand(0, 120);
-        $tour->tag_what = 'tour-test-what-' . $this->helper->random_str();
-        $tour->tag_where = 'tour-test-where-' . $this->helper->random_str();
-        $tour->tag_when_start = $this->helper->random_julian();
-        $tour->tag_when_end = (rand(0,1) == 0) ? null : ($tour->tag_when_start + 30);
-        $tour->accessibility = 'test accessibility ' . $this->helper->random_str();
-
-        for($i = 0; $i < 3; $i++) {
-            $tour->coordinates[] = $this->helper->random_coordinate();
-        }
-
-        return $tour;
     }
 
 }

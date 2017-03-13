@@ -12,11 +12,11 @@ require_once(dirname(__FILE__) . '/../logging.php');
 class MapstopsTest extends TestCase {
 
     public function test_create() {
-        $mapstop = $this->create_mapstop();
+        $mapstop = $this->helper->make_mapstop();
         $this->test_single_good_create($mapstop, "normal mapstop");
         $this->mapstops[] = $mapstop;
 
-        $mapstop = $this->create_mapstop();
+        $mapstop = $this->helper->make_mapstop();
         $mapstop->post_ids = array();
         $this->test_single_good_create($mapstop, "mapstop without post ids");
         $this->mapstops[] = $mapstop;
@@ -39,7 +39,7 @@ class MapstopsTest extends TestCase {
 
     public function test_bad_create() {
         // create a new one for this, will not be persisted
-        $mapstop = $this->create_mapstop();
+        $mapstop = $this->helper->make_mapstop();
 
         // make a clone to test the bad update doesn't change anything
         $clone = clone $mapstop;
@@ -95,7 +95,7 @@ class MapstopsTest extends TestCase {
         $mapstop = $this->mapstops[0];
 
         // make a mapstop with different place_ and tour_id
-        $other = $this->create_mapstop(true);
+        $other = $this->helper->make_mapstop(true);
 
         $mapstop->place_id = $other->place_id;
         $mapstop->tour_id = $other->tour_id;
@@ -144,7 +144,7 @@ class MapstopsTest extends TestCase {
             "mapstop with invalid tour_id");
         $mapstop->tour_id = $val;
 
-        $other = $this->create_mapstop();
+        $other = $this->helper->make_mapstop();
         Mapstops::instance()->insert($other);
         $val = $mapstop->post_ids;
         $mapstop->post_ids[] = $other->post_ids[0];
@@ -203,7 +203,8 @@ class MapstopsTest extends TestCase {
         $this->test_bad_update();
         $this->test_delete();
 
-        $this->cleanup();
+        // delete all the posts that the helper created for the mapstops
+        $this->helper->delete_wp_posts_created();
     }
 
     private function setup() {
@@ -211,49 +212,6 @@ class MapstopsTest extends TestCase {
         $this->table = Mapstops::instance()->table;
         $this->join_table = Mapstops::instance()->join_posts_table;
         $this->mapstops = array();
-        $this->posts_created = array();
-    }
-
-    private function cleanup() {
-        // remove all the worpress posts created for this test
-        foreach($this->posts_created as $id) {
-            $res = wp_delete_post($id, true);
-        }
-    }
-
-    private function create_mapstop($differ = false) {
-        $tours = Tours::instance();
-        $places = Places::instance();
-
-        $mapstop = new Mapstop();
-
-        // TODO: who tests the tests? Make sure that there are first and last differing ids
-        $mapstop->tour_id = $differ ? $tours->first_id() : $tours->last_id();
-        $mapstop->place_id = $differ ? $places->first_id() : $places->last_id();
-
-        $mapstop->name = "Mapstop Test Name " . $this->helper->random_str();
-        $mapstop->description = "Mapstop Test Desc ". $this->helper->random_str();
-        $mapstop->post_ids = array();
-        for($i = 0; $i < 3; $i++) {
-            $mapstop->post_ids[] = $this->create_wp_post();
-        }
-        return $mapstop;
-    }
-
-    // create a minimal wordpress post that can be linked to a mapstop, return
-    // id or panic and fail
-    private function create_wp_post() {
-        $id = wp_insert_post(array(
-            'post_title' => 'Post for mapstop ' . $this->helper->random_str(),
-            'post_status' => 'draft',
-            'post_author' => $this->helper->get_test_user()->ID
-        ));
-        if($id == 0 || $id instanceof WP_Error) {
-            debug_log("Could not insert new post for mapstop test;");
-            exit(1);
-        }
-        $this->posts_created[] = $id;
-        return $id;
     }
 
     private function test_mapstop_values($got, $expected, $test_name) {

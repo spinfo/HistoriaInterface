@@ -21,12 +21,12 @@ class PlacesTest extends TestCase {
     public function test_transactional_create() {
         // invalidate a place and check that neither it nor the coordinate
         // is persisted
-        $place = $this->make_place();
+        $place = $this->helper->make_place();
         $place->name = null;
         $this->check_invalid_insert($place);
 
         // invalidate the coordinate and do the same
-        $place = $this->make_place();
+        $place = $this->helper->make_place();
         $place->coordinate->lat = null;
         $this->check_invalid_insert($place);
     }
@@ -42,8 +42,6 @@ class PlacesTest extends TestCase {
             $exception_thrown = true;
         }
 
-        $this->assert($exception_thrown,
-            "Should throw an exception on bad place insert.");
         $this->assert($last_place == $this->helper->db_highest_id($this->table),
             "Should not have inserted place on bad place insert.");
         $this->assert($last_coord == $this->helper->db_highest_id($this->coord_table),
@@ -116,18 +114,9 @@ class PlacesTest extends TestCase {
             "Should not delete coordinate on bad place delete ($test_name).");
     }
 
-    private function make_place() {
-        $place = new Place();
-        $place->user_id = $this->helper->get_test_user()->ID;
-        $place->area_id = Areas::instance()->first_id();
-        $place->name = "Place Test name" . $this->helper->random_str();
-        $place->coordinate = $this->helper->random_coordinate();
-        return $place;
-    }
-
     private function setup() {
         $this->name = "Places Unit Test";
-        $this->place = Places::instance()->save($this->make_place());
+        $this->place = Places::instance()->save($this->helper->make_place());
         $this->table = Places::instance()->table;
         $this->coord_table = Coordinates::instance()->table;
     }
