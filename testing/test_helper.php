@@ -92,7 +92,7 @@ class TestHelper {
             echo "ERROR: Retrieved empty result: $sql" . PHP_EOL;
             exit(1);
         }
-        return $result_arr[0];
+        return intval($result_arr[0]);
     }
 
     public function db_has_row($table_name, $id) {

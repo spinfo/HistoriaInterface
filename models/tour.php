@@ -11,11 +11,11 @@ class Tour extends AbstractModel {
 
     // the tour's track as array or coordinate ids
     public $coordinates = array();
-    public $coordinate_ids;
+    public $coordinate_ids = array();
 
     // the tour's mapstops as array or mapstop ids
     public $mapstops = array();
-    public $mapstop_ids;
+    public $mapstop_ids = array();
 
     public $name = '';
 
@@ -59,7 +59,16 @@ class Tour extends AbstractModel {
 
         if(!empty($this->coordinates)) {
             foreach($this->coordinates as $coordinate) {
+                // check that the coordinates linked are valid
                 $this->check_coordinate($coordinate, 'tour track coordinate');
+
+                // check that each coordinate with an id appears in the array
+                // of coordinate_ids
+                if(!is_null($coordinate->id) && $coordinate->id != DB::BAD_ID) {
+                    $this->do_check(
+                        in_array($coordinate->id, $this->coordinate_ids),
+                        'coordinate\'s id not in coordinate_ids');
+                }
             }
         }
 
@@ -68,6 +77,8 @@ class Tour extends AbstractModel {
         $this->do_check($this->tag_when_start > 0.0, "start date < 0.0");
 
         if(!is_null($this->tag_when_end)) {
+            $this->do_check(is_float($this->tag_when_end),
+                "no float value as end date");
             $this->do_check($this->tag_when_start < $this->tag_when_end,
                 "start date after end date");
         }

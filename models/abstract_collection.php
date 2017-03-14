@@ -92,7 +92,7 @@ abstract class AbstractCollection {
      * Either inserts or updates the given model, based on whether it already
      * has a valid id or not.
      *
-     * @return object|null  The saved model on success eles null.
+     * @return object|null  The saved model on success else null.
      */
     public function save($model) {
         // validity is checked in the insert/update functions (because
@@ -102,19 +102,20 @@ abstract class AbstractCollection {
             if(empty($model->id) || $model->id == DB::BAD_ID) {
                 $id = $this->db_insert($model);
                 if($id == DB::BAD_ID) {
-                    debug_log("Error inserting model.");
+                    debug_log('Error inserting model: ' . get_class($model));
                     return null;
                 }
             } else {
                 $result = $this->db_update($model);
                 if($result == false) {
-                    debug_log("Error updating model.");
+                    debug_log('Error updating model: ' . get_class($model));
                     return null;
                 }
                 $id = $model->id;
             }
         } catch(DB_Exception $e) {
             debug_log("Error saving model: " . $e->getMessage());
+            return null;
         }
         // Return a fresh copy from the database
         return $this->get($id);
@@ -128,7 +129,7 @@ abstract class AbstractCollection {
      */
     public function update($model) {
        if(empty($model->id) || $model->id == DB::BAD_ID) {
-            debug_log("Can't update model with bad id: '$model->id'");
+            debug_log("Can't update $this->table with bad id: '$model->id'");
             return false;
         } else {
             return $this->db_update($model);
