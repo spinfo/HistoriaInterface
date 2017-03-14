@@ -65,20 +65,52 @@ class DB {
         }
     }
 
-    public static function list($select_sql, $where, $offset = 0, $limit = PHP_INT_MAX) {
-        $sql = $select_sql . " ";
-        $sql .= self::where_clause($where);
-        $sql .= " LIMIT %d, %d";
-
+    // Method to retrieve multiple objects, expects a sanitized query as input.
+    private static function _list($query) {
         global $wpdb;
-        $query = $wpdb->prepare($sql, $offset, $limit);
         $result = $wpdb->get_results($query);
 
         if(empty($result)) {
             debug_log("DB: Could not retrieve list with: $query");
         }
-
         return $result;
+    }
+
+    /**
+     * Returns a list of results from the database using in the conditions of
+     * the where clause and setting offset and limit.
+     *
+     * @param string    $select_sql A string starting the sql query with
+     * @param array     $where      An array of conditions, e.g. (user_id => 3)
+     * @param int       $offset     Offset in the table, default: 0
+     * @param int       $limit      Limit of objects retrieved, default:
+     *                                  PHP_INT_MAX
+     *
+     * @return array    The result of the query as an associative array
+     */
+    public static function list($select_sql, $where, $offset = 0,
+        $limit = PHP_INT_MAX)
+    {
+        $sql = $select_sql . " ";
+        $sql .= self::where_clause($where);
+        $sql .= " LIMIT %d, %d";
+
+        $query = self::prepare($sql, array($offset, $limit));
+
+        return self::_list($query);
+    }
+
+    /**
+     * Returns a list of results from the database using in the conditions of
+     * the where clause and setting offset and limit.
+     *
+     * @param string    $query  The query with sprintf-like placeholders.
+     * @param array     $args   The values to replace and escape in the query.
+     *
+     * @return array    The result of the query as an associative array.
+     */
+    public static function list_by_query($query, $args = array()) {
+        return self::_list(self::prepare($query, $args));
     }
 
     // Method to retrieve a single object, expects a sanitized query as input.
@@ -87,7 +119,7 @@ class DB {
         $result = $wpdb->get_results($query);
 
         if(empty($result)) {
-            debug_log("DB: Could not retrieve object with: $query");
+            debug_log("DB: Could not retrieve row with: $query");
             return null;
         } else if(count($result) != 1) {
             $count = count($result);
@@ -124,17 +156,35 @@ class DB {
      * @return array|null   The table row as an associative array or null on
      *                      failure.
      */
-    public static function get_by_query($query, $args) {
+    public static function get_by_query($query, $args = array()) {
         return self::_get(self::prepare($query, $args));
     }
 
+    /**
+     * Update a single table row at the specified id, using values.
+     *
+     * @param string    $table_name The table to update.
+     * @param int       $id         Row's id to update.
+     * @param array     $values     The values to update, e.g. ['name' => 'str']
+     *
+     * @return bool     Whether the update was successful or not.
+     */
     public static function update($table_name, $id, $values) {
         global $wpdb;
         $result = $wpdb->update($table_name, $values, array('id' => $id));
-        if($result == false) {
-            debug_log("DB: Error updating ${table_name} for id: '${id}'.");
+
+        if($result == 1) {
+            return $result;
+        } else if($result == 0) {
+            $msg = "DB: Updating ${table_name} for id: '${id}' had no effect.";
+            debug_log($msg);
+        } else if($result != 1) {
+            $msg = "DB: Error updating ${table_name} for id: '${id}'";
+            $msg .= " (affected rows: $result)";
+            debug_log($msg);
+            return false;
         }
-        return $result;
+        return true;
     }
 
     /**
@@ -187,6 +237,12 @@ class DB {
         return $wpdb->prepare($sql, $args);
     }
 
+    /**
+     * Start a transaction that can later be committed or rolled back.
+     *
+     * @throws  TransactionException    If a transaction is already running.
+     * @return  null
+     */
     public static function start_transaction() {
         if(self::$transaction_running) {
             throw new TransactionException("Transaction already running.");
@@ -196,6 +252,12 @@ class DB {
         self::$transaction_running = true;
     }
 
+    /**
+     * Commit the current transaction.
+     *
+     * @throws  TransactionException    If no transaction is running.
+     * @return  null
+     */
     public static function commit_transaction() {
         if(!self::$transaction_running) {
             throw new TransactionException("No transaction to commit.");
@@ -205,6 +267,12 @@ class DB {
         self::$transaction_running = false;
     }
 
+    /**
+     * Roll back the current transaction.
+     *
+     * @throws  TransactionException    If no transaction is running.
+     * @return  null
+     */
     public static function rollback_transaction() {
         if(!self::$transaction_running) {
             throw new TransactionException("No transaction to rollback.");
@@ -215,6 +283,13 @@ class DB {
         self::$transaction_running = false;
     }
 
+    /**
+     * Return the table name with all necessary prefixes prepended.
+     *
+     * @param string    $type   The table name to prefix, e.g. 'places'
+     *
+     * @return string   The table name with prefixes.
+     */
     public static function table_name($type) {
         global $wpdb;
         return $wpdb->prefix . self::$prefix . $type;
