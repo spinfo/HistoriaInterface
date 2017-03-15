@@ -15,7 +15,7 @@ class Mapstop extends AbstractModel {
 
     public $post_ids = array(-1);
 
-    public function is_valid() {
+    protected function do_validity_check() {
         $this->do_check($this->tour_id > 0, 'tour_id <= 0');
         $this->do_check($this->place_id > 0, 'place_id <= 0');
 
@@ -26,8 +26,6 @@ class Mapstop extends AbstractModel {
         foreach($this->post_ids as $post_id) {
             $this->do_check($post_id > 0, "post_id <= 0");
         }
-
-        return empty($this->messages);
     }
 }
 

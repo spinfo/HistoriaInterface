@@ -88,7 +88,8 @@ class Tours extends AbstractCollection {
     protected function db_update($tour) {
         // check if the tour is valid and abort if it isn't
         if(!$tour->is_valid()) {
-            debug_log("Not updating invalid tour.");
+            debug_log("Not updating invalid tour. Messages: ");
+            $tour->debug_log_messages();
             return false;
         }
 

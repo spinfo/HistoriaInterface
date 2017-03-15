@@ -45,7 +45,7 @@ class Tour extends AbstractModel {
     // A string indicating accessibility conditions
     public $accessibility = '';
 
-    public function is_valid() {
+    protected function do_validity_check() {
         $this->do_check($this->area_id > 0, 'area_id <= 0');
         $this->do_check($this->user_id > 0, 'area_id <= 0');
 
@@ -67,7 +67,7 @@ class Tour extends AbstractModel {
                 if(!is_null($coordinate->id) && $coordinate->id != DB::BAD_ID) {
                     $this->do_check(
                         in_array($coordinate->id, $this->coordinate_ids),
-                        'coordinate\'s id not in coordinate_ids');
+                        "coordinate's id not in coordinate_ids: $coordinate->id");
                 }
             }
         }
@@ -82,8 +82,6 @@ class Tour extends AbstractModel {
             $this->do_check($this->tag_when_start < $this->tag_when_end,
                 "start date after end date");
         }
-
-        return empty($this->messagess);
     }
 
 }
