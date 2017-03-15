@@ -65,6 +65,29 @@ class DB {
         }
     }
 
+    /**
+     * Count rows in the table where the conditions match.
+     * NOTE: Since this is used only for internal functionality, the table name
+     * is NOT sanitized (but the where conditions are).
+     *
+     * @return bool|int The count's result on success or false
+     */
+    public static function count($table_name, $where = null) {
+        $sql = "SELECT COUNT(*) AS count FROM $table_name";
+        if(!empty($where)) {
+            $sql .= ' ' . self::where_clause($where);
+        }
+        $query = self::prepare($sql, array($table_name));
+
+        global $wpdb;
+        $result = $wpdb->get_results($query);
+        if(!empty($result) && isset($result[0]) && isset($result[0]->count)) {
+            return intval($result[0]->count);
+        } else {
+            return false;
+        }
+    }
+
     // Method to retrieve multiple objects, expects a sanitized query as input.
     private static function _list($query) {
         global $wpdb;
@@ -219,7 +242,7 @@ class DB {
     public static function delete($table_name, $where) {
         global $wpdb;
         $result = $wpdb->delete($table_name, $where);
-        if($result == false) {
+        if($result === false) {
             debug_log(
                 "DB: Error deleting from $table_name with clause: '$where'.");
         }
