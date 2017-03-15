@@ -16,15 +16,11 @@ abstract class AbstractCollection {
     // Every child should implement its own $table like this:
     // public $table = DB::table_name('str');
 
-    protected $user_service;
-
     public $table;
 
     static function instance() {
         if (static::$instance == null) {
             static::$instance = new static;
-            static::$instance->user_service =
-                UserService::instance();
         }
         return static::$instance;
     }

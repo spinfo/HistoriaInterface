@@ -5,6 +5,7 @@ require_once(dirname(__FILE__) . '/abstract_collection.php');
 require_once(dirname(__FILE__) . '/place.php');
 require_once(dirname(__FILE__) . '/coordinates.php');
 require_once(dirname(__FILE__) . '/../db.php');
+require_once(dirname(__FILE__) . '/../user_service.php');
 
 
 final class Places extends AbstractCollection {
@@ -26,9 +27,9 @@ final class Places extends AbstractCollection {
     }
 
     public function list($offset, $limit) {
-        $where = $this->user_service->access_conditions();
+        $where = UserService::instance()->access_conditions();
 
-        $current_area_id = $this->user_service->get_current_area_id();
+        $current_area_id = UserService::instance()->get_current_area_id();
         if($current_area_id == DB::BAD_ID) {
             throw new \Exception(
                 "bad current area id. This should never happen.");
