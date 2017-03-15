@@ -157,7 +157,7 @@ class TestHelper {
         return $place;
     }
 
-    public function make_tour() {
+    public function make_tour($coordinate_amount = 3) {
         $tour = new Tour();
         $tour->area_id = Areas::instance()->first_id();
         $tour->user_id = $this->get_test_user()->ID;
@@ -172,7 +172,7 @@ class TestHelper {
         $tour->tag_when_end = (rand(0,1) == 0) ? null : ($tour->tag_when_start + 30);
         $tour->accessibility = 'test accessibility ' . $this->random_str();
 
-        for($i = 0; $i < 3; $i++) {
+        for($i = 0; $i < $coordinate_amount; $i++) {
             $tour->coordinates[] = $this->random_coordinate();
         }
 

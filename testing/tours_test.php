@@ -9,7 +9,8 @@ require_once(dirname(__FILE__) . '/../models/tours.php');
 class ToursTest extends TestCase {
 
     public function test_create() {
-        $tour = $this->helper->make_tour();
+        // make a tour with three coordinates
+        $tour = $this->helper->make_tour(3);
 
         $id_before = $this->helper->db_highest_id($this->table);
         $result = Tours::instance()->insert($tour);
@@ -19,9 +20,16 @@ class ToursTest extends TestCase {
         $this->assert(DB::valid_id($this->table, $result),
             "Should return a valid tour id on simple insert.");
 
-        foreach($tour->coordinates as $c) {
-            $this->assert(DB::valid_id($this->coords_table, $c->id),
-                "Tour coordinate should have a valid id set.");
+        $n = count($tour->coordinates);
+        $this->assert($n == 3, "Tour should have three coordinates on insert.");
+        for($i = 0; $i < $n; $i++) {
+            $coord = $tour->coordinates[$i];
+
+            $this->assert(DB::valid_id($this->coords_table, $coord->id),
+                "Tour coordinate should have a valid id set on insert.");
+
+            $this->assert($tour->coordinate_ids[$i] = $coord->id,
+                "Coordinate id should be present on tour insert.");
         }
 
         $this->tours[] = $tour;
@@ -82,8 +90,11 @@ class ToursTest extends TestCase {
         $other = $this->helper->make_tour();
 
         // change tour's values to other's values and check that it worked
+        // reset coordinate_ids manually since the other tour doesn't have any
+        $coordinate_ids = $tour->coordinate_ids;
         Tours::instance()->update_values($tour, $other);
         $this->check_tour_values($tour, $other, "value update on tour");
+        $tour->coordinate_ids = $coordinate_ids;
 
         // change the tour's coordinates by removing one coordinate and adding
         // one of those of the other's (not persisted, so without id)
@@ -116,6 +127,63 @@ class ToursTest extends TestCase {
             "New coordinate should have the right id on tour update.");
     }
 
+    public function test_bad_update() {
+        // select a tour to update and get a version from db to test that no
+        // value changes occur
+        $tour = $this->tours[0];
+        $from_db = Tours::instance()->get($tour->id);
+
+        // invalidate by invalidating a coordinate
+        $last_coord = $tour->coordinates[count($tour->coordinates) -1];
+
+        // var_dump($tour->messages);
+
+        $old_lat = $last_coord->lat;
+        $last_coord->lat = null;
+        $this->test_single_bad_update($tour, $from_db,
+            "update tour with bad coordinate");
+        $last_coord->lat = $old_lat;
+
+        // var_dump($tour->messages);
+        foreach ($tour->coordinates as $c) {
+            // var_dump($c->lat);
+        }
+
+        // invalidate by setting tag_when_end before tag_when_start
+        $old_end = $tour->tag_when_end;
+        $tour->tag_when_end = $tour->tag_when_start - 1;
+        $this->test_single_bad_update($tour, $from_db,
+            "update tour with bad tag_when_end");
+        $tour->tag_when_end = $old_end;
+
+    }
+
+    public function test_single_bad_update($tour, $good_clone, $test_name) {
+        // add a coordinate to the tour to check that it doesn't get persisted
+        $new_coord = $this->helper->random_coordinate();
+        $tour->coordinates[] = $new_coord;
+
+        // attempt the insert and check that no coordinate was added to the
+        $c_id_before = $this->helper->db_highest_id($this->coords_table);
+        Tours::instance()->update($tour);
+        $c_id_after = $this->helper->db_highest_id($this->coords_table);
+
+        $this->assert($c_id_before == $c_id_after,
+            "No coordinate should have been created. ($test_name)");
+
+        // test that the new coordinate does not have an id value set
+        $this->assert($new_coord->id == DB::BAD_ID,
+            "Should have bad id on coordinate ($test_name)");
+
+        // retrieve a copy of the tour from the database and ensure that it's
+        // values match those of the good clone
+        $from_db = Tours::instance()->get($tour->id);
+        $this->check_tour_values($from_db, $good_clone, $test_name);
+
+        // remove the coordinate added to this tour
+        array_pop($tour->coordinates);
+    }
+
     public function do_test() {
         $this->setup();
 
@@ -123,6 +191,7 @@ class ToursTest extends TestCase {
         $this->test_bad_create();
         $this->test_get();
         $this->test_update();
+        $this->test_bad_update();
     }
 
     private function setup() {
