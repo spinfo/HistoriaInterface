@@ -22,6 +22,7 @@ class Tours extends AbstractCollection {
     /**
      * Overrides AbstractCollection->get() to give the possibility of querying
      * mapstop and coordinate ids.
+     * TODO: There must be some better way...
      */
     public function get($id, $get_mapstop_ids = false, $get_coord_ids = false) {
         $sql = "SELECT * FROM $this->table WHERE id = %d";
@@ -121,7 +122,68 @@ class Tours extends AbstractCollection {
         }
     }
 
-    protected function db_delete($tour) {}
+    protected function db_delete($tour) {
+        // save old coordinate values to reproduce if needed
+        $coord_ids = $tour->coordinate_ids;
+        $coords = $tour->coordinates;
+
+        // start transaction to easily reverse the delete
+        DB::start_transaction();
+
+        // delete coordinates
+        $tour->coordinate_ids = array();
+        $tour->coordinates = array();
+        foreach ($coord_ids as $c_id) {
+            $coord = Coordinates::instance()->get($c_id);
+            $result = Coordinates::instance()->delete($coord);
+            if(empty($result)) {
+                $this->rollback_delete($tour, $coords, $coord_ids,
+                    "Bad coordinate delete");
+                return null;
+            } else {
+                // add returned invalid coordinate to tour for return
+                $tour->coordinates[] = $result;
+            }
+        }
+
+        // a where condition used for some deletes
+        $where_tour = array('tour_id' => $tour->id);
+
+        // delete joins
+        $n = count($coord_ids);
+        $rows_deleted = DB::delete($this->join_coordinates_table, $where_tour);
+        if($n != $rows_deleted) {
+            $this->rollback_delete($tour, $coords, $coord_ids,
+                "Bad coordinate join delete, got: $rows_deleted, expected: $n");
+            return null;
+        }
+        // delete mapstops
+        $rows_deleted = DB::delete(Mapstops::instance()->table, $where_tour);
+        if($rows_deleted === false) {
+            $this->rollback_delete($tour, $coords, $coord_ids,
+                "Bad mapstop delete for tour.");
+            return null;
+        }
+
+        // delete the tour, invalidate and return
+        $result = DB::delete_single($this->table, $tour->id);
+        if($result != 1) {
+            $this->rollback_delete($tour, $coords, $coord_ids,
+                "Bad tour delete.");
+            return null;
+        }
+        DB::commit_transaction();
+        $tour->id = DB::BAD_ID;
+        $tour->mapstop_ids = array();
+        return $tour;
+    }
+
+    private function rollback_delete($tour, $old_coords, $old_coord_ids, $msg) {
+        $tour->coordinate_ids = $old_coord_ids;
+        $tour->coordinates = $old_coords;
+        DB::rollback_transaction();
+        throw new DB_Exception("Can't delete tour: $msg.");
+    }
 
     protected function instance_from_array($array) {
         $array = (object) $array;

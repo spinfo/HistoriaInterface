@@ -64,12 +64,7 @@ class ToursTest extends TestCase {
     public function test_get() {
         $tour = $this->tours[0];
 
-        // make mapstops for the tour, the ids of which we can retrieve
-        $tour->mapstop_ids = array();
-        $mapstop = $this->helper->make_mapstop();
-        $mapstop->tour_id = $tour->id;
-        Mapstops::instance()->insert($mapstop);
-        $tour->mapstop_ids[] = $mapstop->id;
+        $this->add_mapstop_to_tour($tour);
 
         $from_db = Tours::instance()->get($tour->id, true, true);
 
@@ -78,11 +73,6 @@ class ToursTest extends TestCase {
 
         // test that the returned values match
         $this->check_tour_values($from_db, $tour, "get tour");
-
-        // clean up the the mapstop and the posts created for it, reset vars
-        Mapstops::instance()->delete($mapstop);
-        $tour->mapstop_ids = null;
-        $this->helper->delete_wp_posts_created();
     }
 
     public function test_update() {
@@ -184,6 +174,104 @@ class ToursTest extends TestCase {
         array_pop($tour->coordinates);
     }
 
+    public function test_bad_delete() {
+        // select a tour and invalidate it by removing a coordinate id
+        $tour = $this->tours[0];
+        $save_coordinate_id = array_pop($tour->coordinate_ids);
+
+        // a clone to test values on
+        $clone = clone $tour;
+
+        // add a mapstop to the tour to ensure it has at least one
+        $this->add_mapstop_to_tour($tour);
+
+        // take count
+        $old_tour_count = DB::count($this->table);
+        $old_join_count = DB::count($this->join_table);
+        $old_coord_count = DB::count(Coordinates::instance()->table);
+        $old_mapstop_count = DB::count(Mapstops::instance()->table);
+
+        // attempt the delete
+        $exception_thrown = false;
+        try {
+            $result = Tours::instance()->delete($tour);
+        } catch(DB_Exception $e) {
+            $exception_thrown = true;
+        }
+
+        // check function spec
+        $this->assert($exception_thrown,
+            "Should throw an exception on bad tour delete.");
+        $this->assert(is_null($result),
+            "Should return null on bad tour delete.");
+        $this->check_tour_values($tour, $clone, "no change on bad delete");
+
+        // recount
+        $new_tour_count = DB::count($this->table);
+        $new_join_count = DB::count($this->join_table);
+        $new_coord_count = DB::count(Coordinates::instance()->table);
+        $new_mapstop_count = DB::count(Mapstops::instance()->table);
+
+        $this->assert($old_tour_count === $new_tour_count,
+            "Should not have deleted any tours on bad tour delete.");
+        $this->assert($old_join_count === $new_join_count,
+            "Should not have deleted any join on bad tour delete.");
+        $this->assert($old_coord_count === $new_coord_count,
+            "Should not have deleted any coordinates on bad tour delete.");
+        $this->assert($old_mapstop_count === $new_mapstop_count,
+            "Should not have deleted any mapstops on bad tour delete.");
+
+        // restore the tour's state to before invalidation
+        array_push($tour->coordinate_ids, $save_coordinate_id);
+    }
+
+    public function test_delete() {
+        // test for every tour present (should be only one though)
+        foreach ($this->tours as $tour) {
+            // a where condition to get counts
+            $where = array('tour_id' => $tour->id);
+
+            // take count
+            $count_mapstops = DB::count(Mapstops::instance()->table, $where);
+            $count_joins = DB::count($this->join_table, $where);
+            $n_coords = count($tour->coordinate_ids);
+            $old_coords_count = DB::count(Coordinates::instance()->table);
+
+            $this->assert($count_mapstops > 0,
+                "Should have positive mapstop count before tour delete.");
+            $this->assert($count_joins > 0,
+                "Should have positive join count before tour delete.");
+
+            // do the delete
+            $result = Tours::instance()->delete($tour);
+
+            $this->assert(!is_null($result),
+                "Should return not null on tour delete.");
+            $this->assert(!DB::valid_id($this->table, $tour->id),
+                "Should have deleted the tour on tour delete");
+            $this->assert($tour->id === DB::BAD_ID,
+                "Tour should have invalid id after delete");
+            $this->assert(count($tour->coordinates) === $n_coords,
+                "Should have the right amount of coordinates after delete");
+            foreach($tour->coordinates as $c) {
+                $this->assert($c->id === DB::BAD_ID,
+                    "Coordinate should have invalid id on tour delete.");
+            }
+
+            // recount
+            $count_mapstops = DB::count(Mapstops::instance()->table, $where);
+            $count_joins = DB::count($this->join_table, $where);
+            $new_coords_count = DB::count(Coordinates::instance()->table);
+
+            $this->assert($count_mapstops === 0,
+                "Should count zero linked mapstops after tour delete.");
+            $this->assert($count_joins === 0,
+                "Should count zero coordinate joins after tour delete.");
+            $this->assert(($old_coords_count - $new_coords_count) === $n_coords,
+                "Should have deleted the right no. of coords on tour delete");
+        }
+    }
+
     public function do_test() {
         $this->setup();
 
@@ -192,6 +280,11 @@ class ToursTest extends TestCase {
         $this->test_get();
         $this->test_update();
         $this->test_bad_update();
+        $this->test_bad_delete();
+        $this->test_delete();
+
+        // delete the wordpress posts created for mapstops during these tests
+        $this->helper->delete_wp_posts_created();
     }
 
     private function setup() {
@@ -226,6 +319,17 @@ class ToursTest extends TestCase {
             $this->assert($got->mapstop_ids == $expected->mapstop_ids,
                 "mapstop_ids should match ($test_name).");
         }
+    }
+
+    // add a mapstop to the database that is linked to the tour
+    private function add_mapstop_to_tour($tour) {
+        if(is_null($tour->mapstop_ids)) {
+            $tour->mapstop_ids = array();
+        }
+        $mapstop = $this->helper->make_mapstop();
+        $mapstop->tour_id = $tour->id;
+        Mapstops::instance()->insert($mapstop);
+        $tour->mapstop_ids[] = $mapstop->id;
     }
 
 }
