@@ -338,6 +338,32 @@ function shtm_render_tour_creator() {
                     break;
             }
             break;
+        case 'tour':
+            require_once( dirname(__FILE__) . '/controllers/tours_controller.php');
+            switch ($action) {
+                case 'new':
+                    ToursController::new();
+                    break;
+                case 'create':
+                    ToursController::create();
+                    break;
+                case 'edit':
+                    ToursController::edit();
+                    break;
+                case 'update':
+                    ToursController::update();
+                    break;
+                case 'delete':
+                    ToursController::delete();
+                    break;
+                case 'destroy':
+                    ToursController::destroy();
+                    break;
+                default:
+                    ToursController::index();
+                    break;
+            }
+            break;
         default:
             require_once( dirname(__FILE__) . '/controllers/places_controller.php');
             PlacesController::index();

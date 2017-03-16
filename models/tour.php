@@ -49,7 +49,8 @@ class Tour extends AbstractModel {
         $this->do_check($this->area_id > 0, 'area_id <= 0');
         $this->do_check($this->user_id > 0, 'area_id <= 0');
 
-        $this->do_check(!is_null($this->name), 'name is null');
+        $this->do_check(!empty($this->name), 'name is empty');
+
         $this->do_check(!is_null($this->intro), 'intro is null');
         $this->do_check(!is_null($this->walk_length), 'walk_length is null');
         $this->do_check(!is_null($this->duration), 'duration is null');

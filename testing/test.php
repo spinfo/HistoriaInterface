@@ -266,6 +266,10 @@ function test_set_current_area($test_con, $name) {
 test_set_current_area($admin_test, "admin");
 test_set_current_area($contributor_test, "contributor");
 
+// invalidate logins for areas tests
+$admin_test->invalidate_login();
+$contributor_test->invalidate_login();
+
 // Unit test for places
 $places_unit_test = new PlacesTest();
 $test_cases[] = $places_unit_test;
@@ -280,6 +284,46 @@ $mapstops_unit_test->do_test();
 $tours_unit_test = new ToursTest();
 $test_cases[] = $tours_unit_test;
 $tours_unit_test->do_test();
+
+
+// SETUP TOURS TESTS
+require_once(dirname(__FILE__) . '/../models/areas.php');
+
+$admin_test = new WPTestConnection('Tours API Test (admin)',
+    'test-admin', 'test-admin', $helper->config->wp_url);
+$contributor_test = new WPTestConnection('Tours API Test (contributor)',
+    'test-contributor', 'test-contributor', $helper->config->wp_url);
+$test_cases[] = $admin_test;
+$test_cases[] = $contributor_test;
+
+// TOUR NEW
+function test_tour_new($con, $name) {
+    $helper = $con->helper;
+    $name = "tour new ($name)";
+
+    $con->test_fetch($helper->tc_url('tour', 'new'), null, 200,
+        "Should have status 200 on $name");
+
+    test_simple_page($con, $name);
+    test_page_heading($con, 'Tour erstellen', $name);
+
+    $con->ensure_xpath("//input[@name='shtm_tour[name]' and @value='']", 1,
+        "Should have an empty form field for the name on $name");
+
+    // test the area selection
+    $con->ensure_xpath("//select[@name='shtm_tour[area_id]']", 1,
+        "Should contain a selection for the tour's area id on $name");
+    $areas = Areas::instance()->list_simple();
+    foreach ($areas as $area) {
+        $xpath = "//option[@value='$area->id' and contains(text(), '$area->name')]";
+        $con->ensure_xpath($xpath, 1,
+            "Should contain an option for area: '$area->id' on $name");
+    }
+}
+test_tour_new($admin_test, 'admin');
+test_tour_new($contributor_test, 'contributor');
+
+
 
 
 // Report totals for all tests done

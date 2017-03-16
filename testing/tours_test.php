@@ -125,19 +125,11 @@ class ToursTest extends TestCase {
 
         // invalidate by invalidating a coordinate
         $last_coord = $tour->coordinates[count($tour->coordinates) -1];
-
-        // var_dump($tour->messages);
-
         $old_lat = $last_coord->lat;
         $last_coord->lat = null;
         $this->test_single_bad_update($tour, $from_db,
             "update tour with bad coordinate");
         $last_coord->lat = $old_lat;
-
-        // var_dump($tour->messages);
-        foreach ($tour->coordinates as $c) {
-            // var_dump($c->lat);
-        }
 
         // invalidate by setting tag_when_end before tag_when_start
         $old_end = $tour->tag_when_end;
@@ -146,6 +138,12 @@ class ToursTest extends TestCase {
             "update tour with bad tag_when_end");
         $tour->tag_when_end = $old_end;
 
+        // invalidate by setting an empty name
+        $old_name = $tour->name;
+        $tour->name = '';
+        $this->test_single_bad_update($tour, $from_db,
+            "update tour with empty name");
+        $tour->name = $old_name;
     }
 
     public function test_single_bad_update($tour, $good_clone, $test_name) {

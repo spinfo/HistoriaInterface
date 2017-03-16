@@ -1,20 +1,25 @@
 
-<form action=admin.php?<?php echo $this->action_params ?> method="post">
+<h1>Tour erstellen</h1>
+
+<form action="admin.php?<?php echo $this->action_params ?>">
     <div>
-        <label for="shtm_name">Name:</label>
-        <input type="text" id="shtm_name" name="shtm_place[name]" value="<?php echo $this->place->name ?>">
-    </div>
-    <div>
-        <label for="shtm_lat">Lat:</label>
-        <input type="text" id="shtm_lat" name="shtm_place[lat]" value="<?php printf("%.6f", $this->place->coordinate->lat) ?>">
-    </div>
-    <div>
-        <label for="shtm_lon">Lon:</label>
-        <input type="text" id="shtm_lon" name="shtm_place[lon]" value="<?php printf("%.6f", $this->place->coordinate->lon) ?>">
+        <label for="shtm_tour_name">Name:</label>
+        <input type="text" id="shtm_tour_name" name="shtm_tour[name]" value="">
     </div>
 
-    <div class="button">
-        <button type="submit">Speichern</button>
+    <div>
+        <label for="shtm_tour_area">Gebiet: </label>
+        <select id="shtm_tour_area" name="shtm_tour[area_id]">
+            <?php foreach($this->areas_list as $area): ?>
+                <option value="<?php echo $area->id ?>"
+                    <?php if($area->id == $this->current_area_id): ?>
+                        selected>
+                    <?php else: ?>
+                        >
+                    <?php endif ?>
+                        <?php echo $area->name ?>
+                </option>
+            <?php endforeach ?>
+        </select>
     </div>
-
 </form>

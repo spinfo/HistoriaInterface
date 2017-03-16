@@ -43,7 +43,7 @@ class Areas extends AbstractCollection {
      */
     public function list_simple() {
         $sql = $this->select_sql();
-        $rows = DB::list($sql, array(1 => 1), 0, PHP_INT_MAX);
+        $rows = DB::list($sql, array(1 => 1));
 
         $areas = array();
         foreach($rows as $count => $row) {

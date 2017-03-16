@@ -25,6 +25,10 @@ class ViewHelper {
     public static function delete_place_view() {
         return dirname(__FILE__) . '/views/place_delete.php';
     }
+
+    public static function new_tour_view() {
+        return dirname(__FILE__) . '/views/tour_new.php';
+    }
 }
 
 ?>

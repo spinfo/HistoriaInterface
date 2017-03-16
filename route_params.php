@@ -75,6 +75,20 @@ class RouteParams {
         ));
     }
 
+    public static function new_tour() {
+        return self::params(array(
+            self::$key_controller => 'tour',
+            self::$key_action => 'new'
+        ));
+    }
+
+    public static function create_tour() {
+        return self::params(array(
+            self::$key_controller => 'tour',
+            self::$key_action => 'create'
+        ));
+    }
+
     public static function set_current_area($id = null) {
         return self::params(self::set_current_area_params($id));
     }
