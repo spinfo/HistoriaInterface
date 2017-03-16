@@ -1,7 +1,7 @@
 
 <h1>Orte</h1>
 
-<form action="admin.php?<?php echo $this->route_params->set_current_area() ?>" method="get"
+<form action="admin.php?<?php echo $this->route_params::set_current_area() ?>" method="get"
     style="float:right">
     <div>
         <label for="shtm_current_area">Gebiet: </label>
@@ -18,7 +18,7 @@
             <?php endforeach ?>
         </select>
 
-        <?php foreach($this->route_params->set_current_area_params() as $key => $value): ?>
+        <?php foreach($this->route_params::set_current_area_params() as $key => $value): ?>
             <input type="hidden" name="<?php echo $key ?>" value="<?php echo $value ?>">
         <?php endforeach ?>
     </div>
@@ -49,12 +49,12 @@
             <td><?php echo $place->coordinate->lon ?></td>
             <td>
                 <?php if($this->user_service->user_may_edit_place($place)): ?>
-                    <a href="?<?php echo $this->route_params->edit_place($place->id) ?>">Bearbeiten</a>
+                    <a href="?<?php echo $this->route_params::edit_place($place->id) ?>">Bearbeiten</a>
                 <?php endif ?>
             </td>
             <td>
                 <?php if($this->user_service->user_may_edit_place($place)): ?>
-                    <a href="?<?php echo $this->route_params->delete_place($place->id) ?>">Löschen</a>
+                    <a href="?<?php echo $this->route_params::delete_place($place->id) ?>">Löschen</a>
                 <?php endif ?>
             </td>
         </tr>
@@ -63,5 +63,5 @@
 </table>
 
 <p>
-    <a href="?<?php echo $this->route_params->new_place() ?>">Neuen Ort anlegen</a>
+    <a href="?<?php echo $this->route_params::new_place() ?>">Neuen Ort anlegen</a>
 </p>

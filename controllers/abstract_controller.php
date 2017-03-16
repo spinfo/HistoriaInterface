@@ -1,6 +1,8 @@
 <?php
 namespace SmartHistoryTourManager;
 
+require_once( dirname(__FILE__) . '/../view_helper.php');
+
 /**
  * A class to wrap methods used by all controllers.
  */

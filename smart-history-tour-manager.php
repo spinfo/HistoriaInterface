@@ -292,12 +292,10 @@ function shtm_setup_tour_creator() {
 }
 
 function shtm_render_tour_creator() {
-    require_once(dirname(__FILE__) . '/resource_helpers.php');
+    require_once(dirname(__FILE__) . '/route_params.php');
 
-    $route_params = RouteParams::instance();
-
-    $controller = $route_params->get_controller_value();
-    $action = $route_params->get_action_value();
+    $controller = RouteParams::get_controller_value();
+    $action = RouteParams::get_action_value();
 
     switch($controller) {
         case 'place':

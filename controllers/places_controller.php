@@ -6,7 +6,7 @@ require_once( dirname(__FILE__) . '/../views/view.php');
 require_once( dirname(__FILE__) . '/../models/places.php');
 require_once( dirname(__FILE__) . '/../models/place.php');
 require_once( dirname(__FILE__) . '/../models/areas.php');
-require_once( dirname(__FILE__) . '/../resource_helpers.php');
+require_once( dirname(__FILE__) . '/../route_params.php');
 require_once( dirname(__FILE__) . '/../user_service.php');
 require_once( dirname(__FILE__) . '/../message_service.php');
 
@@ -32,7 +32,6 @@ class PlacesController extends AbstractController {
 
         $view = new View(ViewHelper::index_places_view(),
             array(
-                'route_params' => RouteParams::instance(),
                 'user_service' => UserService::instance(),
                 'places_list' => $places_list,
                 'areas_list' => $areas_list,
@@ -44,21 +43,19 @@ class PlacesController extends AbstractController {
 
     public static function new() {
         $places = Places::instance();
-        $route_params = RouteParams::instance();
 
         $place = $places->create();
 
         $view = new View(ViewHelper::edit_place_view(), array(
             'heading' => 'Neuer Ort',
             'place' => $place,
-            'action_params' => $route_params->create_place()
+            'action_params' => RouteParams::create_place()
         ));
         self::wrap_in_page_view($view)->render();
     }
 
     public static function create() {
         $places = Places::instance();
-        $route_params = RouteParams::instance();
 
         $place_params = self::place_params();
         $view = null;
@@ -79,7 +76,7 @@ class PlacesController extends AbstractController {
                 }
             } else {
                 MessageService::instance()->add_success("Ort erstellt!");
-                self::redirect($route_params->edit_place($place->id));
+                self::redirect(RouteParams::edit_place($place->id));
             }
         } else {
             $view = self::create_bad_request_view("Ungültiger Input");
@@ -90,11 +87,10 @@ class PlacesController extends AbstractController {
 
     public static function edit() {
         $places = Places::instance();
-        $route_params = RouteParams::instance();
         $user_service = UserService::instance();
 
         $view;
-        $id = $route_params->get_id_value();
+        $id = RouteParams::get_id_value();
         if(empty($id)) {
             $view = self::create_bad_request_view("Ungültiger Input: id fehlt.");
         } else {
@@ -106,7 +102,7 @@ class PlacesController extends AbstractController {
                     $view = new View(ViewHelper::edit_place_view(), array(
                             'heading' => 'Ort bearbeiten',
                             'place' => $place,
-                            'action_params' => $route_params->update_place($place->id)
+                            'action_params' => RouteParams::update_place($place->id)
                         )
                     );
                 } else {
@@ -120,10 +116,9 @@ class PlacesController extends AbstractController {
 
     public static function update() {
         $places = Places::instance();
-        $route_params = RouteParams::instance();
 
         $view;
-        $id = $route_params->get_id_value();
+        $id = RouteParams::get_id_value();
         if(empty($id)) {
             $view = self::create_bad_request_view("Ungültiger Input: id fehlt.");
         } else {
@@ -137,7 +132,7 @@ class PlacesController extends AbstractController {
                     $place = $places->save($place);
 
                     MessageService::instance()->add_success("Änderungen gespeichert!");
-                    self::redirect($route_params->edit_place($place->id));
+                    self::redirect(RouteParams::edit_place($place->id));
                 } else {
                     $view = self::create_bad_request_view("Ungültiger Input.");
                 }
@@ -149,10 +144,9 @@ class PlacesController extends AbstractController {
 
     public static function delete() {
         $places = Places::instance();
-        $route_params = RouteParams::instance();
         $user_service = UserService::instance();
 
-        $id = $route_params->get_id_value();
+        $id = RouteParams::get_id_value();
         $place = $places->get($id);
 
         $view = null;
@@ -161,7 +155,7 @@ class PlacesController extends AbstractController {
         } else {
             if($user_service->user_may_edit_place($place)) {
                 $view = new View(ViewHelper::delete_place_view(), array(
-                    'action_params' => $route_params->destroy_place($place->id),
+                    'action_params' => RouteParams::destroy_place($place->id),
                     'place' => $place
                 ));
             } else {
@@ -173,10 +167,9 @@ class PlacesController extends AbstractController {
 
     public static function destroy() {
         $places = Places::instance();
-        $route_params = RouteParams::instance();
         $user_service = UserService::instance();
 
-        $id = $route_params->get_id_value();
+        $id = RouteParams::get_id_value();
         $place = $places->get($id);
 
         $view = null;
@@ -193,13 +186,13 @@ class PlacesController extends AbstractController {
                     // Something went wrong
                     MessageService::instance()->add_error("Konnte den Ort nicht löschen.");
                     $view = new View(ViewHelper::delete_place_view(), array(
-                        'action_params' => $route_params->destroy_place($place->id),
+                        'action_params' => RouteParams::destroy_place($place->id),
                         'place' => $place
                     ));
                 } else {
                     // success: redirect to index
                     MessageService::instance()->add_success("Ort gelöscht!");
-                    self::redirect($route_params->index_places());
+                    self::redirect(RouteParams::index_places());
                 }
             } else {
                 // permissions insufficient
