@@ -1,6 +1,9 @@
 <?php
 namespace SmartHistoryTourManager;
 
+/**
+ * A simple static class that knows about the paths to views.
+ */
 class ViewHelper {
 
     public static function empty_view() {
