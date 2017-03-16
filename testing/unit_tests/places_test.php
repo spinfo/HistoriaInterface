@@ -1,13 +1,13 @@
 <?php
 namespace SmartHistoryTourManager;
 
-require_once(dirname(__FILE__) . '/../models/places.php');
-require_once(dirname(__FILE__) . '/../models/place.php');
-require_once(dirname(__FILE__) . '/../models/coordinate.php');
-require_once(dirname(__FILE__) . '/test_helper.php');
-require_once(dirname(__FILE__) . '/test_case.php');
-require_once(dirname(__FILE__) . '/../db.php');
-require_once(dirname(__FILE__) . '/../models/areas.php');
+require_once(dirname(__FILE__) . '/../../models/places.php');
+require_once(dirname(__FILE__) . '/../../models/place.php');
+require_once(dirname(__FILE__) . '/../../models/coordinate.php');
+require_once(dirname(__FILE__) . '/../test_helper.php');
+require_once(dirname(__FILE__) . '/../test_case.php');
+require_once(dirname(__FILE__) . '/../../db.php');
+require_once(dirname(__FILE__) . '/../../models/areas.php');
 
 /**
  * A test case for the Places collection.
@@ -135,5 +135,18 @@ class PlacesTest extends TestCase {
     }
 
 }
+
+// Create test, add it to the global test cases, then run
+$places_unit_test = new PlacesTest();
+
+global $shtm_test_cases;
+if(empty($shtm_test_cases)) {
+    $shtm_test_cases = array();
+}
+$shtm_test_cases[] = $places_unit_test;
+
+$places_unit_test->do_test();
+$places_unit_test->report();
+
 
 ?>

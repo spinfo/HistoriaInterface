@@ -1,10 +1,10 @@
 <?php
 namespace SmartHistoryTourManager;
 
-require_once(dirname(__FILE__) . '/../models/areas.php');
-require_once(dirname(__FILE__) . '/../models/mapstops.php');
-require_once(dirname(__FILE__) . '/../models/tour.php');
-require_once(dirname(__FILE__) . '/../models/tours.php');
+require_once(dirname(__FILE__) . '/../../models/areas.php');
+require_once(dirname(__FILE__) . '/../../models/mapstops.php');
+require_once(dirname(__FILE__) . '/../../models/tour.php');
+require_once(dirname(__FILE__) . '/../../models/tours.php');
 
 class ToursTest extends TestCase {
 
@@ -332,5 +332,16 @@ class ToursTest extends TestCase {
 
 }
 
+// Create test, add it to the global test cases, then run
+$tours_unit_test = new ToursTest();
+
+global $shtm_test_cases;
+if(empty($shtm_test_cases)) {
+    $shtm_test_cases = array();
+}
+$shtm_test_cases[] = $tours_unit_test;
+
+$tours_unit_test->do_test();
+$tours_unit_test->report();
 
 ?>

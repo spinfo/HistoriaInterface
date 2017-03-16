@@ -2,6 +2,7 @@
 namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/test_case.php');
+require_once(dirname(__FILE__) . '/mycurl.php');
 
 /**
  * A class to use for connections to a wordpress page. Handles the login and
@@ -143,6 +144,35 @@ class WPTestConnection extends TestCase {
         }
 
         $this->note_pass($msg);
+    }
+
+    // performs tests common for normal pages retrieved by a simple GET
+    public function test_simple_page($page_type) {
+        $this->ensure_xpath("//div[contains(@class, 'shtm_message')]", 0,
+            "Should not show any message on ${page_type}.");
+    }
+
+    // test for the presence of an h1-heading on the page retrieved last by the
+    // given test connection
+    public function test_page_heading($heading, $name) {
+        $this->ensure_xpath("//h1[text()='${heading}']", 1,
+            "Should have the right heading on ${name}.");
+    }
+
+    // test for the presence of an error message containing the specified text
+    public function test_error_message($text, $name) {
+        $this->ensure_xpath(
+            "//div[contains(@class, 'shtm_message_error') and contains(., '$text')]", 1,
+            "Should show error message with text '$text' on $name."
+        );
+    }
+
+    // test for the presence of a success message containing the specified text
+    public function test_success_message($text, $name) {
+        $this->ensure_xpath(
+            "//div[contains(@class, 'shtm_message_success') and contains(., '$text')]", 1,
+            "Should show success message with text '$text' on $name."
+        );
     }
 }
 

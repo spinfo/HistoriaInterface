@@ -1,12 +1,12 @@
 <?php
 namespace SmartHistoryTourManager;
 
-require_once(dirname(__FILE__) . '/../models/areas.php');
-require_once(dirname(__FILE__) . '/../models/area.php');
-require_once(dirname(__FILE__) . '/../models/coordinate.php');
-require_once(dirname(__FILE__) . '/test_helper.php');
-require_once(dirname(__FILE__) . '/test_case.php');
-require_once(dirname(__FILE__) . '/../db.php');
+require_once(dirname(__FILE__) . '/../../db.php');
+require_once(dirname(__FILE__) . '/../../models/areas.php');
+require_once(dirname(__FILE__) . '/../../models/area.php');
+require_once(dirname(__FILE__) . '/../../models/coordinate.php');
+require_once(dirname(__FILE__) . '/../test_helper.php');
+require_once(dirname(__FILE__) . '/../test_case.php');
 
 class AreasTest extends TestCase {
 
@@ -322,5 +322,17 @@ class AreasTest extends TestCase {
         return $area;
     }
 }
+
+// Create test, add it to the global test cases, then run
+$areas_unit_test = new AreasTest();
+
+global $shtm_test_cases;
+if(empty($shtm_test_cases)) {
+    $shtm_test_cases = array();
+}
+$shtm_test_cases[] = $areas_unit_test;
+
+$areas_unit_test->do_test();
+$areas_unit_test->report();
 
 ?>

@@ -1,13 +1,13 @@
 <?php
 namespace SmartHistoryTourManager;
 
-require_once(dirname(__FILE__) . '/../models/mapstops.php');
-require_once(dirname(__FILE__) . '/../models/mapstop.php');
+require_once(dirname(__FILE__) . '/../../models/mapstops.php');
+require_once(dirname(__FILE__) . '/../../models/mapstop.php');
 
-require_once(dirname(__FILE__) . '/../models/tours.php');
-require_once(dirname(__FILE__) . '/../models/places.php');
+require_once(dirname(__FILE__) . '/../../models/tours.php');
+require_once(dirname(__FILE__) . '/../../models/places.php');
 
-require_once(dirname(__FILE__) . '/../logging.php');
+require_once(dirname(__FILE__) . '/../../logging.php');
 
 class MapstopsTest extends TestCase {
 
@@ -228,8 +228,18 @@ class MapstopsTest extends TestCase {
         $this->assert($got->post_ids == $expected->post_ids,
             "post ids should match on: $test_name.");
     }
-
-
 }
+
+// Create test, add it to the global test cases, then run
+$mapstops_unit_test = new MapstopsTest();
+
+global $shtm_test_cases;
+if(empty($shtm_test_cases)) {
+    $shtm_test_cases = array();
+}
+$shtm_test_cases[] = $mapstops_unit_test;
+
+$mapstops_unit_test->do_test();
+$mapstops_unit_test->report();
 
 ?>
