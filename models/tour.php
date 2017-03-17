@@ -46,8 +46,10 @@ class Tour extends AbstractModel {
     public $accessibility = '';
 
     protected function do_validity_check() {
-        $this->do_check($this->area_id > 0, 'area_id <= 0');
-        $this->do_check($this->user_id > 0, 'user_id <= 0');
+        $this->do_check(Areas::instance()->valid_id($this->area_id),
+            'area_id invalid');
+        $this->do_check(UserService::instance()->get_user($this->user_id),
+            'user_id invalid');
 
         $this->do_check(!empty($this->name), 'name is empty');
 
@@ -59,16 +61,19 @@ class Tour extends AbstractModel {
         $this->do_check(!is_null($this->accessibility), 'accessibility null');
 
         if(!empty($this->coordinates)) {
-            foreach($this->coordinates as $coordinate) {
+            foreach($this->coordinates as $c) {
                 // check that the coordinates linked are valid
-                $this->check_coordinate($coordinate, 'tour track coordinate');
+                $this->check_coordinate($c, 'tour track coordinate');
 
                 // check that each coordinate with an id appears in the array
-                // of coordinate_ids
-                if(!is_null($coordinate->id) && $coordinate->id != DB::BAD_ID) {
+                // of coordinate_ids and that it is a valid id
+                if(!is_null($c->id) && $c->id != DB::BAD_ID) {
                     $this->do_check(
-                        in_array($coordinate->id, $this->coordinate_ids),
-                        "id not in coordinate_ids: $coordinate->id");
+                        in_array($c->id, $this->coordinate_ids),
+                        "id not in coordinate_ids: $c->id");
+
+                    $this->do_check(Coordinates::instance()->valid_id($c->id),
+                        "invalid coordinate id");
                 }
             }
         }

@@ -142,7 +142,7 @@ final class Places extends AbstractCollection {
         $row_count = DB::delete_single($this->table, $place->id);
         if($row_count != 1) {
             DB::rollback_transaction();
-            // reset the value that might have been destroyed on coordinate delete
+            // reset the value that might have been destroyed on coord's delete
             $place->coordinate->id = $place->coordinate_id;
             throw new DB_Exception("Error deleting place: $place->id");
         } else {

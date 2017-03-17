@@ -3,6 +3,9 @@ namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/abstract_model.php');
 require_once(dirname(__FILE__) . '/coordinate.php');
+require_once(dirname(__FILE__) . '/coordinates.php');
+require_once(dirname(__FILE__) . '/areas.php');
+require_once(dirname(__FILE__) . '/../user_service.php');
 
 class Place extends AbstractModel {
 
@@ -17,9 +20,12 @@ class Place extends AbstractModel {
     public $name = "";
 
     protected function do_validity_check() {
-        $this->do_check(($this->user_id > 0), 'user_id <= 0');
-        $this->do_check(($this->area_id > 0), 'area_id <= 0');
-        $this->do_check(($this->coordinate_id > 0), 'coordinate_id <= 0');
+        $this->do_check(UserService::instance()->get_user($this->user_id),
+            'user_id invalid');
+        $this->do_check(Areas::instance()->valid_id($this->area_id),
+            'area_id invalid');
+        $this->do_check(Coordinates::instance()->valid_id($this->coordinate_id),
+            'coordinate_id invalid');
 
         $this->check_coordinate($this->coordinate, 'coordinate');
 

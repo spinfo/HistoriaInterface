@@ -55,6 +55,11 @@ class DB {
      * @return bool true if result was found else false.
      */
     public static function valid_id($table, $id) {
+        $id = intval($id);
+        if($id <= 0) {
+            return false;
+        }
+
         $sql = "SELECT 1 FROM $table";
         $result = self::get($sql, array('id' => $id));
 
