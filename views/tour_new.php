@@ -1,7 +1,7 @@
 
 <h1>Tour erstellen</h1>
 
-<form action="admin.php?<?php echo $this->action_params ?>">
+<form action="admin.php?<?php echo $this->action_params ?>" method="post">
     <div>
         <label for="shtm_tour_name">Name:</label>
         <input type="text" id="shtm_tour_name" name="shtm_tour[name]" value="">
@@ -21,5 +21,9 @@
                 </option>
             <?php endforeach ?>
         </select>
+    </div>
+
+    <div class="button">
+        <button type="submit">Speichern</button>
     </div>
 </form>

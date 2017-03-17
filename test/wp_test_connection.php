@@ -137,7 +137,9 @@ class WPTestConnection extends TestCase {
             }
         } else {
             if($nodes->length != $expected_node_count) {
-                $this->note_fail($msg . " (Expected $expected_node_count node(s), got $nodes->length on '$xpath'.)");
+                $msg .= " (Expected $expected_node_count node(s),";
+                $msg .= " got $nodes->length on '$xpath'.)";
+                $this->note_fail($msg);
                 return;
             }
         }
@@ -173,6 +175,45 @@ class WPTestConnection extends TestCase {
             "Should show success message with text '$text' on $name."
         );
     }
+
+    /**
+     * Test for the presence or equality of value (if tehe value parameter is
+     * not null) of a parameter in the last effective url.
+     *
+     * @return string|null  The parameter's value or null if no value found.
+     */
+    public function test_get_redirect_param($param, $value = null) {
+        $url = $this->mycurl->getEffectiveUrl();
+        if(empty($url)) {
+            $this->note_fail("No last url to check param: '$param'.");
+            return null;
+        }
+        // simply pattern match the url
+        $matches = array();
+        $pattern = "/${param}\=([^\=\&]+)/";
+        preg_match($pattern, $url, $matches);
+
+        // check result for presence
+        $msg = "Should have param on redirect: ";
+        if(empty($matches || !isset($matches[1]))) {
+            $this->note_fail("$msg '$param'.");
+            return null;
+        } else {
+            $got = $matches[1];
+            // no equality checking wanted, so note success
+            if(is_null($value)) {
+                $this->note_pass("$msg '$param'");
+            } else {
+                // do the requested equality check
+                if($value == $got) {
+                    $this->note_pass("$msg '$param' => '$got'.");
+                } else {
+                    $this->note_fail("$msg '$param' => '$got'.");
+                }
+            }
+            return $got;
+        }
+    }
 }
 
 /**
@@ -183,6 +224,7 @@ class WPTestConnection extends TestCase {
  *      - set $_url to public
  *      - set $_cookieFileLocation to public
  *      - add function mycurl->removePost()
+ *      - added info about last effective url
  */
 class mycurl {
      protected $_useragent = 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1';
@@ -200,6 +242,7 @@ class mycurl {
      protected $_includeHeader;
      protected $_noBody;
      protected $_status;
+     protected $_effectiveUrl;
      protected $_binaryTransfer;
      public    $authentication = 0;
      public    $auth_name      = '';
@@ -303,7 +346,8 @@ class mycurl {
          curl_setopt($s,CURLOPT_REFERER,$this->_referer);
 
          $this->_webpage = curl_exec($s);
-                   $this->_status = curl_getinfo($s,CURLINFO_HTTP_CODE);
+         $this->_status = curl_getinfo($s,CURLINFO_HTTP_CODE);
+         $this->_effectiveUrl = curl_getinfo($s, CURLINFO_EFFECTIVE_URL);
          curl_close($s);
 
      }
@@ -311,6 +355,11 @@ class mycurl {
    public function getHttpStatus()
    {
        return $this->_status;
+   }
+
+   public function getEffectiveUrl()
+   {
+        return $this->_effectiveUrl;
    }
 
    public function __tostring(){

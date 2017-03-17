@@ -56,6 +56,11 @@ class Tours extends AbstractCollection {
 
         DB::start_transaction();
         $tour_id = DB::insert($this->table, $values);
+        if($tour_id == DB::BAD_ID) {
+            debug_log("Errors while saving tour. Rolling back.");
+            $this->rollback_insert($tour);
+            return DB::BAD_ID;
+        }
 
         // insert tour's track (coordinates) with join relation
         $tour->coordinate_ids = array();
@@ -71,13 +76,11 @@ class Tours extends AbstractCollection {
                 }
             }
             $result_coords = $this->db_insert_coordinate_joins($tour, $tour_id);
-        }
-
-        // check for errors and abort if there are any
-        if($tour_id == DB::BAD_ID || !$result_coords) {
-            debug_log("Errors while saving tour. Rolling back.");
-            $this->rollback_insert($tour);
-            return DB::BAD_ID;
+            if(!$result_coords) {
+                debug_log("Error on saving tour's coordinates. Rolling back.");
+                $this->rollback_insert($tour);
+                return DB::BAD_ID;
+            }
         }
 
         // at this point we may commit the results and return

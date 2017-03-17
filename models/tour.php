@@ -47,7 +47,7 @@ class Tour extends AbstractModel {
 
     protected function do_validity_check() {
         $this->do_check($this->area_id > 0, 'area_id <= 0');
-        $this->do_check($this->user_id > 0, 'area_id <= 0');
+        $this->do_check($this->user_id > 0, 'user_id <= 0');
 
         $this->do_check(!empty($this->name), 'name is empty');
 
@@ -56,7 +56,7 @@ class Tour extends AbstractModel {
         $this->do_check(!is_null($this->duration), 'duration is null');
         $this->do_check(!is_null($this->tag_what), 'tag_what is null');
         $this->do_check(!is_null($this->tag_where), 'tag_where is null');
-        $this->do_check(!is_null($this->accessibility), 'accessibility is null');
+        $this->do_check(!is_null($this->accessibility), 'accessibility null');
 
         if(!empty($this->coordinates)) {
             foreach($this->coordinates as $coordinate) {
@@ -68,14 +68,14 @@ class Tour extends AbstractModel {
                 if(!is_null($coordinate->id) && $coordinate->id != DB::BAD_ID) {
                     $this->do_check(
                         in_array($coordinate->id, $this->coordinate_ids),
-                        "coordinate's id not in coordinate_ids: $coordinate->id");
+                        "id not in coordinate_ids: $coordinate->id");
                 }
             }
         }
 
         $this->do_check(is_float($this->tag_when_start),
             "no float value as start date");
-        $this->do_check($this->tag_when_start > 0.0, "start date < 0.0");
+        $this->do_check($this->tag_when_start >= 0.0, "start date < 0.0");
 
         if(!is_null($this->tag_when_end)) {
             $this->do_check(is_float($this->tag_when_end),

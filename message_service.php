@@ -60,6 +60,19 @@ class MessageService {
         $this->messages[] = new Message($message, self::ERROR);
     }
 
+    /**
+     * If the model has messages attacthed that indicate invalidity these are
+     * added as messages of the specified type.
+     * NOTE: This does not perform validity checking itself (left to the user)
+     */
+    public function add_model_messages($model, $type = self::WARNING) {
+        if(!empty($model->messages)) {
+            foreach ($model->messages as $msg => $bool) {
+                $this->messages[] = new Message($msg, $type);
+            }
+        }
+    }
+
     public static function message_label($msg_type) {
         switch($msg_type) {
             case self::SUCCESS:
@@ -93,7 +106,6 @@ class MessageService {
         }
         return $instance;
     }
-
 
 }
 

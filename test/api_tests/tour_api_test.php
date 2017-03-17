@@ -1,9 +1,10 @@
 <?php
 namespace SmartHistoryTourManager;
 
-// setup the tests
 require_once(dirname(__FILE__) . '/../../models/areas.php');
+require_once(dirname(__FILE__) . '/../wp_test_connection.php');
 
+// setup the tests
 $admin_test = new WPTestConnection('Tours API Test (admin)',
     'test-admin', 'test-admin', $helper->config->wp_url);
 $contributor_test = new WPTestConnection('Tours API Test (contributor)',
@@ -42,6 +43,29 @@ function test_tour_new($con, $name) {
 }
 test_tour_new($admin_test, 'admin');
 test_tour_new($contributor_test, 'contributor');
+
+
+// TOUR CREATE
+function test_tour_create($con, $post, $name) {
+    $helper = $con->helper;
+    $name = "tour create ($name)";
+
+    $con->test_fetch($helper->tc_url('tour', 'create'), $post, 200,
+        "Should have status 200 on $name.");
+
+    $con->test_success_message("Tour erstellt!", $name);
+
+    $id = $con->test_get_redirect_param('shtm_id');
+}
+$tour = $helper->make_tour();
+$post_create = array(
+    'shtm_tour[name]' => $tour->name,
+    'shtm_tour[area_id]' => $tour->area_id,
+);
+
+test_tour_create($admin_test, $post_create, 'admin');
+test_tour_create($contributor_test, $post_create, 'contributor');
+
 
 // invalidate logins
 $admin_test->invalidate_login();

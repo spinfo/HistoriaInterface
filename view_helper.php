@@ -2,7 +2,7 @@
 namespace SmartHistoryTourManager;
 
 /**
- * A simple static class that knows about the paths to views.
+ * A simple static class that knows the paths to views.
  */
 class ViewHelper {
 
@@ -28,6 +28,10 @@ class ViewHelper {
 
     public static function new_tour_view() {
         return dirname(__FILE__) . '/views/tour_new.php';
+    }
+
+    public static function edit_tour_view() {
+        return dirname(__FILE__) . '/views/tour_edit.php';
     }
 }
 
