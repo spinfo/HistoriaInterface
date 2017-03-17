@@ -3,7 +3,6 @@ namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/../../models/mapstops.php');
 require_once(dirname(__FILE__) . '/../../models/mapstop.php');
-
 require_once(dirname(__FILE__) . '/../../models/tours.php');
 require_once(dirname(__FILE__) . '/../../models/places.php');
 

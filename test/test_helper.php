@@ -2,6 +2,9 @@
 namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/../models/coordinate.php');
+require_once(dirname(__FILE__) . '/../models/places.php');
+require_once(dirname(__FILE__) . '/../models/mapstop.php');
+require_once(dirname(__FILE__) . '/../models/tour.php');
 
 class TestHelper {
 

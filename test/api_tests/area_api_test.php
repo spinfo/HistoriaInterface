@@ -1,6 +1,8 @@
 <?php
 namespace SmartHistoryTourManager;
 
+require_once(dirname(__FILE__) . '/../wp_test_connection.php');
+
 // AREAS TESTS
 $admin_test = new WPTestConnection('Areas API Test (admin)',
     'test-admin', 'test-admin', $helper->config->wp_url);
