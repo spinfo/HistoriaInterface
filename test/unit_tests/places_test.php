@@ -19,6 +19,7 @@ require_once(dirname(__FILE__) . '/../../models/areas.php');
 class PlacesTest extends TestCase {
 
     public function test_transactional_create() {
+
         // invalidate a place and check that neither it nor the coordinate
         // is persisted
         $place = $this->helper->make_place();
@@ -32,19 +33,19 @@ class PlacesTest extends TestCase {
     }
 
     private function check_invalid_insert($place) {
-        $last_place = $this->helper->db_highest_id($this->table);
-        $last_coord = $this->helper->db_highest_id($this->coord_table);
+        $last_place = Places::instance()->last_id();
+        $last_coord = Coordinates::instance()->last_id();
 
         $exception_thrown = false;
         try {
-            Places::instance()->save($place);
+            Places::instance()->insert($place);
         } catch (DB_Exception $e) {
             $exception_thrown = true;
         }
 
-        $this->assert($last_place == $this->helper->db_highest_id($this->table),
+        $this->assert($last_place == Places::instance()->last_id(),
             "Should not have inserted place on bad place insert.");
-        $this->assert($last_coord == $this->helper->db_highest_id($this->coord_table),
+        $this->assert($last_coord == Coordinates::instance()->last_id(),
             "Should not have inserted coordinate on bad place insert.");
 
         $this->assert_invalid_id($place->id, "place");

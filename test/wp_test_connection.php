@@ -51,11 +51,6 @@ class WPTestConnection extends TestCase {
         $this->invalidate_login();
     }
 
-    // this overwrites the parent log function to log url and http status
-    protected function log($msg = '') {
-        echo $msg . ' - ' . $this->mycurl->_url . ' (' . $this->mycurl->getHttpStatus() . ')' . PHP_EOL;
-    }
-
     private function login() {
         $url = $this->wp_url . self::$login_path;
         $post_data = array(
@@ -95,10 +90,9 @@ class WPTestConnection extends TestCase {
             $this->mycurl->removePost();
         }
 
-        // setting _url is not strictly necessary, but makes for easier logging
-        // later
-        $this->mycurl->_url = $url;
+        // do the request and append url/status to the message, note results
         $this->mycurl->createCurl($url);
+        $msg .= ' - ' . $url . ' (' . $this->mycurl->getHttpStatus() . ')';
         if($this->mycurl->getHttpStatus() == $expected_status) {
             $this->note_pass($msg);
         } else {
@@ -182,7 +176,7 @@ class WPTestConnection extends TestCase {
      *
      * @return string|null  The parameter's value or null if no value found.
      */
-    public function test_get_redirect_param($param, $value = null) {
+    public function test_redirect_param($param, $value = null) {
         $url = $this->mycurl->getEffectiveUrl();
         if(empty($url)) {
             $this->note_fail("No last url to check param: '$param'.");
@@ -194,7 +188,7 @@ class WPTestConnection extends TestCase {
         preg_match($pattern, $url, $matches);
 
         // check result for presence
-        $msg = "Should have param on redirect: ";
+        $msg = "Should have param on redirect:";
         if(empty($matches || !isset($matches[1]))) {
             $this->note_fail("$msg '$param'.");
             return null;

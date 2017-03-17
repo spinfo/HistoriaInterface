@@ -2,14 +2,16 @@
 namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/../../models/areas.php');
+require_once(dirname(__FILE__) . '/../../models/tours.php');
 require_once(dirname(__FILE__) . '/../wp_test_connection.php');
 
-// setup the tests
+// setup the test cases
 $admin_test = new WPTestConnection('Tours API Test (admin)',
     'test-admin', 'test-admin', $helper->config->wp_url);
 $contributor_test = new WPTestConnection('Tours API Test (contributor)',
     'test-contributor', 'test-contributor', $helper->config->wp_url);
 
+// add the test cases to the global test variables
 global $shtm_test_cases;
 if(empty($shtm_test_cases)) {
     $shtm_test_cases = array();
@@ -47,24 +49,63 @@ test_tour_new($contributor_test, 'contributor');
 
 // TOUR CREATE
 function test_tour_create($con, $post, $name) {
-    $helper = $con->helper;
     $name = "tour create ($name)";
 
-    $con->test_fetch($helper->tc_url('tour', 'create'), $post, 200,
+    $con->test_fetch($con->helper->tc_url('tour', 'create'), $post, 200,
         "Should have status 200 on $name.");
 
     $con->test_success_message("Tour erstellt!", $name);
 
-    $id = $con->test_get_redirect_param('shtm_id');
+    // should redirect to the edit page of the tour
+    $con->test_redirect_param('shtm_c', 'tour');
+    $con->test_redirect_param('shtm_a', 'edit');
+    $id = $con->test_redirect_param('shtm_id');
+
+    // test that the id exists in the database
+    $id = intval($id);
+    $con->assert(DB::valid_id(Tours::instance()->table, $id),
+        "Returned id should be valid");
+
+    // return the id param we were redirected to
+    return $id;
 }
+
+function test_bad_create($con, $post, $name) {
+    $name = "bad tour create ($name)";
+
+    $id_before = Tours::instance()->last_id();
+
+    $con->test_fetch($con->helper->tc_url('tour', 'create'), $post, 200,
+        "Should have status 200 on $name.");
+
+    $con->test_error_message("Nicht gespeichert", $name);
+
+    // should have redirect back to new page
+    $con->test_redirect_param('shtm_c', 'tour');
+    $con->test_redirect_param('shtm_a', 'new');
+
+    $id_after = Tours::instance()->last_id();
+    $con->assert($id_before == $id_after, "Should not have created any tour.");
+}
+
 $tour = $helper->make_tour();
-$post_create = array(
+$post = array(
     'shtm_tour[name]' => $tour->name,
     'shtm_tour[area_id]' => $tour->area_id,
 );
+// test the normal create and save the returned id values for later tests
+$t_id_admin = test_tour_create($admin_test, $post, 'admin');
+$t_id_contributor =
+    test_tour_create($contributor_test, $post, 'contributor');
 
-test_tour_create($admin_test, $post_create, 'admin');
-test_tour_create($contributor_test, $post_create, 'contributor');
+$bad_post = array_merge($post, array('shtm_tour[name]' => ''));
+test_bad_create($admin_test, $bad_post, 'admin - bad tour name');
+test_bad_create($contributor_test, $bad_post, 'contributor - bad tour name');
+
+$bad_id = Areas::instance()->last_id() + 1;
+$bad_post = array_merge($post, array('shtm_tour[area_id]' => $bad_id));
+test_bad_create($admin_test, $bad_post, 'admin - bad area_id');
+test_bad_create($contributor_test, $bad_post, 'contributor - bad area_id');
 
 
 // invalidate logins

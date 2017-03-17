@@ -132,6 +132,15 @@ class UserService {
         return intval($this->user->ID);
     }
 
+    /**
+     * Wrapper for the worpress function get_userdata
+     *
+     * @return WP_User|false    The WP_User object on success else fals.
+     */
+    public function get_user($id) {
+        return get_userdata($id);
+    }
+
     private function get_roles($id = null) {
         $roles = array();
         if (isset($id)) {

@@ -35,7 +35,6 @@ class ToursController extends AbstractController {
             $tour->user_id = UserService::instance()->user_id();
             // persist tour
             $id = Tours::instance()->insert($tour);
-            debug_log("start: $tour->tag_when_start");
             if($id != DB::BAD_ID) {
                 // saved: redirect to the tour edit page
                 MessageService::instance()->add_success("Tour erstellt!");
