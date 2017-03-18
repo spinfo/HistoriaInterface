@@ -14,7 +14,8 @@ class RouteParams {
 
     // build GET parametrs for a query by adding all params to the current GET
     // parameters
-    private static function params($added_params = array()) {
+    // The "route" build here is just a string of GET parameters
+    private static function params_to_route($added_params = array()) {
         return http_build_query(array_merge($_GET, $added_params));
     }
 
@@ -22,83 +23,63 @@ class RouteParams {
         return self::index_places();
     }
 
+    private static function make_route($controller, $action, $id = null) {
+        $params = array(
+            self::$key_controller => $controller,
+            self::$key_action => $action
+        );
+        if(!is_null($id)) {
+            $params[self::$key_id] = $id;
+        }
+        return self::params_to_route($params);
+    }
+
     public static function index_places() {
-        return self::params(array(
-            self::$key_controller => 'place',
-            self::$key_action => 'index'
-        ));
+        return self::make_route('place', 'index');
     }
 
     public static function new_place() {
-        return self::params(array(
-            self::$key_controller => 'place',
-            self::$key_action => 'new'
-        ));
+        return self::make_route('place', 'new');
     }
 
     public static function create_place() {
-        return self::params(array(
-            self::$key_controller => 'place',
-            self::$key_action => 'create'
-        ));
+        return self::make_route('place', 'create');
     }
 
     public static function edit_place($id) {
-        return self::params(array(
-            self::$key_controller => 'place',
-            self::$key_action => 'edit',
-            self::$key_id => $id
-        ));
+        return self::make_route('place', 'edit', $id);
     }
 
     public static function update_place($id) {
-        return self::params(array(
-            self::$key_controller => 'place',
-            self::$key_action => 'update',
-            self::$key_id => $id
-        ));
+        return self::make_route('place', 'update', $id);
     }
 
     public static function delete_place($id) {
-        return self::params(array(
-            self::$key_controller => 'place',
-            self::$key_action => 'delete',
-            self::$key_id => $id
-        ));
+        return self::make_route('place', 'delete', $id);
     }
 
     public static function destroy_place($id) {
-        return self::params(array(
-            self::$key_controller => 'place',
-            self::$key_action => 'destroy',
-            self::$key_id => $id
-        ));
+        return self::make_route('place', 'destroy', $id);
     }
 
     public static function new_tour() {
-        return self::params(array(
-            self::$key_controller => 'tour',
-            self::$key_action => 'new'
-        ));
+        return self::make_route('tour', 'new');
     }
 
     public static function create_tour() {
-        return self::params(array(
-            self::$key_controller => 'tour',
-            self::$key_action => 'create'
-        ));
+        return self::make_route('tour', 'create');
     }
 
     public static function edit_tour($id) {
-        return self::params(array(
-            self::$key_controller => 'tour',
-            self::$key_action => 'edit',
-            self::$key_id => $id
-        ));
+        return self::make_route('tour', 'edit', $id);
+    }
+
+    public static function update_tour($id) {
+        return self::make_route('tour', 'update', $id);
     }
 
     public static function set_current_area($id = null) {
-        return self::params(self::set_current_area_params($id));
+        return self::params_to_route(self::set_current_area_params($id));
     }
 
     public static function set_current_area_params($id = null) {
@@ -106,7 +87,7 @@ class RouteParams {
             self::$key_controller => 'area',
             self::$key_action => 'set_current_area',
             // encode the current params as back url
-            self::$key_back_params => urlencode(self::params())
+            self::$key_back_params => urlencode(self::params_to_route())
         );
         if(!empty($id)) {
             $values[self::$key_id] = $id;
