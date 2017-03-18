@@ -26,9 +26,13 @@ class DB {
         $sql = "SELECT id FROM $table ORDER BY id ASC LIMIT 0,1";
 
         global $wpdb;
-        $result = $wpdb->query($sql);
+        $result = $wpdb->get_results($sql);
 
-        return (empty($result)) ? self::BAD_ID : $result;
+        if(empty($result) || !isset($result[0]->id)) {
+            return self::BAD_ID;
+        } else {
+            return intval($result[0]->id);
+        }
     }
 
     /**
@@ -42,9 +46,13 @@ class DB {
         $sql = "SELECT id FROM $table ORDER BY id DESC LIMIT 0,1";
 
         global $wpdb;
-        $result = $wpdb->query($sql);
+        $result = $wpdb->get_results($sql);
 
-        return (empty($result)) ? self::BAD_ID : $result;
+        if(empty($result) || !isset($result[0]->id)) {
+            return self::BAD_ID;
+        } else {
+            return intval($result[0]->id);
+        }
     }
 
     /**

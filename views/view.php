@@ -56,6 +56,14 @@ class View {
         $included = new View($file, $available_args);
         return $included->render();
     }
+
+    public function datetime_format($datetime) {
+        if(empty($datetime)) {
+            return "";
+        } else {
+            return $datetime->format('d.m.Y H:i:s');
+        }
+    }
 }
 
 ?>

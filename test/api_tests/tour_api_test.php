@@ -108,6 +108,48 @@ test_bad_create($admin_test, $bad_post, 'admin - bad area_id');
 test_bad_create($contributor_test, $bad_post, 'contributor - bad area_id');
 
 
+
+// TEST EDIT
+function test_edit_with_bad_id($con, $id, $name) {
+    $con->test_fetch($con->helper->tc_url('tour', 'edit', $id), null, 404,
+        "Should have status 404 on tour edit with wrong id ($name).");
+    $con->test_error_message('existiert nicht', $name);
+}
+
+function test_no_edit_access($con, $id, $name) {
+    $con->test_fetch($con->helper->tc_url('tour', 'edit', $id), null, 403,
+        "Should have status 403 on tour edit ($name).");
+    $con->test_error_message('Berechtigung', $name);
+}
+
+function test_tour_edit($con, $id, $tour, $name) {
+    $con->test_fetch($con->helper->tc_url('tour', 'edit', $id), null, 200,
+        "Should have status 200 on tour edit ($name).");
+    $con->test_simple_page("tour edit ($name)");
+
+    // page should contain the areas name
+    $area = Areas::instance()->get($tour->area_id);
+
+    $con->test_page_contains($area->name, $name);
+    $con->ensure_xpath(
+        "//input[@name='shtm_tour[name]' and @value='$tour->name']", 1,
+        "Should contain the tour's name.");
+}
+
+// test bad ids
+$bad_id = Tours::instance()->last_id() + 1;
+test_edit_with_bad_id($admin_test, $bad_id, 'admin');
+test_edit_with_bad_id($contributor_test, $bad_id, 'contributor');
+
+// admin should be able to edit all tours
+test_tour_edit($admin_test, $t_id_admin, $tour, 'admin - own tour');
+test_tour_edit($admin_test, $t_id_contributor, $tour, 'admin - other tour');
+
+// contributor should only be able to edit her own tour
+test_tour_edit($contributor_test, $t_id_contributor, $tour,
+    'contributor - own tour');
+test_no_edit_access($contributor_test, $t_id_admin, 'contributor - admin tour');
+
 // invalidate logins
 $admin_test->invalidate_login();
 $contributor_test->invalidate_login();

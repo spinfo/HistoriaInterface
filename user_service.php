@@ -68,7 +68,11 @@ class UserService {
     }
 
     public function user_may_edit_place($place) {
-        return ($this->is_admin() || ($this->user_id() == $place->id));
+        return ($this->is_admin() || ($this->user_id() == $place->user_id));
+    }
+
+    public function user_may_edit_tour($tour) {
+        return ($this->is_admin() || ($this->user_id() == $tour->user_id));
     }
 
     public function is_logged_in() {

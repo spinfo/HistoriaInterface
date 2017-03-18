@@ -149,24 +149,31 @@ class WPTestConnection extends TestCase {
 
     // test for the presence of an h1-heading on the page retrieved last by the
     // given test connection
-    public function test_page_heading($heading, $name) {
+    public function test_page_heading($heading, $test_name) {
         $this->ensure_xpath("//h1[text()='${heading}']", 1,
             "Should have the right heading on ${name}.");
     }
 
     // test for the presence of an error message containing the specified text
-    public function test_error_message($text, $name) {
+    public function test_error_message($text, $test_name) {
         $this->ensure_xpath(
             "//div[contains(@class, 'shtm_message_error') and contains(., '$text')]", 1,
-            "Should show error message with text '$text' on $name."
+            "Should show error message with text '$text' on $test_name."
         );
     }
 
     // test for the presence of a success message containing the specified text
-    public function test_success_message($text, $name) {
+    public function test_success_message($text, $test_name) {
         $this->ensure_xpath(
             "//div[contains(@class, 'shtm_message_success') and contains(., '$text')]", 1,
-            "Should show success message with text '$text' on $name."
+            "Should show success message with text '$text' on $test_name."
+        );
+    }
+
+    public function test_page_contains($text, $test_name) {
+        $this->ensure_xpath(
+            "//div[@id='shtm_content' and contains(., '$text')]", 1,
+            "Should contain the text '$text' on $test_name."
         );
     }
 

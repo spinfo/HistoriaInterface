@@ -52,9 +52,35 @@ class ToursController extends AbstractController {
 
 
     public static function edit() {
-
-        $view = new View(ViewHelper::edit_tour_view(), null);
+        // get the id of the tour to edit
+        $id = RouteParams::get_id_value();
+        // determine the right view to use and render in page
+        $view = self::determine_edit_view($id);
         self::wrap_in_page_view($view)->render();
+    }
+
+
+    private static function determine_edit_view($id) {
+        $tour = Tours::instance()->get($id);
+        if(empty($tour)) {
+            // tour not found
+            return self::create_not_found_view("Tour '$id' existiert nicht.");
+        }
+        // test access rights
+        if(!UserService::instance()->user_may_edit_tour($tour)) {
+            return self::create_access_denied_view();
+        }
+        // the tour's area should always be accessible, but test anyway
+        $area = Areas::instance()->get($tour->area_id);
+        if(empty($area)) {
+            $e = new \Exception("Error not present for tour: '$tour->area_id'");
+            return self::create_view_with_exception($e, 500);
+        }
+        // success
+        return new View(ViewHelper::edit_tour_view(), array(
+            'tour' => $tour,
+            'area' => $area
+        ));
     }
 
 

@@ -28,7 +28,11 @@ class Tours extends AbstractCollection {
         $sql = "SELECT * FROM $this->table WHERE id = %d";
         $result = DB::get_by_query($sql, array($id));
 
-        if(!empty($result) && $get_mapstop_ids) {
+        if(empty($result)) {
+            return null;
+        }
+
+        if($get_mapstop_ids) {
             $result->mapstop_ids = array();
             $sql = "SELECT id FROM " . Mapstops::instance()->table;
             $m_ids = DB::list($sql, array('tour_id' => $id));
@@ -37,7 +41,7 @@ class Tours extends AbstractCollection {
             }
         }
 
-        if(!empty($result) && $get_coord_ids) {
+        if($get_coord_ids) {
             $result->coordinate_ids = $this->db_get_coordinate_ids($id);
         }
 
