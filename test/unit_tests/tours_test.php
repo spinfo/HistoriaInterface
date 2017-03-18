@@ -270,6 +270,39 @@ class ToursTest extends TestCase {
         }
     }
 
+    // test that the conversion to and from julian dates works
+    public function test_tour_dates() {
+        // setup a few times to test
+        $times = array(
+            '-4713-01-01 12:00:00',
+            '-1003-06-27 12:00:00',
+            '+1548-10-13 17:23:07',
+            '+1716-02-02 13:33:33',
+            '+2017-08-16 12:00:00',
+            '+3333-01-28 11:17:02',
+            '+9999-12-31 23:59:59',
+        );
+
+        foreach ($times as $time_str) {
+            $this->test_single_time_conversion($time_str);
+        }
+    }
+
+    private function test_single_time_conversion($str) {
+        $tour = $this->tours[0];
+        $in = new \DateTime($str, new \DateTimeZone('UTC'));
+
+        $tour->set_tag_when_start($in);
+        $out = $tour->get_tag_when_start();
+        $diff = $in->diff($out);
+
+        // just sum all interval values to see if there is any diff
+        $sum = $diff->y + $diff->m + $diff->d + $diff->h + $diff->i + $diff->s;
+
+        $this->assert($sum === 0,
+            "There should be no time difference for input: $str");
+    }
+
     public function do_test() {
         $this->setup();
 
@@ -280,6 +313,8 @@ class ToursTest extends TestCase {
         $this->test_bad_update();
         $this->test_bad_delete();
         $this->test_delete();
+
+        $this->test_tour_dates();
 
         // delete the wordpress posts created for mapstops during these tests
         $this->helper->delete_wp_posts_created();

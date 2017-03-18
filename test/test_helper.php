@@ -80,7 +80,8 @@ class TestHelper {
     }
 
     public function random_julian() {
-        return floatval(sprintf("%.6f", $this->random_float(0, 2457824)));
+        $decimal = rand(0, 2457824) + ($this->random_float());
+        return floatval(sprintf("%.6f", $decimal));
     }
 
     public function db_highest_id($table_name) {

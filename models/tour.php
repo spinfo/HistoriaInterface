@@ -45,6 +45,35 @@ class Tour extends AbstractModel {
     // A string indicating accessibility conditions
     public $accessibility = '';
 
+    // set the start date by a datetime object
+    public function set_tag_when_start($datetime) {
+        $this->tag_when_start = $this->julian_date_from_datetime($datetime);
+    }
+
+    // get tag_when_start as a datetime object
+    public function get_tag_when_start() {
+        if(empty($this->tag_when_start)) {
+            return null;
+        } else {
+            return $this->datetime_from_julian_date($this->tag_when_start);
+        }
+    }
+
+    // set tag_when_end date by a datetime object
+    public function set_tag_when_end($datetime) {
+        $this->tag_when_end = $this->julian_date_from_datetime($datetime);
+    }
+
+    // get tag_when_end as a datetime object
+    public function get_tag_when_end() {
+        if(empty($this->tag_when_end)) {
+            return null;
+        } else {
+            return $this->datetime_from_julian_date($this->tag_when_end);
+        }
+    }
+
+
     protected function do_validity_check() {
         $this->do_check(Areas::instance()->valid_id($this->area_id),
             'area_id invalid');
@@ -88,6 +117,41 @@ class Tour extends AbstractModel {
             $this->do_check($this->tag_when_start < $this->tag_when_end,
                 "start date after end date");
         }
+    }
+
+    private function julian_date_from_datetime($d) {
+        $julian_day = gregoriantojd(
+            $d->format('m'), $d->format('d'), $d->format('Y'));
+
+        // get the day's fraction and correct for half day offset as julian
+        // dates start at noon
+        $dayfrac = ($d->format('G') / 24) - .5;
+        // if($dayfrac < 0) $dayfrac += 1;
+
+        // set the complete fraction of the day
+        $frac = $dayfrac + ($d->format('i') + ($d->format('s') / 60)) / 60 / 24;
+
+        $julian_date = $julian_day + $frac;
+        return $julian_date;
+    }
+
+    private function datetime_from_julian_date($julian_date) {
+        $julian_day = floor($julian_date);
+        // get the julian date
+        list($month, $day, $year) = explode('/', jdtogregorian($julian_day));
+
+        // construct a datetime for the day (julian days begin at noon)
+        $str = sprintf("%+05d-%02d-%02d 12:00:00", $year, $month, $day);
+        $dt = new \DateTime($str, new \DateTimeZone('UTC'));
+
+        // calculate the fraction of the day in seconds and add it
+        $frac = $julian_date - $julian_day;
+        $seconds = round($frac * (24 * 60 * 60));
+        $interval = new \DateInterval("PT${seconds}S");
+
+        // add the seconds and return the datetime
+        $dt->add($interval);
+        return $dt;
     }
 
 }
