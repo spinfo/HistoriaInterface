@@ -375,6 +375,9 @@ function shtm_render_tour_creator() {
                 case 'edit':
                     ToursController::edit();
                     break;
+                case 'edit_track':
+                    ToursController::edit_track();
+                    break;
                 case 'update':
                     ToursController::update();
                     break;
@@ -430,5 +433,40 @@ function check_session_messages() {
     }
 }
 add_action('init', 'SmartHistoryTourManager\check_session_messages');
+
+
+
+// conditionally adds the leaflet dependencies to certain admin pages
+function add_leaflet_js() {
+    require_once(dirname(__FILE__) . '/route_params.php');
+
+    $controller = RouteParams::get_controller_value();
+    $action = RouteParams::get_action_value();
+
+    $is_script_page = false;
+    if($controller == 'tour' && $action == 'edit_track') {
+        $is_script_page = true;
+    }
+
+    if($is_script_page) {
+        // add the script
+        // TODO: remove '-src' from js url
+        $url = esc_url_raw('https://unpkg.com/leaflet@1.0.3/dist/leaflet-src.js');
+        wp_enqueue_script('shtm-leaflet-script', $url);
+
+        // add the style
+        $url = esc_url_raw('https://unpkg.com/leaflet@1.0.3/dist/leaflet.css');
+        wp_enqueue_style('shtm-leaflet-style', $url);
+
+        // add leaflet draw style and js
+        // TODO: add leaflet as dependency
+        // TODO: remove '-src' from js url
+        wp_enqueue_style('shtm-leaflet-draw-style',
+            'https://unpkg.com/leaflet-draw@0.4.9/dist/leaflet.draw.css');
+        wp_enqueue_script('shtm-leaflet-draw-script',
+            'https://unpkg.com/leaflet-draw@0.4.9/dist/leaflet.draw-src.js');
+    }
+}
+add_action('admin_enqueue_scripts', 'SmartHistoryTourManager\add_leaflet_js');
 
 ?>

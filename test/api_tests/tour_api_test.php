@@ -150,6 +150,24 @@ test_tour_edit($contributor_test, $t_id_contributor, $tour,
     'contributor - own tour');
 test_no_edit_access($contributor_test, $t_id_admin, 'contributor - admin tour');
 
+
+// TEST EDIT TRACK
+function test_tour_edit_track($con, $id, $name) {
+    $con->test_fetch($con->helper->tc_url('tour', 'edit_track', $id), null, 200,
+        "Should have status 200 on edit_track ($name)");
+
+    // check that leaflet scripts/styles are included
+    $con->ensure_xpath("//link[@id='shtm-leaflet-style-css']", 1,
+        "Should contain the leaflet style.");
+    $con->ensure_xpath("//link[@id='shtm-leaflet-draw-style-css']", 1,
+        "Should contain the leaflet draw style.");
+    $con->ensure_xpath("//script[contains(@src, 'leaflet')]", 2,
+        "Should contain two leaflet script.");
+}
+test_tour_edit_track($admin_test, $t_id_admin, 'admin');
+test_tour_edit_track($contributor_test, $t_id_contributor, 'contributor');
+
+
 // invalidate logins
 $admin_test->invalidate_login();
 $contributor_test->invalidate_login();

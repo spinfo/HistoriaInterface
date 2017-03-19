@@ -1,7 +1,7 @@
 
 <h1>Tour bearbeiten</h1>
 
-<form action=admin.php?<?php echo $this->route_params::create_tour() ?> method="post">
+<form action=admin.php?<?php echo $this->route_params::update_tour($tour->id) ?> method="post">
 
     <div>
         Gebiet: <?php echo $this->area->name ?>

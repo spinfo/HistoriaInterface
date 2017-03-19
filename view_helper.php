@@ -33,6 +33,10 @@ class ViewHelper {
     public static function edit_tour_view() {
         return dirname(__FILE__) . '/views/tour_edit.php';
     }
+
+    public static function edit_tour_track_view() {
+        return dirname(__FILE__) . '/views/tour_edit_track.php';
+    }
 }
 
 ?>

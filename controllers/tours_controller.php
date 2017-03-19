@@ -52,23 +52,63 @@ class ToursController extends AbstractController {
 
 
     public static function edit() {
-        // get the id of the tour to edit
+        // attempt to get the the tour to edit
         $id = RouteParams::get_id_value();
-        // determine the right view to use and render in page
-        $view = self::determine_edit_view($id);
+        $tour = Tours::instance()->get($id);
+        // determine the right view to use based on the result
+        $view = self::determine_edit_view($tour);
+        // and render the view in page
         self::wrap_in_page_view($view)->render();
     }
 
+    public static function edit_track() {
+        // attempt to get the the tour to edit
+        $id = RouteParams::get_id_value();
+        $tour = Tours::instance()->get($id, true, true);
 
-    private static function determine_edit_view($id) {
-        $tour = Tours::instance()->get($id);
-        if(empty($tour)) {
-            // tour not found
-            return self::create_not_found_view("Tour '$id' existiert nicht.");
+        $view = self::determine_edit_track_view($tour);
+
+        if(!empty($tour)) {
+            // TODO: there should be a better way to get these
+            $tour->coordinates = array();
+            foreach ($tour->coordinate_ids as $id) {
+                $tour->coordinates[] = Coordinates::instance()->get($id);
+            }
+            $tour->mapstops = array();
+            foreach ($tour->mapstop_ids as $id) {
+                $mapstop = Mapstops::instance()->get($id);
+                if(!empty($mapstop)) {
+                    $mapstop->place =
+                        Places::instance()->get($mapstop->place_id);
+                    $tour->mapstops[] = $mapstop;
+                }
+            }
         }
-        // test access rights
-        if(!UserService::instance()->user_may_edit_tour($tour)) {
-            return self::create_access_denied_view();
+        self::wrap_in_page_view($view)->render();
+    }
+
+    private static function determine_edit_track_view($tour) {
+        $error_view = self::filter_edit_view($tour);
+        if(!is_null($error_view)) {
+            return $error_view;
+        }
+        // the tour's area should always be accessible, but test anyway
+        $area = Areas::instance()->get($tour->area_id);
+        if(empty($area)) {
+            $e = new \Exception("Error not present for tour: '$tour->area_id'");
+            return self::create_view_with_exception($e, 500);
+        }
+        // success
+        return new View(ViewHelper::edit_tour_track_view(), array(
+            'tour' => $tour,
+            'area' => $area
+        ));
+    }
+
+    private static function determine_edit_view($tour) {
+        $error_view = self::filter_edit_view($tour);
+        if(!is_null($error_view)) {
+            return $error_view;
         }
         // the tour's area should always be accessible, but test anyway
         $area = Areas::instance()->get($tour->area_id);
@@ -83,6 +123,17 @@ class ToursController extends AbstractController {
         ));
     }
 
+    private static function filter_edit_view($tour) {
+        // tour not found
+        if(empty($tour)) {
+            $msg = "Tour '$tour->id' existiert nicht.";
+            return self::create_not_found_view($msg);
+        }
+        // test access rights
+        if(!UserService::instance()->user_may_edit_tour($tour)) {
+            return self::create_access_denied_view();
+        }
+    }
 
 }
 

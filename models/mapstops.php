@@ -2,6 +2,7 @@
 namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/abstract_collection.php');
+require_once(dirname(__FILE__) . '/mapstop.php');
 require_once(dirname(__FILE__) . '/../db.php');
 
 class Mapstops extends AbstractCollection {
