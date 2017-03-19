@@ -206,8 +206,12 @@ class Tours extends AbstractCollection {
     public function update_values($tour, $array) {
         $array = (object) $array;
 
-        $tour->area_id = intval($array->area_id);
-        $tour->user_id = intval($array->user_id);
+        if(!empty($array->area_id)) {
+            $tour->area_id = intval($array->area_id);
+        }
+        if(!empty($array->area_id)) {
+            $tour->user_id = intval($array->user_id);
+        }
         $tour->name = strval($array->name);
         $tour->intro = strval($array->intro);
         $tour->type = strval($array->type);
@@ -215,7 +219,9 @@ class Tours extends AbstractCollection {
         $tour->duration = intval($array->duration);
         $tour->tag_what = strval($array->tag_what);
         $tour->tag_where = strval($array->tag_where);
-        $tour->tag_when_start = floatval($array->tag_when_start);
+        if(!is_null($array->tag_when_start)) {
+            $tour->tag_when_start = floatval($array->tag_when_start);
+        }
         // end date is either a float, when explicitly given or null
         if(!is_null($array->tag_when_end)) {
             $tour->tag_when_end = floatval($array->tag_when_end);
@@ -229,6 +235,19 @@ class Tours extends AbstractCollection {
         }
         if(!is_null($array->mapstop_ids)) {
             $tour->mapstop_ids = array_map('intval', $array->mapstop_ids);
+        }
+    }
+
+    public function update_track($tour, $track_values) {
+        if(!empty($track_values)) {
+            $coords_to_set = array();
+            foreach ($track_values as $c) {
+                $new_c = new Coordinate();
+                Coordinates::instance()->update_values($new_c, $c);
+                $new_c->id = (empty($c->id)) ? DB::BAD_ID : intval($c->id);
+                $coords_to_set[] = $new_c;
+            }
+            $tour->coordinates = $coords_to_set;
         }
     }
 
@@ -265,11 +284,14 @@ class Tours extends AbstractCollection {
         return $result;
     }
 
-    // Update the tour's coordinates, return fals on any error else true.
+    // Update the tour's coordinates based on the objects in it's coordinates
+    // array. Return false on any error else true.
     // This will alter the $tour->coordinates and $tour->coordinate_ids fields
     // if successful.
-    // The caller should make sure that this happens within a transaction.
     private function db_update_coordinates($tour) {
+        if(empty($tour->coordinates)) {
+            return true;
+        }
         $new_coordinate_ids = array();
         $new_coordinates = array();
         // update all coordinates and update the tour's coordinate_ids

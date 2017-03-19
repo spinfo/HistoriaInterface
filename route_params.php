@@ -78,6 +78,10 @@ class RouteParams {
         return self::make_route('tour', 'update', $id);
     }
 
+    public static function edit_tour_track($id) {
+        return self::make_route('tour', 'edit_track', $id);
+    }
+
     public static function set_current_area($id = null) {
         return self::params_to_route(self::set_current_area_params($id));
     }

@@ -77,10 +77,17 @@ final class Coordinates extends AbstractCollection {
     public function instance_from_array($row) {
         $row = (object) $row;
         $coord = new Coordinate();
-        $coord->lat = floatval($row->lat);
-        $coord->lon = floatval($row->lon);
+
+        $this->update_values($coord, $row);
+
         $this->set_abstract_model_values($coord, $row);
         return $coord;
+    }
+
+    public function update_values($coord, $array) {
+        $array = (object) $array;
+        $coord->lat = floatval($array->lat);
+        $coord->lon = floatval($array->lon);
     }
 }
 

@@ -42,7 +42,7 @@ abstract class AbstractController {
         return $view;
     }
 
-    protected static function create_view_with_exception($exception, $status = 400) {
+    protected static function create_view_with_exception($exception, $status = 500) {
         MessageService::instance()->add_error($exception->getMessage());
         self::status_header($status);
         $view = new View(ViewHelper::empty_view(), null);

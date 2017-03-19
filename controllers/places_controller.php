@@ -14,7 +14,7 @@ require_once( dirname(__FILE__) . '/../message_service.php');
 class PlacesController extends AbstractController {
 
     // defines accepted parameters for a place
-    const PLACE_PARAMS = array(
+    const PLACE_PARAMS_WHITELIST = array(
         'shtm_place' => array(
             'name' => "",
             'lat' => 0.0,
@@ -57,7 +57,7 @@ class PlacesController extends AbstractController {
     public static function create() {
         $places = Places::instance();
 
-        $place_params = self::place_params();
+        $place_params = self::get_place_params();
         $view = null;
         if(!empty($place_params)) {
             $place = $places->create($place_params);
@@ -126,7 +126,7 @@ class PlacesController extends AbstractController {
             if(empty($place)) {
                 $view = self::create_not_found_view("Kein Objekt für id: $id.");
             } else {
-                $place_params = self::place_params();
+                $place_params = self::get_place_params();
                 if(!empty($place_params)) {
                     $places->update_values($place, $place_params);
                     $place = $places->save($place);
@@ -203,8 +203,8 @@ class PlacesController extends AbstractController {
     }
 
 
-    private static function place_params() {
-        $result = self::filter_params(self::PLACE_PARAMS, $_POST);
+    private static function get_place_params() {
+        $result = self::filter_params(self::PLACE_PARAMS_WHITELIST, $_POST);
         if (empty(result) || !isset($result['shtm_place'])) {
             return null;
         } else {
