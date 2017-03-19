@@ -45,11 +45,11 @@
     <div>
         <label for="shtm_name">Wann:</label>
         <input type="text" id="shtm_name" name="shtm_tour[tag_when_start]" value="<?php echo $this->datetime_format($this->tour->get_tag_when_start()) ?>">-
-        <input type="text" id="shtm_name" name="shtm_tour[tag_when_end]" value="<?php echo $this->datetime_format($this->tour->get_tag_when_end()) ?>">-
+        <input type="text" id="shtm_name" name="shtm_tour[tag_when_end]" value="<?php echo $this->datetime_format($this->tour->get_tag_when_end()) ?>">
     </div>
 
     <div>
-        <label for="shtm_name">Einschränkungsfrei?</label>
+        <label for="shtm_name">Zugänglichkeit</label>
         <input type="text" id="shtm_name" name="shtm_tour[accessibility]" value="<?php echo $this->tour->accessibility ?>">
     </div>
 

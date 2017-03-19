@@ -168,16 +168,10 @@ function shtm_create_test_data() {
 
     $user_service = UserService::instance();
 
-    $values = array(
-        "lat" => 51.188801,
-        "lon" => 6.794488
-    );
+    $values = array("lat" => 51.120429, "lon" => 7.086940);
     $coord1_id = DB::insert(Coordinates::instance()->table, $values);
 
-    $values = array(
-        "lat" => 51.188801,
-        "lon" => 6.794488
-    );
+    $values = array("lat" => 51.357928, "lon" => 6.534190);
     $coord2_id = DB::insert(Coordinates::instance()->table, $values);
 
     // Make the test area
@@ -188,6 +182,27 @@ function shtm_create_test_data() {
     );
     $area_id = DB::insert(Areas::instance()->table, $values);
 
+    // Make the test places
+    $values = array(
+        "user_id" => $user_service->user_id(),
+        "area_id" => $area_id,
+        "name" => "HHU-Campus 1",
+        "lat" => 51.191180,
+        "lon" => 6.793582
+    );
+    $place1 = Places::instance()->create($values);
+    Places::instance()->save($place1);
+
+    $values = array(
+        "user_id" => $user_service->user_id(),
+        "area_id" => $area_id,
+        "name" => "HHU-Campus 2",
+        "lat" => 51.190430,
+        "lon" => 6.793775
+    );
+    $place2 = Places::instance()->create($values);
+    Places::instance()->save($place2);
+
     $values = array(
         "user_id" => $user_service->user_id(),
         "area_id" => $area_id,
@@ -195,65 +210,75 @@ function shtm_create_test_data() {
         "lat" => 51.188801,
         "lon" => 6.794488
     );
-    $place = Places::instance()->create($values);
-    Places::instance()->save($place);
+    $place3 = Places::instance()->create($values);
+    Places::instance()->save($place3);
 
+    // Make the test tour
+    $values = array(
+        'area_id' => $area_id,
+        'user_id' => $user_service->user_id(),
+        'name' => "Heinrich-Heine-Denkmäler der Universität Düsseldorf",
+        'intro' => "Sie stehen tagein tagaus unbeweglich an der selben Stelle. Jeden Tag gehen wir an ihnen vorbei, bis wir sie kaum noch wahrnehmen, wie ein Sitzbank, eine Mauer oder ein Hinweisschild. Dabei haben Denkmäler allerhand zu erzählen: über die Geschichte der Heinrich-Heine-Universität und die Person, der sie gewidmet sind. Diese Tour zeigt Dir, was Du sonst jeden Tag übersiehst.",
+        'type' => 'tour',
+        'walk_length' => 280,
+        'duration' => 10,
+        'tag_what' => "Heinrich Heine",
+        'tag_where' => "Campus Universität",
+        'tag_when_start' => 2449353.5,
+        'tag_when_end' => 2455927.5,
+        'accessibility' => 'barrierefrei'
+    );
+    $tour_id = DB::insert(Tours::instance()->table, $values);
+    $tour = Tours::instance()->get($tour_id);
+
+    // make the tour track
+    $track = [ [ 51.188801, 6.794488 ], [ 51.189071, 6.794514 ], [ 51.189433, 6.794360 ], [ 51.189768, 6.794192 ], [ 51.190129, 6.794021 ], [ 51.190454, 6.793881 ], [ 51.190663, 6.793877 ], [ 51.190947, 6.793751 ], [ 51.191180, 6.793582 ] ];
+    foreach ($track as $coord_pair) {
+        $coord = new Coordinate();
+        $coord->lat = $coord_pair[0];
+        $coord->lon = $coord_pair[1];
+        $tour->coordinates[] = $coord;
+    }
+    Tours::instance()->save($tour);
+
+    // add the example mapstops
+    $mapstop_ids = array();
+    $values = array(
+        'tour_id' => $tour_id,
+        'place_id' => $place1->id,
+        'name' => "Ein Posten ist vakant",
+        'description' => "Gedenksteine Heinrich Heine"
+    );
+    $mapstop_ids[] = DB::insert(Mapstops::instance()->table, $values);
+
+    $values = array(
+        'tour_id' => $tour_id,
+        'place_id' => $place2->id,
+        'name' => "Heine-Denkmal (2012)",
+        'description' => "Das Heine-Denkmal des ..."
+    );
+    $mapstop_ids[] = DB::insert(Mapstops::instance()->table, $values);
+
+    $values = array(
+        'tour_id' => $tour_id,
+        'place_id' => $place2->id,
+        'name' => "Heine-Denkmal (2012)",
+        'description' => "Das Heine-Denkmal des ..."
+    );
+    $mapstop_ids[] = DB::insert(Mapstops::instance()->table, $values);
+
+    // link each mapstop to two wp posts
     // use id values of posts that come with default wordpress install
-    // (use only thos that have a title)
     $post_ids = array(1,2,3,4,5,6,7,8,10,11,12,19,20,21);
-
-    // Make tours to work with
-    for($i = 0; $i < 3; $i++) {
-        $values = array(
-            'area_id' => $area_id,
-            'user_id' => $user_service->user_id(),
-            'name' => "Tour$i",
-            'intro' => "Intro to Tour$i",
-            'type' => (($i % 2 == 1) ? 'round-tour' : 'tour'),
-            'walk_length' => ($i * 110),
-            'duration' => ($i * 11),
-            'tag_what' => "tag-what-tour-$i",
-            'tag_where' => "tag-where-tour-$i",
-            'tag_when_start' => (2457824.21294 + $i),
-            'tag_when_end' => (($i % 2 == 0) ? (2457824.21294 + $i + 30) : null),
-            'accessibility' => 'barrierefrei'
-        );
-        $tour_id = DB::insert(Tours::instance()->table, $values);
-
-        // for each tour make between 2 and 15 coordinates and link them
-        $n = rand(2, 15);
-        for($j = 0; $j < $n; $j++) {
-            $values = array( "lat" => 51.188801, "lon" => 6.794488 );
-            $coord_id = DB::insert(Coordinates::instance()->table, $values);
+    foreach ($mapstop_ids as $mapstop_id) {
+        for($i = 0; $i < 2; $i++) {
             $values = array(
-                'tour_id' => $tour_id,
-                'coordinate_id' => $coord_id
+                'mapstop_id' => $mapstop_id,
+                'post_id' => array_shift($post_ids)
             );
-            DB::insert(Tours::instance()->join_coordinates_table, $values);
-        }
-
-        // Make two mapstops for each tour
-        for($j = 0; $j < 2; $j++) {
-            $values = array(
-                'tour_id' => $tour_id,
-                'place_id' => $place->id,
-                'name' => "Mapstop no. $j (t: $tour_id)",
-                'description' => "Desc for mapstop no. $j (t: $tour_id)"
-            );
-            $mapstop_id = DB::insert(Mapstops::instance()->table, $values);
-
-            // link each mapstop to two tours
-            for($k = 0; $k < 2; $k++) {
-                $values = array(
-                    'mapstop_id' => $mapstop_id,
-                    'post_id' => array_shift($post_ids)
-                );
-                DB::insert(Mapstops::instance()->join_posts_table, $values);
-            }
+            DB::insert(Mapstops::instance()->join_posts_table, $values);
         }
     }
-
-
 }
 
 register_activation_hook(__FILE__, 'SmartHistoryTourManager\shtm_install');
