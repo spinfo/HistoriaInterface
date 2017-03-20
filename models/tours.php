@@ -19,6 +19,29 @@ class Tours extends AbstractCollection {
         $this->join_coordinates_table = DB::table_name('tours_to_coordinates');
     }
 
+    // TODO: Very similiar to places->list, refactor
+    public function list($offset, $limit) {
+        $where = UserService::instance()->access_conditions();
+
+        $current_area_id = UserService::instance()->get_current_area_id();
+        if($current_area_id == DB::BAD_ID) {
+            throw new \Exception(
+                "bad current area id. This should never happen.");
+        } else {
+            $where['area_id'] = $current_area_id;
+        }
+
+        $sql = "SELECT * FROM $this->table";
+        $rows = DB::list($sql, $where, $offset, $limit);
+
+        $tours = array();
+        foreach($rows as $count => $row) {
+            $tour = $this->instance_from_array($row);
+            $tours[] = $tour;
+        }
+        return $tours;
+    }
+
     /**
      * Overrides AbstractCollection->get() to give the possibility of querying
      * mapstop and coordinate ids.

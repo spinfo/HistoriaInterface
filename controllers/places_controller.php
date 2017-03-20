@@ -27,7 +27,7 @@ class PlacesController extends AbstractController {
         $areas = Areas::instance();
         $user_service = UserService::instance();
 
-        $places_list = $places->list(0, 10);
+        $places_list = $places->list(0, PHP_INT_MAX);
         $areas_list = $areas->list_simple();
 
         $view = new View(ViewHelper::index_places_view(),

@@ -26,6 +26,10 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/place_delete.php';
     }
 
+    public static function index_tours_view() {
+        return dirname(__FILE__) . '/views/tour_index.php';
+    }
+
     public static function new_tour_view() {
         return dirname(__FILE__) . '/views/tour_new.php';
     }
@@ -36,6 +40,11 @@ class ViewHelper {
 
     public static function edit_tour_track_view() {
         return dirname(__FILE__) . '/views/tour_edit_track.php';
+    }
+
+
+    public static function choose_current_area_template() {
+        return dirname(__FILE__) . '/views/templates/choose_current_area.php';
     }
 }
 

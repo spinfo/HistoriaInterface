@@ -24,6 +24,23 @@ class ToursController extends AbstractController {
         )
     );
 
+    public static function index() {
+        $user_service = UserService::instance();
+
+        $tours_list = Tours::instance()->list(0, PHP_INT_MAX);
+        $areas_list = Areas::instance()->list_simple();
+
+        $view = new View(ViewHelper::index_tours_view(),
+            array(
+                'user_service' => UserService::instance(),
+                'tours_list' => $tours_list,
+                'areas_list' => $areas_list,
+                'current_area_id' => $user_service->get_current_area_id(),
+            )
+        );
+        self::wrap_in_page_view($view)->render();
+    }
+
     // just renders an empty form for a tour's name and area
     public static function new() {
         $areas_list = Areas::instance()->list_simple();
@@ -107,6 +124,7 @@ class ToursController extends AbstractController {
         $tour = Tours::instance()->get($id, true, true);
 
         // if the tour itself is not editale, abort
+        $view = null;
         $error_view = self::filter_if_not_editable($tour);
         if(is_null($error_view)) {
             // only proceed if we have valid update params
@@ -115,27 +133,41 @@ class ToursController extends AbstractController {
                 if(!empty($params['coordinates'])) {
                     // just update coordinates on track update
                     Tours::instance()->update_track($tour, $params['coordinates']);
+                    // redirect url leads back to track edit
+                    $back_params = RouteParams::edit_tour_track($tour->id);
                 } else {
                     // update values
                     Tours::instance()->update_values($tour, $params);
                     // TODO: handle all time stuff in a util
                     // update times (returned as datetime)
-                    if(isset($params['tag_when_start'])) {
-                        $tour->set_tag_when_start($params['tag_when_start']);
-                        unset($params['tag_when_start']);
+                    try {
+                        if(isset($params['tag_when_start'])) {
+                            $tour->set_tag_when_start($params['tag_when_start']);
+                            unset($params['tag_when_start']);
+                        }
+                        if(isset($params['tag_when_end'])) {
+                            $tour->set_tag_when_end($params['tag_when_end']);
+                            unset($params['tag_when_end']);
+                        }
+                    } catch(\Exception $e) {
+                        $msg = "Falsches Datumsformat: '$input'";
+                        MessageService::instance()->add_error($msg);
+                        $view = self::create_view_with_exception($e, 500);
                     }
-                    if(isset($params['tag_when_end'])) {
-                        $tour->set_tag_when_end($params['tag_when_end']);
-                        unset($params['tag_when_end']);
-                    }
+                    // redirect url leads back to tour meta edit
+                    $back_params = RouteParams::edit_tour($tour->id);
                 }
+                // actually update the tour
                 $result = Tours::instance()->update($tour);
                 if(!$result) {
-                    $e = new \Exception("Unbekannter Datenbankfehler.");
-                    $view = self::create_view_with_exception($e, 500);
-                } else {
+                    MessageService::instance()->add_model_messages($tour);
+                    $msg = "Tour konnte nicht gespeichert werden.";
+                    $view = self::create_bad_request_view($msg);
+                }
+                // proceed only if the view has not been set to an error view
+                if(empty($view)) {
                     MessageService::instance()->add_success("Änderungen gespeichert!");
-                    self::redirect(RouteParams::edit_tour_track($tour->id));
+                    self::redirect($back_params);
                 }
             } else {
                 self::create_bad_request_view("Ungültiger Input");
@@ -221,8 +253,8 @@ class ToursController extends AbstractController {
                 // set the input start date to datetime or error
                 if(isset($result['tag_when_start'])) {
                     $dt = self::datetime_from_input($result['tag_when_start']);
-                    if(is_null($dt)) {
-                        return null;
+                    if(empty($dt)) {
+                        unset($result['tag_when_start']);
                     }
                     $result['tag_when_start'] = $dt;
                 }
@@ -230,8 +262,8 @@ class ToursController extends AbstractController {
                 $end_input = $_POST['shtm_tour']['tag_when_end'];
                 if(!is_null($end_input)) {
                     $dt = self::datetime_from_input($end_input);
-                    if(is_null($dt)) {
-                        return null;
+                    if(empty($dt)) {
+                        unset($result['tag_when_end']);
                     }
                     $result['tag_when_end'] = $dt;
                 }
@@ -245,11 +277,19 @@ class ToursController extends AbstractController {
     }
 
     private static function datetime_from_input($input) {
+        if(empty($input)) {
+            return null;
+        }
         try {
             $utc = new \DateTimeZone('UTC');
             $result = \DateTime::createFromFormat('d.m.Y H:i:s', $input, $utc);
         } catch(\Exception $e) {
             $msg = "Falsches Datumsformat: '$input' (" . $e->getMessage() . ')';
+            MessageService::instance()->add_error($msg);
+            return null;
+        }
+        if(empty($result)) {
+            $msg = "Falsches Datumsformat: '$input'";
             MessageService::instance()->add_error($msg);
             return null;
         }

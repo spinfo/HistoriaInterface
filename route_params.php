@@ -62,6 +62,10 @@ class RouteParams {
         return self::make_route('place', 'destroy', $id);
     }
 
+    public static function index_tours() {
+        return self::make_route('tour', 'index');
+    }
+
     public static function new_tour() {
         return self::make_route('tour', 'new');
     }
@@ -76,6 +80,10 @@ class RouteParams {
 
     public static function update_tour($id) {
         return self::make_route('tour', 'update', $id);
+    }
+
+    public static function delete_tour($id) {
+        return self::make_route('tour', 'delete', $id);
     }
 
     public static function edit_tour_track($id) {

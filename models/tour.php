@@ -47,6 +47,9 @@ class Tour extends AbstractModel {
 
     // set the start date by a datetime object
     public function set_tag_when_start($datetime) {
+        if(empty($datetime)) {
+            throw new \Exception("Bad datetime given for start date.");
+        }
         $this->tag_when_start = $this->julian_date_from_datetime($datetime);
     }
 
@@ -61,6 +64,9 @@ class Tour extends AbstractModel {
 
     // set tag_when_end date by a datetime object
     public function set_tag_when_end($datetime) {
+        if(empty($datetime)) {
+            throw new \Exception("Bad datetime given for end date.");
+        }
         $this->tag_when_end = $this->julian_date_from_datetime($datetime);
     }
 

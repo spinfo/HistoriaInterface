@@ -366,6 +366,9 @@ function shtm_render_tour_creator() {
         case 'tour':
             require_once( dirname(__FILE__) . '/controllers/tours_controller.php');
             switch ($action) {
+                case 'index':
+                    ToursController::index();
+                    break;
                 case 'new':
                     ToursController::new();
                     break;
@@ -393,8 +396,8 @@ function shtm_render_tour_creator() {
             }
             break;
         default:
-            require_once( dirname(__FILE__) . '/controllers/places_controller.php');
-            PlacesController::index();
+            require_once( dirname(__FILE__) . '/controllers/tours_controller.php');
+            ToursController::index();
             break;
     }
 
