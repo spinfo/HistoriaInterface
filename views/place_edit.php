@@ -2,7 +2,10 @@
 
 <?php $this->include($this->view_helper::single_place_header_template()) ?>
 
-<form action=admin.php?<?php echo $this->action_params ?> method="post">
+<?php $this->include($this->view_helper::place_map_template()) ?>
+
+<form action=admin.php?<?php echo $this->action_params ?> method="post"
+    class="shtm_right_from_map">
     <div>
         <label for="shtm_name">Name:</label>
         <input type="text" id="shtm_name" name="shtm_place[name]" value="<?php echo $this->place->name ?>">

@@ -447,7 +447,9 @@ function add_leaflet_js() {
     $action = RouteParams::get_action_value();
 
     $is_script_page = false;
-    if($controller == 'tour' && $action == 'edit_track') {
+    if($controller == 'place') {
+        $is_script_page = true;
+    } else if($controller == 'tour' && $action == 'edit_track') {
         $is_script_page = true;
     }
 

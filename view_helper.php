@@ -2,7 +2,7 @@
 namespace SmartHistoryTourManager;
 
 /**
- * A simple static class that knows the paths to views.
+ * A simple static class that knows the paths to views and view related files.
  */
 class ViewHelper {
 
@@ -57,6 +57,19 @@ class ViewHelper {
 
     public static function single_tour_header_template() {
         return dirname(__FILE__) . '/views/templates/single_tour_header.php';
+    }
+
+    public static function place_map_template() {
+        return dirname(__FILE__) . '/views/templates/place_map.php';
+    }
+
+
+    public static function map_util_js() {
+        return dirname(__FILE__) . '/views/js/map-util.js';
+    }
+
+    public static function coordinate_form_binding_js() {
+        return dirname(__FILE__) . '/views/js/coordinate-form-binding.js';
     }
 }
 

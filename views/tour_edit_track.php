@@ -1,8 +1,8 @@
 
 <?php $this->include($this->view_helper::single_tour_header_template()) ?>
 
-<div id="shtm-map" style="height: 500px; width: 500px; float: left">
-    <div id="shtm-map-area">
+<div id="shtm_map" class="shtm_map_left" style="height: 500px; width: 500px;">
+    <div id="shtm_map_area">
         <coordinate cid="<?php echo $this->area->coordinate1->id ?>"
             lat="<?php echo $this->area->coordinate1->lat ?>"
             lon="<?php echo $this->area->coordinate1->lon ?>"></coordinate>
@@ -11,17 +11,17 @@
             lat="<?php echo $this->area->coordinate2->lat ?>"
             lon="<?php echo $this->area->coordinate2->lon ?>"></coordinate>
     </div>
-    <div id="shtm-map-track">
+    <div id="shtm_map_track">
         <?php foreach ($this->tour->coordinates as $c): ?>
             <coordinate cid="<?php echo $c->id ?>" lat="<?php echo $c->lat ?>" lon="<?php echo $c->lon ?>"></coordinate>
         <?php endforeach ?>
     </div>
 </div>
 
-<form id="shtm-map-form" action=admin.php?<?php echo $this->route_params::update_tour($tour->id) ?> method="post"
-    style="margin-left: 20px; float: left">
+<form id="shtm_map_form" action=admin.php?<?php echo $this->route_params::update_tour($tour->id) ?> method="post"
+    class="shtm_right_from_map">
 
-    <div id="shtm-tour-track-inputs">
+    <div id="shtm_tour_track_inputs">
         <!-- input fields added dynamically -->
     </div>
 
@@ -34,120 +34,44 @@
 
 <script type="text/javascript">
 
-    // A class to map html form fields to leaflet latLngs
-    function CoordinateFormBinding(domElem) {
+    <?php $this->include($this->view_helper::map_util_js()) ?>
+    <?php $this->include($this->view_helper::coordinate_form_binding_js()) ?>
 
-        this.domElem = domElem;
-        this.latLngs = [];
+    // create a single <input> tag for a coordinate's value
+    function createCoordInputElem (key, value, index) {
+        var input = document.createElement('input');
+        var name = 'shtm_tour[coordinates][' + index + '][' + key + ']';
+        input.setAttribute('name', name);
+        input.setAttribute('value', value);
+        input.setAttribute('type', 'text');
+        return input;
+    };
 
-        // add the latLng to our collection
-        this.addLatLng = function(latLng) {
-            // if a latLng does not have an id it gets an empty string
-            // (indicating to the backend should create it rather than update)
-            if(typeof latLng._shtm_cid === 'undefined') {
-                latLng._shtm_cid = "";
-            }
-            this.latLngs.push(latLng);
-        };
+    // A callback for the CoordinateFormBinding to render a coordinate's input
+    // fields
+    createInputElements = function(latLng, idx) {
+        var inputs = [];
+        inputs.push(createCoordInputElem('lat', latLng.lat, idx));
+        inputs.push(createCoordInputElem('lon', latLng.lng, idx));
+        var input = createCoordInputElem('id', latLng._shtm_cid, idx);
+        input.setAttribute('type', 'hidden');
+        inputs.push(input);
 
-        // clear all latLngs
-        this.clear = function() {
-            this.latLngs = [];
-        }
-
-        // create a single <input> tag for a coordinate's value
-        this.createCoordInputElem = function(key, value, index) {
-            var input = document.createElement('input');
-            var name = 'shtm_tour[coordinates][' + index + '][' + key + ']';
-            input.setAttribute('name', name);
-            input.setAttribute('value', value);
-            input.setAttribute('type', 'text');
-            return input;
-        };
-
-        // create a form for the coordinates/latLngs this object has
-        this.display = function() {
-            // remove old input elements
-            while(this.domElem.firstChild) {
-                this.domElem.removeChild(this.domElem.firstChild);
-            }
-            // and add new ones
-            for (var i = 0; i < this.latLngs.length; i++) {
-                var latLng = this.latLngs[i];
-
-                var inputs = [];
-                inputs.push(this.createCoordInputElem('lat', latLng.lat, i));
-                inputs.push(this.createCoordInputElem('lon', latLng.lng, i));
-                var input = this.createCoordInputElem('id', latLng._shtm_cid, i);
-                input.setAttribute('type', 'hidden');
-                inputs.push(input);
-
-                var container = document.createElement('div');
-                inputs.forEach(function(inputElem) {
-                    container.appendChild(inputElem);
-                });
-
-                this.domElem.appendChild(container);
-            }
-        };
-    }
-
-    // create a new default map
-    function createMap() {
-        var layerConfig =  {
-            'name': 'OpenStreetMap',
-            'type': 'xyz',
-            'url': 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
-            'layerOptions': {
-                'subdomains': ['a', 'b', 'c'],
-                'attribution': 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
-                'continuousWorld': false,
-                'maxZoom': 18
-            }
-        };
-        var map = L.map('shtm-map');
-        var tiles = L.tileLayer.wms(layerConfig.url, layerConfig.layerOptions);
-        map.addLayer(tiles);
-        return map;
-    }
-
-    // parses all <coordinate> tags that are childs of elem into a latLng array
-    // adds the coordinate id as a further property '_shtm_cid' for later
-    // retrieval
-    function parseCoordinates(elem) {
-        var result = [];
-        var elems = elem.getElementsByTagName('coordinate');
-        for(var i = 0; i < elems.length; i++) {
-            var cid = elems[i].getAttribute('cid');
-            var lat = elems[i].getAttribute('lat');
-            var lng = elems[i].getAttribute('lon');
-            latLng = L.latLng(lat, lng);
-            latLng._shtm_cid = cid;
-            result.push(latLng);
-        }
-        return result;
-    }
-
-    // create a form binding from the specified Element ids
-    function createFormBindingWithElems(initialElementId, formElementId) {
-        // create the binding
-        var tracksInputDiv = document.getElementById(formElementId);
-        var binding = new CoordinateFormBinding(tracksInputDiv);
-        // parse coordinates into the binding
-        var latLngs = parseCoordinates(document.getElementById(initialElementId));
-        latLngs.forEach(function(latLng) {
-            binding.addLatLng(latLng);
+        var container = document.createElement('div');
+        inputs.forEach(function(inputElem) {
+            container.appendChild(inputElem);
         });
-
-        return binding;
+        container.innerHTML = (idx + 1) + ': ' + container.innerHTML;
+        return container;
     }
 
     // create a leaflet map object to contain everything
-    var map = createMap();
+    var map = MapUtil.createMap('shtm_map');
 
     // create a form binding and fill it with the latLngs
-    binding = createFormBindingWithElems('shtm-map-track', 'shtm-tour-track-inputs');
-    binding.display();
+    binding = CoordinateFormBinding.createWithElems(
+        'shtm_map_track', 'shtm_tour_track_inputs');
+    binding.display(createInputElements);
 
     // fit map to the binding OR if no track coordinates exist yet, fit it to
     // the mapstops OR if there are no mapstops yet, fit it to the area
@@ -155,7 +79,7 @@
     if(binding.latLngs.length > 0) {
         latLngs = binding.latLngs;
     } else {
-        latLngs = parseCoordinates(document.getElementById('shtm-map-area'));
+        latLngs = MapUtil.parseCoordinates(document.getElementById('shtm_map_area'));
     }
     map.fitBounds(L.latLngBounds(latLngs));
 
@@ -205,7 +129,7 @@
         layer._latlngs.forEach(function(latLng, idx) {
             binding.addLatLng(latLng);
         });
-        binding.display();
+        binding.display(createInputElements);
 
         // the layer (i.e. the line) may now be edited
         layer.addTo(editableItems);
@@ -233,14 +157,14 @@
             });
         });
         // tell the form binding to re-render the form
-        binding.display();
+        binding.display(createInputElements);
     });
 
     // a hook called after a layer has been removed from the map
     map.on('draw:deleted', function(e) {
         // remove all coordinates from the binding and refresh the form
         binding.clear();
-        binding.display();
+        binding.display(createInputElements);
         // remove the edit control and replace it by the draw control
         editControl.remove();
         drawControl.addTo(map);

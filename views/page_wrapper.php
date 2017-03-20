@@ -25,7 +25,6 @@
 
         .shtm_info_text {
             margin: 0 12px 12px 0;
-            width: 50%;
             font-style: italic;
         }
 
@@ -50,6 +49,15 @@
 
         .shtm_index_table {
             margin-top: 12px;
+        }
+
+        .shtm_map_left {
+            float: left;
+        }
+
+        .shtm_right_from_map {
+            margin-left: 20px;
+            float: left;
         }
     -->
 </style>
