@@ -1,5 +1,5 @@
 
-<h1>Orte</h1>
+<h2>Orte</h2>
 
 <?php $this->include($this->view_helper::choose_current_area_template()) ?> 
 

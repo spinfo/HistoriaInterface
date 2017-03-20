@@ -1,5 +1,5 @@
 
-<h1><?php echo $this->heading ?></h1>
+<h2><?php echo $this->heading ?></h2>
 
 <form action=admin.php?<?php echo $this->action_params ?> method="post">
     <div>

@@ -144,13 +144,24 @@ class WPTestConnection extends TestCase {
     // performs tests common for normal pages retrieved by a simple GET
     public function test_simple_page($page_type) {
         $this->ensure_xpath("//div[contains(@class, 'shtm_message')]", 0,
-            "Should not show any message on ${page_type}.");
+            "Should not show any message on $page_type.");
+
+        $exp = "//div[@id='shtm_page_wrapper_heading' and contains(., 'Orte')]";
+        $this->ensure_xpath($exp, 1,
+            "Should have 'Orte' in main header on $page_type");
+
+        $exp = "//div[@id='shtm_page_wrapper_heading' and contains(., 'Touren')]";
+        $this->ensure_xpath($exp, 1,
+            "Should have 'Touren' in main header on $page_type");
+
+        $this->ensure_xpath('//h1', 1,
+            "Should have exactly one top heading on $page_type");
     }
 
     // test for the presence of an h1-heading on the page retrieved last by the
     // given test connection
     public function test_page_heading($heading, $test_name) {
-        $this->ensure_xpath("//h1[text()='${heading}']", 1,
+        $this->ensure_xpath("//h2[text()='${heading}']", 1,
             "Should have the right heading on ${name}.");
     }
 

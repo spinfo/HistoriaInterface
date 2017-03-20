@@ -1,5 +1,5 @@
 
-<h1>Tour erstellen</h1>
+<h2>Tour erstellen</h2>
 
 <form action="admin.php?<?php echo $this->action_params ?>" method="post">
     <div>

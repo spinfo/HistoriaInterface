@@ -1,5 +1,5 @@
 
-<h1>Ort löschen</h1>
+<h2>Ort löschen</h2>
 
 <div>Möchten Sie den folgenden Ort wirklich löschen?</div>
 

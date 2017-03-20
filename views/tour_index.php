@@ -1,5 +1,5 @@
 
-<h1>Touren</h1>
+<h2>Touren</h2>
 
 <?php $this->include($this->view_helper::choose_current_area_template()) ?> 
 

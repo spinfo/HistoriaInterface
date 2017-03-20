@@ -1,5 +1,5 @@
 
-<h1>Tourweg bearbeiten</h1>
+<h2>Tourweg bearbeiten</h2>
 
 <p>
     Tour: <i><?php echo $this->tour->name ?></i>

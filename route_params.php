@@ -34,6 +34,13 @@ class RouteParams {
         return self::params_to_route($params);
     }
 
+    // parse the supplied string of query params and return an array
+    private static function params_from_str($str) {
+        $result;
+        parse_str($str, $result);
+        return $result;
+    }
+
     public static function index_places() {
         return self::make_route('place', 'index');
     }
@@ -92,6 +99,26 @@ class RouteParams {
 
     public static function set_current_area($id = null) {
         return self::params_to_route(self::set_current_area_params($id));
+    }
+
+    /**
+     * Return true if the current page has all get parameters that are in the
+     * given parameter string, else false.
+     *
+     * @param string    $params_str
+     *
+     * @return boolean
+     */
+    public static function is_current_page($params_str) {
+        $params = self::params_from_str($params_str);
+        $result = true;
+        foreach ($params as $key => $value) {
+            if(!isset($_GET[$key]) || $_GET[$key] != $value) {
+                $result = false;
+                break;
+            }
+        }
+        return $result;
     }
 
     public static function set_current_area_params($id = null) {

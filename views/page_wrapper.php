@@ -22,11 +22,41 @@
         .shtm_message_error {
             background-color: rgba(217, 83, 79, 0.4);
         }
+
+        #shtm_container {
+            margin: 2%;
+            padding: 2%;
+        }
+
+        #shtm_page_wrapper_heading > h1 {
+            display: inline;
+        }
+
+        #shtm_page_wrapper_heading .shtm_not_a_link {
+            font-weight: bold;
+            color: #AFAFAF;
+        }
     -->
 </style>
 
 
-<div id="shtm_container" style="margin:2%; padding:2%;">
+<div id="shtm_container">
+
+    <div id="shtm_page_wrapper_heading">
+        <h1>SmartHistory</h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+        <?php if($this->route_params::is_current_page($this->route_params::index_places())): ?>
+            <span class="shtm_not_a_link">Orte</span> |
+        <?php else: ?>
+            <a href="admin.php?<?php echo $this->route_params::index_places() ?>">Orte</a> |
+        <?php endif ?>
+
+        <?php if($this->route_params::is_current_page($this->route_params::index_tours())): ?>
+            <span class="shtm_not_a_link">Touren</span>
+        <?php else: ?>
+            <a href="admin.php?<?php echo $this->route_params::index_tours() ?>">Touren</a>
+        <?php endif ?>
+    </div>
 
     <div id="shtm_messages">
 
