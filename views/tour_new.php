@@ -2,6 +2,12 @@
 <h2>Tour erstellen</h2>
 
 <form action="admin.php?<?php echo $this->action_params ?>" method="post">
+
+    <div class="shtm_info_text">
+        Geben Sie hier einen Namen und ein Gebiet für die Tour ein.<br>
+        Der Name kann später noch geändert werden.)
+    </div>
+
     <div>
         <label for="shtm_tour_name">Name:</label>
         <input type="text" id="shtm_tour_name" name="shtm_tour[name]" value="">

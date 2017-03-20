@@ -42,9 +42,21 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/tour_edit_track.php';
     }
 
+    public static function delete_tour_view() {
+        return dirname(__FILE__) . '/views/tour_delete.php';
+    }
+
 
     public static function choose_current_area_template() {
         return dirname(__FILE__) . '/views/templates/choose_current_area.php';
+    }
+
+    public static function single_place_header_template() {
+        return dirname(__FILE__) . '/views/templates/single_place_header.php';
+    }
+
+    public static function single_tour_header_template() {
+        return dirname(__FILE__) . '/views/templates/single_tour_header.php';
     }
 }
 

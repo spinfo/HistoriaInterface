@@ -2,9 +2,9 @@
 <style>
     <!--
         .shtm_message {
-            margin: 3px;
-            padding: 3px;
-            width: 80%;
+            margin: 10px;
+            padding: 5px;
+            width: 50%;
         }
 
         .shtm_message_success {
@@ -23,18 +23,33 @@
             background-color: rgba(217, 83, 79, 0.4);
         }
 
+        .shtm_info_text {
+            margin: 0 12px 12px 0;
+            width: 50%;
+            font-style: italic;
+        }
+
         #shtm_container {
             margin: 2%;
             padding: 2%;
         }
 
-        #shtm_page_wrapper_heading > h1 {
-            display: inline;
+        .shtm_heading_line {
+            margin-bottom: 15px;
         }
 
-        #shtm_page_wrapper_heading .shtm_not_a_link {
+        .shtm_heading_line > h1, .shtm_heading_line > h2 {
+            display: inline;
+            padding-right: 15px;
+        }
+
+        .shtm_not_a_link {
             font-weight: bold;
             color: #AFAFAF;
+        }
+
+        .shtm_index_table {
+            margin-top: 12px;
         }
     -->
 </style>
@@ -42,8 +57,8 @@
 
 <div id="shtm_container">
 
-    <div id="shtm_page_wrapper_heading">
-        <h1>SmartHistory</h1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <div id="shtm_page_wrapper_heading" class="shtm_heading_line">
+        <h1>SmartHistory</h1>
 
         <?php if($this->route_params::is_current_page($this->route_params::index_places())): ?>
             <span class="shtm_not_a_link">Orte</span> |

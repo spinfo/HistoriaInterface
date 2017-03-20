@@ -1,10 +1,13 @@
 
 <h2>Orte</h2>
 
-<?php $this->include($this->view_helper::choose_current_area_template()) ?> 
+<?php $this->include($this->view_helper::choose_current_area_template()) ?>
 
+<div>
+    <a href="?<?php echo $this->route_params::new_place() ?>">Ort hinzufügen</a>
+</div>
 
-<table id="shtm_place_index">
+<table id="shtm_place_index" class="shtm_index_table">
     <thead>
         <tr>
             <th>id</th>
@@ -36,7 +39,3 @@
     <?php endforeach ?>
     </tbody>
 </table>
-
-<p>
-    <a href="?<?php echo $this->route_params::new_place() ?>">Neuen Ort anlegen</a>
-</p>

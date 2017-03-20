@@ -1,13 +1,5 @@
 
-<h2>Tourweg bearbeiten</h2>
-
-<p>
-    Tour: <i><?php echo $this->tour->name ?></i>
-</p>
-
-<p>
-    <a href="?<?php echo $this->route_params::edit_tour($tour->id) ?>">Tour-Info bearbeiten</a>
-</p>
+<?php $this->include($this->view_helper::single_tour_header_template()) ?>
 
 <div id="shtm-map" style="height: 500px; width: 500px; float: left">
     <div id="shtm-map-area">

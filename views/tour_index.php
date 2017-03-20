@@ -1,9 +1,14 @@
 
-<h2>Touren</h2>
 
-<?php $this->include($this->view_helper::choose_current_area_template()) ?> 
+<?php $this->include($this->view_helper::choose_current_area_template()) ?>
 
-<table id="shtm_tour_index">
+<div>
+    <h2>Touren</h2>
+
+    <a href="?<?php echo $this->route_params::new_tour() ?>">Tour hinzufügen</a>
+</div>
+
+<table id="shtm_tour_index" class="shtm_index_table">
     <thead>
         <tr>
             <th>id</th>
@@ -35,7 +40,3 @@
     <?php endforeach ?>
     </tbody>
 </table>
-
-<p>
-    <a href="?<?php echo $this->route_params::new_tour() ?>">Neue Tour anlegen</a>
-</p>

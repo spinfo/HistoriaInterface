@@ -1,7 +1,9 @@
 
-<h2>Ort löschen</h2>
+<?php $this->include($this->view_helper::single_place_header_template()) ?>
 
-<div>Möchten Sie den folgenden Ort wirklich löschen?</div>
+<div class="shtm_info_text">
+    Möchten Sie den folgenden Ort wirklich löschen?
+</div>
 
 <ul>
     <li>ID: <?php echo $this->place->id ?></li>

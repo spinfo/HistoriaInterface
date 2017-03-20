@@ -65,7 +65,8 @@ $admin_test->test_fetch($helper->tc_url('place', 'create'), $post, 200,
 // Test for the success message
 $admin_test->test_success_message("Ort erstellt", "place create");
 // Test for the redirect to place edit
-$admin_test->test_page_heading("Ort bearbeiten", "place create");
+$admin_test->test_redirect_param('shtm_c', 'place');
+$admin_test->test_redirect_param('shtm_a', 'edit');
 
 // test a bad create with incomplete post
 $bad_post = array(
@@ -82,7 +83,6 @@ $id = $helper->db_highest_id($helper->config->places_table);
 $admin_test->test_fetch($helper->tc_url('place', 'edit', $id), null, 200,
     "Should have status 200 on place edit.");
 $admin_test->test_simple_page("place edit");
-$admin_test->test_page_heading("Ort bearbeiten", "place edit");
 
 // Test for the presence of the right form fields
 test_place_form_fields($admin_test, "place edit");
@@ -106,7 +106,6 @@ $new_lon_repr = sprintf("%.6f", $new_lon);
 $admin_test->test_fetch($helper->tc_url('place', 'update', $id), $update_post, 200,
     "Should have status 200 on update post");
 // test that we have been redirected to place edit and the form is present
-$admin_test->test_page_heading("Ort bearbeiten", "place update");
 test_place_form_fields($admin_test, "place update");
 test_place_form_fields_values($admin_test,
     $new_name, $new_lat_repr, $new_lon_repr, "place update");
@@ -132,7 +131,7 @@ $admin_test->test_page_heading("Orte", "place index");
 
 $admin_test->ensure_xpath("//table[@id='shtm_place_index']", 1,
     "Should show the places table on place index");
-$admin_test->ensure_xpath("//a[text()='Neuen Ort anlegen']", 1,
+$admin_test->ensure_xpath("//a[text()='Ort hinzufügen']", 1,
     "Should have a link to create new place.");
 $admin_test->ensure_xpath("//a[text()='Löschen']", null,
     "Should show at least one Link to delete on place index.");

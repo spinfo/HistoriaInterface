@@ -1,9 +1,5 @@
 
-<h2>Tour bearbeiten</h2>
-
-<p>
-    <a href="?<?php echo $this->route_params::edit_tour_track($tour->id) ?>">Tourweg bearbeiten</a>
-</p>
+<?php $this->include($this->view_helper::single_tour_header_template()) ?>
 
 <form action=admin.php?<?php echo $this->route_params::update_tour($tour->id) ?> method="post">
 

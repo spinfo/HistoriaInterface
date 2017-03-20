@@ -189,8 +189,8 @@ class WPTestConnection extends TestCase {
     }
 
     /**
-     * Test for the presence or equality of value (if tehe value parameter is
-     * not null) of a parameter in the last effective url.
+     * Test for a redirect by checking if a parameter appears in the effective
+     * url, that the connection landed on.
      *
      * @return string|null  The parameter's value or null if no value found.
      */

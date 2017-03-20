@@ -1,5 +1,6 @@
 
-<h2><?php echo $this->heading ?></h2>
+
+<?php $this->include($this->view_helper::single_place_header_template()) ?>
 
 <form action=admin.php?<?php echo $this->action_params ?> method="post">
     <div>

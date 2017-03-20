@@ -118,6 +118,23 @@ class ToursController extends AbstractController {
         self::wrap_in_page_view($view)->render();
     }
 
+    // stub
+    public static function delete() {
+        // attempt to get the view by id
+        $id = RouteParams::get_id_value();
+        $tour = Tours::instance()->get($id);
+        // filter for basic errors
+        $error_view = self::filter_if_not_editable($tour);
+        if(!empty($error_view)) {
+            $view = $error_view;
+        } else {
+            $view = new View(ViewHelper::delete_tour_view(), array(
+                'tour' => $tour,
+            ));
+        }
+        self::wrap_in_page_view($view)->render();
+    }
+
     public static function update() {
         // get the tour to update
         $id = RouteParams::get_id_value();
