@@ -13,7 +13,7 @@ MapUtil.createMap = function(elementId) {
             'subdomains': ['a', 'b', 'c'],
             'attribution': 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors',
             'continuousWorld': false,
-            'maxZoom': 18
+            'maxZoom': 19
         }
     };
     var map = L.map(elementId);
