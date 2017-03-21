@@ -44,7 +44,7 @@ function shtm_install() {
     //      http://mysql.rjweb.org/doc.php/latlng
     $table_name = Coordinates::instance()->table;
     $coordinates_sql = "CREATE TABLE $table_name (
-        id bigint(20) NOT NULL AUTO_INCREMENT,
+        id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
         lat decimal(8,6) NOT NULL,
         lon decimal(9,6) NOT NULL,
         created_at timestamp DEFAULT now(),
@@ -55,9 +55,9 @@ function shtm_install() {
     // sql for the areas table
     $table_name = Areas::instance()->table;
     $areas_sql = "CREATE TABLE $table_name (
-        id bigint(20) NOT NULL AUTO_INCREMENT,
-        coordinate1_id bigint(20) NOT NULL,
-        coordinate2_id bigint(20) NOT NULL,
+        id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+        coordinate1_id bigint(20) UNSIGNED NOT NULL,
+        coordinate2_id bigint(20) UNSIGNED NOT NULL,
         name text NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
@@ -67,10 +67,10 @@ function shtm_install() {
     // sql for the places table
     $table_name = Places::instance()->table;
     $places_sql = "CREATE TABLE $table_name (
-        id bigint(20) NOT NULL AUTO_INCREMENT,
-        user_id bigint(20) NOT NULL,
-        coordinate_id bigint(20) NOT NULL,
-        area_id bigint(20) NOT NULL,
+        id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+        user_id bigint(20) UNSIGNED NOT NULL,
+        coordinate_id bigint(20) UNSIGNED NOT NULL,
+        area_id bigint(20) UNSIGNED NOT NULL,
         name text NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
@@ -85,9 +85,9 @@ function shtm_install() {
     //    (end is empty if this is an instant and not a duration)
     $table_name = Tours::instance()->table;
     $tours_sql = "CREATE TABLE $table_name (
-        id bigint(20) NOT NULL AUTO_INCREMENT,
-        area_id bigint(20) NOT NULL,
-        user_id bigint(20) NOT NULL,
+        id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+        area_id bigint(20) UNSIGNED NOT NULL,
+        user_id bigint(20) UNSIGNED NOT NULL,
         name TEXT DEFAULT '',
         intro TEXT DEFAULT '',
         type ENUM('round-tour', 'tour') NOT NULL,
@@ -105,9 +105,9 @@ function shtm_install() {
 
     $table_name = Tours::instance()->join_coordinates_table;
     $tours_to_coordinates_sql = "CREATE TABLE $table_name (
-        id bigint(20) NOT NULL AUTO_INCREMENT,
-        tour_id bigint(20) NOT NULL,
-        coordinate_id bigint(20) NOT NULL,
+        id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+        tour_id bigint(20) UNSIGNED NOT NULL,
+        coordinate_id bigint(20) UNSIGNED NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id)
@@ -116,9 +116,9 @@ function shtm_install() {
     // sql for the mapstop table
     $table_name = Mapstops::instance()->table;
     $mapstops_sql = "CREATE TABLE $table_name (
-        id bigint(20) NOT NULL AUTO_INCREMENT,
-        tour_id bigint(20) NOT NULL,
-        place_id bigint(20) NOT NULL,
+        id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+        tour_id bigint(20) UNSIGNED NOT NULL,
+        place_id bigint(20) UNSIGNED NOT NULL,
         name text NOT NULL,
         description text NOT NULL,
         created_at timestamp DEFAULT now(),
@@ -131,9 +131,9 @@ function shtm_install() {
     // sql for joining posts on mapstops
     $table_name = Mapstops::instance()->join_posts_table;
     $mapstops_to_posts_sql = "CREATE TABLE $table_name (
-        id bigint(20) NOT NULL AUTO_INCREMENT,
-        mapstop_id bigint(20) NOT NULL,
-        post_id bigint(20) NOT NULL,
+        id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+        mapstop_id bigint(20) UNSIGNED NOT NULL,
+        post_id bigint(20) UNSIGNED NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id),
