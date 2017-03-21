@@ -4,17 +4,17 @@ namespace SmartHistoryTourManager;
 require_once(dirname(__FILE__) . '/../wp_test_connection.php');
 
 // AREAS TESTS
-$admin_test = new WPTestConnection('Areas API Test (admin)',
+$admin_con = new WPTestConnection('Areas API Test (admin)',
     'test-admin', 'test-admin', $helper->config->wp_url);
-$contributor_test = new WPTestConnection('Areas API Test (contributor)',
+$contrib_con = new WPTestConnection('Areas API Test (contributor)',
     'test-contributor', 'test-contributor', $helper->config->wp_url);
 
 global $shtm_test_cases;
 if(empty($shtm_test_cases)) {
     $shtm_test_cases = array();
 }
-$shtm_test_cases[] = $admin_test;
-$shtm_test_cases[] = $contributor_test;
+$shtm_test_cases[] = $admin_con;
+$shtm_test_cases[] = $contrib_con;
 
 // TEST SETTING CURRENT AREA
 function test_set_current_area($test_con, $name) {
@@ -36,15 +36,15 @@ function test_set_current_area($test_con, $name) {
         "Should still have marked the valid area on bad input as selected for $name.");
 }
 
-test_set_current_area($admin_test, "admin");
-test_set_current_area($contributor_test, "contributor");
+test_set_current_area($admin_con, "admin");
+test_set_current_area($contrib_con, "contributor");
 
 // invalidate logins
-$admin_test->invalidate_login();
-$contributor_test->invalidate_login();
+$admin_con->invalidate_login();
+$contrib_con->invalidate_login();
 
 // report results
-$admin_test->report();
-$contributor_test->report();
+$admin_con->report();
+$contrib_con->report();
 
 ?>

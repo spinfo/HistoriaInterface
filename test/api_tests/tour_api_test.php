@@ -6,9 +6,9 @@ require_once(dirname(__FILE__) . '/../../models/tours.php');
 require_once(dirname(__FILE__) . '/../wp_test_connection.php');
 
 // setup the test cases
-$admin_test = new WPTestConnection('Tours API Test (admin)',
+$admin_con = new WPTestConnection('Tours API Test (admin)',
     'test-admin', 'test-admin', $helper->config->wp_url);
-$contributor_test = new WPTestConnection('Tours API Test (contributor)',
+$contrib_con = new WPTestConnection('Tours API Test (contributor)',
     'test-contributor', 'test-contributor', $helper->config->wp_url);
 
 // add the test cases to the global test variables
@@ -16,8 +16,8 @@ global $shtm_test_cases;
 if(empty($shtm_test_cases)) {
     $shtm_test_cases = array();
 }
-$shtm_test_cases[] = $admin_test;
-$shtm_test_cases[] = $contributor_test;
+$shtm_test_cases[] = $admin_con;
+$shtm_test_cases[] = $contrib_con;
 
 // TOUR NEW
 function test_tour_new($con, $name) {
@@ -43,8 +43,8 @@ function test_tour_new($con, $name) {
             "Should contain an option for area: '$area->id' on $name");
     }
 }
-test_tour_new($admin_test, 'admin');
-test_tour_new($contributor_test, 'contributor');
+test_tour_new($admin_con, 'admin');
+test_tour_new($contrib_con, 'contributor');
 
 
 // TOUR CREATE
@@ -94,18 +94,18 @@ $post = array(
     'shtm_tour[area_id]' => $tour->area_id,
 );
 // test the normal create and save the returned id values for later tests
-$t_id_admin = test_tour_create($admin_test, $post, 'admin');
+$t_id_admin = test_tour_create($admin_con, $post, 'admin');
 $t_id_contributor =
-    test_tour_create($contributor_test, $post, 'contributor');
+    test_tour_create($contrib_con, $post, 'contributor');
 
 $bad_post = array_merge($post, array('shtm_tour[name]' => ''));
-test_bad_create($admin_test, $bad_post, 'admin - bad tour name');
-test_bad_create($contributor_test, $bad_post, 'contributor - bad tour name');
+test_bad_create($admin_con, $bad_post, 'admin - bad tour name');
+test_bad_create($contrib_con, $bad_post, 'contributor - bad tour name');
 
 $bad_id = Areas::instance()->last_id() + 1;
 $bad_post = array_merge($post, array('shtm_tour[area_id]' => $bad_id));
-test_bad_create($admin_test, $bad_post, 'admin - bad area_id');
-test_bad_create($contributor_test, $bad_post, 'contributor - bad area_id');
+test_bad_create($admin_con, $bad_post, 'admin - bad area_id');
+test_bad_create($contrib_con, $bad_post, 'contributor - bad area_id');
 
 
 
@@ -130,17 +130,17 @@ function test_tour_edit($con, $id, $tour, $name) {
 
 // test bad ids
 $bad_id = Tours::instance()->last_id() + 1;
-test_edit_with_bad_id($admin_test, $bad_id, 'admin');
-test_edit_with_bad_id($contributor_test, $bad_id, 'contributor');
+test_edit_with_bad_id($admin_con, $bad_id, 'admin');
+test_edit_with_bad_id($contrib_con, $bad_id, 'contributor');
 
 // admin should be able to edit all tours
-test_tour_edit($admin_test, $t_id_admin, $tour, 'admin - own tour');
-test_tour_edit($admin_test, $t_id_contributor, $tour, 'admin - other tour');
+test_tour_edit($admin_con, $t_id_admin, $tour, 'admin - own tour');
+test_tour_edit($admin_con, $t_id_contributor, $tour, 'admin - other tour');
 
 // contributor should only be able to edit her own tour
-test_tour_edit($contributor_test, $t_id_contributor, $tour,
+test_tour_edit($contrib_con, $t_id_contributor, $tour,
     'contributor - own tour');
-$contributor_test->test_no_access(
+$contrib_con->test_no_access(
     $helper->tc_url('tour', 'edit', $t_id_admin), null,
     'contributor tries to edit admin tour');
 
@@ -158,8 +158,8 @@ function test_tour_edit_track($con, $id, $name) {
     $con->ensure_xpath("//script[contains(@src, 'leaflet')]", 2,
         "Should contain two leaflet script.");
 }
-test_tour_edit_track($admin_test, $t_id_admin, 'admin');
-test_tour_edit_track($contributor_test, $t_id_contributor, 'contributor');
+test_tour_edit_track($admin_con, $t_id_admin, 'admin');
+test_tour_edit_track($contrib_con, $t_id_contributor, 'contributor');
 
 
 // TEST UPDATE
@@ -219,36 +219,36 @@ for($i = 0; $i < count($tour->coordinates); $i++) {
 }
 
 // test updating the meta information
-test_tour_update($admin_test, $t_id_admin, $post, $tour,
+test_tour_update($admin_con, $t_id_admin, $post, $tour,
     'admin updates own tour');
-test_tour_update($contributor_test, $t_id_contributor, $post, $tour,
+test_tour_update($contrib_con, $t_id_contributor, $post, $tour,
     'contributor updates own tour');
-test_tour_update($admin_test, $t_id_contributor, $post, $tour,
+test_tour_update($admin_con, $t_id_contributor, $post, $tour,
     'admin updates contributors tour');
 
-$contributor_test->test_no_access(
+$contrib_con->test_no_access(
     $helper->tc_url('tour', 'update', $t_id_admin), $post,
     'contributor tries to update admin tour');
 
 // test updating the tour track
-test_tour_update($admin_test, $t_id_admin, $track_post, $tour,
+test_tour_update($admin_con, $t_id_admin, $track_post, $tour,
     'admin updates own tour track');
-test_tour_update($contributor_test, $t_id_contributor, $track_post, $tour,
+test_tour_update($contrib_con, $t_id_contributor, $track_post, $tour,
     'contributor updates own tour track');
-test_tour_update($admin_test, $t_id_contributor, $track_post, $tour,
+test_tour_update($admin_con, $t_id_contributor, $track_post, $tour,
     'admin updates contributors tour track');
 
-$contributor_test->test_no_access(
+$contrib_con->test_no_access(
     $helper->tc_url('tour', 'update', $t_id_admin), $track_post,
     'contributor tries to update admin tour track');
 
 
 // invalidate logins
-$admin_test->invalidate_login();
-$contributor_test->invalidate_login();
+$admin_con->invalidate_login();
+$contrib_con->invalidate_login();
 
 // report results
-$admin_test->report();
-$contributor_test->report();
+$admin_con->report();
+$contrib_con->report();
 
 ?>
