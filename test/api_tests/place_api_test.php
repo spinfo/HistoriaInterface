@@ -4,29 +4,26 @@ namespace SmartHistoryTourManager;
 require_once(dirname(__FILE__) . '/../wp_test_connection.php');
 
 // test for the presence of form fields needed for place creation
-function test_place_form_fields($test_connection, $page_type) {
-    $test_connection->ensure_xpath("//label[@for='shtm_name']", 1,
+function test_place_form_fields($con, $page_type) {
+    $con->ensure_xpath("//label[@for='shtm_name']", 1,
         "Should have name label on $page_type.");
-    $test_connection->ensure_xpath("//label[@for='shtm_lat']", 1,
+    $con->ensure_xpath("//label[@for='shtm_lat']", 1,
         "Should have latitude label on $page_type.");
-    $test_connection->ensure_xpath("//label[@for='shtm_lon']", 1,
+    $con->ensure_xpath("//label[@for='shtm_lon']", 1,
         "Should have longitude label on $page_type.");
-    $test_connection->ensure_xpath("//input[@name='shtm_place[name]']", 1,
+    $con->ensure_xpath("//input[@name='shtm_place[name]']", 1,
         "Should have name input on $page_type.");
-    $test_connection->ensure_xpath("//input[@name='shtm_place[lat]']", 1,
+    $con->ensure_xpath("//input[@name='shtm_place[lat]']", 1,
         "Should have latitute input on $page_type.");
-    $test_connection->ensure_xpath("//input[@name='shtm_place[lon]']", 1,
+    $con->ensure_xpath("//input[@name='shtm_place[lon]']", 1,
         "Should have longitude input on $page_type.");
 }
 
 // test for the presence of the right values in places form field
-function test_place_form_fields_values($test_connection, $name, $lat, $lon, $page_type) {
-    $test_connection->ensure_xpath("//input[@name='shtm_place[name]' and @value='$name']", 1,
-        "Should have the right name on $page_type.");
-    $test_connection->ensure_xpath("//input[@name='shtm_place[lat]' and @value='$lat']", 1,
-        "Should have the right latitude on $page_type.");
-    $test_connection->ensure_xpath("//input[@name='shtm_place[lon]' and @value='$lon']", 1,
-        "Should have the right longitude on $page_type.");
+function test_place_form_fields_values($con, $name, $lat, $lon, $page_type) {
+    $con->test_input_field('shtm_place[name]', $name, $page_type);
+    $con->test_input_field('shtm_place[lat]', $lat, $page_type);
+    $con->test_input_field('shtm_place[lon]', $lon, $page_type);
 }
 
 
@@ -55,8 +52,8 @@ $post = array(
 );
 // Coordinate values have a precision of exactly six digits after the decimal
 // point
-$lat_repr = sprintf("%.6f", $lat);
-$lon_repr = sprintf("%.6f", $lon);
+$lat_repr = $helper->coord_value_string($lat);
+$lon_repr = $helper->coord_value_string($lon);
 
 // Create by fetching the create page
 $admin_test->test_fetch($helper->tc_url('place', 'create'), $post, 200,
@@ -100,8 +97,8 @@ $update_post = array(
     'shtm_place[lat]' => $new_lat,
     'shtm_place[lon]' => $new_lon
 );
-$new_lat_repr = sprintf("%.6f", $new_lat);
-$new_lon_repr = sprintf("%.6f", $new_lon);
+$new_lat_repr = $helper->coord_value_string($new_lat);
+$new_lon_repr = $helper->coord_value_string($new_lon);
 
 $admin_test->test_fetch($helper->tc_url('place', 'update', $id), $update_post, 200,
     "Should have status 200 on update post");
@@ -118,7 +115,7 @@ $admin_test->test_simple_page("place new");
 $admin_test->test_page_heading("Neuer Ort", "place new");
 test_place_form_fields($admin_test, "place new");
 
-$empty_lonlat = sprintf("%.6f", 0.0);
+$empty_lonlat = $helper->coord_value_string(0.0);
 test_place_form_fields_values($admin_test, "",
     $empty_lonlat, $empty_lonlat, "place new");
 
@@ -152,17 +149,16 @@ $admin_test->test_fetch($helper->tc_url('place', 'delete', $invalid_id), null, 4
 $admin_test->test_error_message("Kein Ort", "delete place with invalid id");
 
 // error page should be shown to the wrong user
-$contributor_test->test_fetch($helper->tc_url('place', 'delete', $id), null, 403,
-    "Should have status 403 on place delete by wrong user.");
-$contributor_test->test_error_message("Berechtigung", "delete place by wrong user");
+$contributor_test->test_no_access($helper->tc_url('place', 'delete', $id), null,
+    'contributor tries to delete other\'s place');
 $contributor_test->ensure_xpath("//div[@id='shtm_delete_place']", 0,
     "Should have no delete button on delete place by wrong user.");
 
 
 // TEST PLACE DESTROY
 // first test to delete by the wrong user
-$contributor_test->test_fetch($helper->tc_url('place', 'destroy', $id), null, 403,
-    "Should have status 403 on place destroy by wrong user.");
+$contributor_test->test_no_access($helper->tc_url('place', 'destroy', $id), null,
+    'contributor tries to destroy other\'s place');
 $contributor_test->test_error_message("Berechtigung", "destroy place by wrong user");
 
 // then the right user should actually be able to destroy

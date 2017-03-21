@@ -181,6 +181,7 @@ class WPTestConnection extends TestCase {
         );
     }
 
+    // test that string $text appears anywhere within the content area
     public function test_page_contains($text, $test_name) {
         $this->ensure_xpath(
             "//div[@id='shtm_content' and contains(., '$text')]", 1,
@@ -188,6 +189,31 @@ class WPTestConnection extends TestCase {
         );
     }
 
+    // test that there is an input field with the name and value attrs set to
+    // the supplied values
+    public function test_input_field($name_attr, $value_attr, $test_name) {
+        $this->ensure_xpath(
+            "//input[@name='$name_attr' and @value='$value_attr']", 1,
+            "Should have input tag: '$name_attr' => '$value_attr' ($test_name)."
+        );
+    }
+
+    // test for the correct status and messages on attempt to access a bad url
+    function test_no_access($url, $post, $name) {
+        $this->test_fetch($url, $post, 403,
+            "Should have status 403 on forbidden access ($name).");
+
+        $this->test_error_message('Berechtigung', "forbidden access ($name).");
+
+        $this->ensure_xpath("div//[contains(@class,'shtm_message_success')]", 0,
+            "Should not have success message on forbidden access ($name).");
+    }
+
+    // tests the presence of a coordinate tag with the specified lat/lon
+    function test_coordinate($lat, $lon, $test_name) {
+        $this->ensure_xpath("//coordinate[@lat='$lat' and @lon='$lon']", null,
+            "Should have a coordinate with the right lat/lon ($test_name).");
+    }
     /**
      * Test for a redirect by checking if a parameter appears in the effective
      * url, that the connection landed on.

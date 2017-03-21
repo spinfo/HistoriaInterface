@@ -71,17 +71,28 @@ class TestHelper {
         return (mt_rand() / mt_getrandmax()) * $mul;
     }
 
+    // formats a float value to the pricision of the database
+    public function coord_value_string($float) {
+        return sprintf("%.6f", $float);
+    }
+
+    // returns a float value reduced to the precision used in the database
+    public function coord_value($float) {
+        return floatval($this->coord_value_string($float));
+    }
+
     public function random_coordinate() {
         $coordinate = new Coordinate();
         // coordinates should have a precision of 6 decimal points
-        $coordinate->lat = floatval(sprintf("%.6f", $this->random_float(-90, 90)));
-        $coordinate->lon = floatval(sprintf("%.6f", $this->random_float(-180, 180)));
+        $coordinate->lat = $this->coord_value($this->random_float(-90, 90));
+        $coordinate->lon = $this->coord_value($this->random_float(-180, 180));
         return $coordinate;
     }
 
     public function random_julian() {
         $decimal = rand(0, 2457824) + ($this->random_float());
-        return floatval(sprintf("%.6f", $decimal));
+        // incidentally coordinates and julian dates have the same precision
+        return $this->coord_value($decimal);
     }
 
     public function db_highest_id($table_name) {
