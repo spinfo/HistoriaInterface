@@ -16,6 +16,15 @@
             <coordinate cid="<?php echo $c->id ?>" lat="<?php echo $c->lat ?>" lon="<?php echo $c->lon ?>"></coordinate>
         <?php endforeach ?>
     </div>
+    <div id="shtm_map_mapstops">
+        <?php foreach ($this->tour->mapstops as $mapstop): ?>
+            <div data-mapstop-id="<?php echo $mapstop->id ?>"
+                data-mapstop-name="<?php echo $mapstop->name ?>"
+                data-mapstop-description="<?php echo $mapstop->description ?>">
+                <?php $this->include($this->view_helper::coordinate_template(), array('coordinate' => $mapstop->place->coordinate)) ?>
+            </div>
+        <?php endforeach ?>
+    </div>
 </div>
 
 <form id="shtm_map_form" action=admin.php?<?php echo $this->route_params::update_tour($tour->id) ?> method="post"
@@ -75,12 +84,22 @@
         'shtm_map_track', 'shtm_tour_track_inputs');
     binding.display(createInputElements);
 
+    // parse mapstops into array
+    var mapstopElems = document.getElementById('shtm_map_mapstops').children;
+    var mapstops = [];
+    for(var i = 0; i < mapstopElems.length; i++) {
+        mapstops.push(MapUtil.mapstopFromElem(mapstopElems[i]));
+    }
+
     // fit map to the binding OR if no track coordinates exist yet, fit it to
     // the mapstops OR if there are no mapstops yet, fit it to the area
-    // TODO: really do that
     var latLngs;
     if(binding.latLngs.length > 0) {
         latLngs = binding.latLngs;
+    } else if(mapstops.length > 0) {
+        latLngs = mapstops.map(function(mapstop) {
+            return mapstop.latLng;
+        });
     } else {
         latLngs = MapUtil.parseCoordinates(document.getElementById('shtm_map_area'));
     }
@@ -89,7 +108,14 @@
     // Initialize options for drawing, set every other element to false
     var drawOptions = {
         draw: {
-            polyline: { allowIntersection: true },
+            polyline: {
+                allowIntersection: true,
+                shapeOptions: {
+                    color: '#0099cc',
+                    // weight: 10
+                    opacity: 0.75
+                }
+            },
             marker: false,
             circle: false,
             polygon: false,
@@ -116,6 +142,16 @@
         });
         line._finishShape();
     }
+
+    // if mapstops are present display them as markers on the map
+    var mapstopsGroup = L.layerGroup();
+    for(var i = 0; i < mapstops.length; i++) {
+        var mapstop = mapstops[i];
+        var marker = L.marker(mapstop.latLng, { zIndexOffset: -1000, opacity: 0.8 });
+        marker.bindPopup('<b>' + mapstop.name + '</b><br>' + mapstop.description);
+        mapstopsGroup.addLayer(marker);
+    }
+    mapstopsGroup.addTo(map);
 
 
 

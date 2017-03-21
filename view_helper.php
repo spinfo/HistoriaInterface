@@ -63,6 +63,10 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/templates/place_map.php';
     }
 
+    public static function coordinate_template() {
+        return dirname(__FILE__) . '/views/templates/coordinate.php';
+    }
+
 
     public static function map_util_js() {
         return dirname(__FILE__) . '/views/js/map-util.js';

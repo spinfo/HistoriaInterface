@@ -22,19 +22,26 @@ MapUtil.createMap = function(elementId) {
     return map;
 }
 
-// parses all <coordinate> tags that are childs of elem into a latLng array.
+// parses a single coordinate tag with into a latLng array.
+// NOTE: adds the coordinate id as a further property '_shtm_cid' for later
+// retrieval
+MapUtil.parseCoordinate = function(elem) {
+    var cid = elem.getAttribute('cid');
+    var lat = elem.getAttribute('lat');
+    var lng = elem.getAttribute('lon');
+    var latLng = L.latLng(lat, lng);
+    latLng._shtm_cid = cid;
+    return latLng;
+}
+
+// parses all coordinat-tags that are childs of elem into a latLng array.
 // NOTE: adds the coordinate id as a further property '_shtm_cid' for later
 // retrieval
 MapUtil.parseCoordinates = function(elem) {
     var result = [];
     var elems = elem.getElementsByTagName('coordinate');
     for(var i = 0; i < elems.length; i++) {
-        var cid = elems[i].getAttribute('cid');
-        var lat = elems[i].getAttribute('lat');
-        var lng = elems[i].getAttribute('lon');
-        latLng = L.latLng(lat, lng);
-        latLng._shtm_cid = cid;
-        result.push(latLng);
+        result.push(MapUtil.parseCoordinate(elems[i]));
     }
     return result;
 }
@@ -42,6 +49,27 @@ MapUtil.parseCoordinates = function(elem) {
 // Format an input value according to the precision we save on coordinates
 MapUtil.formatCoordValue = function(value) {
     return Number.parseFloat(value).toFixed(6);
+}
+
+// Parse mapstop data out of a html element and return a simple object.
+// Treats the first coordinate below the mapstop as belonging to it and
+// adds it's coordinates as a leaflet latLng.
+// NOTE: sets parameter ._shtm_cid on the contained latLng
+MapUtil.mapstopFromElem = function(elem) {
+    var result = {
+        id: elem.getAttribute('data-mapstop-id'),
+        name: elem.getAttribute('data-mapstop-name'),
+        description: elem.getAttribute('data-mapstop-description'),
+    }
+
+    var coords = MapUtil.parseCoordinates(elem);
+    if(coords.length > 0) {
+        result.latLng = coords[0];
+    } else {
+        console.warn("No coordinate for mapstop.");
+    }
+
+    return result
 }
 
 // LEAFLET DRAW CONFIGURATION

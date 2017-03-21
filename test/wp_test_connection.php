@@ -3,6 +3,8 @@ namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/test_case.php');
 
+require_once(dirname(__FILE__) . '/../models/places.php');
+
 /**
  * A class to use for connections to a wordpress page. Handles the login and
  * basic testing.
@@ -214,6 +216,21 @@ class WPTestConnection extends TestCase {
         $this->ensure_xpath("//coordinate[@lat='$lat' and @lon='$lon']", null,
             "Should have a coordinate with the right lat/lon ($test_name).");
     }
+
+    // test that the mapstop data is included on the page and that the right
+    // coordinate data is present as well
+    function test_mapstop_tag($mapstop, $test_name) {
+        $condition = "@data-mapstop-id='$mapstop->id'";
+        $condition .= " and @data-mapstop-name='$mapstop->name'";
+        $condition .= " and @data-mapstop-description='$mapstop->description'";
+        $this->ensure_xpath("//div[$condition]", 1,
+            "Should have the correct mapstop data ($test_name).");
+
+        $place = Places::instance()->get($mapstop->place_id);
+        $this->test_coordinate($place->coordinate->lat, $place->coordinate->lon,
+            "coordinate data - $test_name");
+    }
+
     /**
      * Test for a redirect by checking if a parameter appears in the effective
      * url, that the connection landed on.

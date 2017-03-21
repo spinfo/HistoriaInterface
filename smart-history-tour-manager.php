@@ -261,7 +261,7 @@ function shtm_create_test_data() {
 
     $values = array(
         'tour_id' => $tour_id,
-        'place_id' => $place2->id,
+        'place_id' => $place3->id,
         'name' => "Heine-Denkmal (2012)",
         'description' => "Das Heine-Denkmal des ..."
     );

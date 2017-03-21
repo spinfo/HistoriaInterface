@@ -147,6 +147,14 @@ $contrib_con->test_no_access(
 
 // TEST EDIT TRACK
 function test_tour_edit_track($con, $id, $name) {
+    // setup some mapstops, so that we can test for their presence
+    $mapstop1 = $con->helper->make_mapstop(true);
+    $mapstop2 = $con->helper->make_mapstop(false);
+    $mapstop1->tour_id = $id;
+    $mapstop2->tour_id = $id;
+    Mapstops::instance()->save($mapstop1);
+    Mapstops::instance()->save($mapstop2);
+
     $con->test_fetch($con->helper->tc_url('tour', 'edit_track', $id), null, 200,
         "Should have status 200 on edit_track ($name)");
 
@@ -157,6 +165,16 @@ function test_tour_edit_track($con, $id, $name) {
         "Should contain the leaflet draw style.");
     $con->ensure_xpath("//script[contains(@src, 'leaflet')]", 2,
         "Should contain two leaflet script.");
+
+    // testing that coordinate values are present is done on testing the update
+    // (which redirects to the edit url), here only test for the mapstops
+    $con->test_mapstop_tag($mapstop1, "1st mapstop on tour edit_track");
+    $con->test_mapstop_tag($mapstop1, "2nd mapstop on tour edit_track");
+
+    // cleanup
+    Mapstops::instance()->delete($mapstop1);
+    Mapstops::instance()->delete($mapstop2);
+    $con->helper->delete_wp_posts_created();
 }
 test_tour_edit_track($admin_con, $t_id_admin, 'admin');
 test_tour_edit_track($contrib_con, $t_id_contributor, 'contributor');

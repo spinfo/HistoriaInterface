@@ -20,7 +20,6 @@ function test_place_form_fields_values($con, $name, $lat, $lon, $page_type) {
     $con->test_input_field('shtm_place[lon]', $lon, $page_type);
 }
 
-
 // get instances of test connections and add them to the test cases
 $admin_con = new WPTestConnection('Places API Test (admin)',
     'test-admin', 'test-admin', $helper->config->wp_url);
