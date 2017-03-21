@@ -56,7 +56,7 @@ abstract class AbstractController {
 
     // redirects based on the url params passed setting the required status
     // makes sure that messages intended for the user reach the page in question
-    protected static function redirect($params, $status = 302) {
+    public static function redirect($params, $status = 302) {
         $url = 'admin.php?' . $params;
 
         if(!session_id()) {

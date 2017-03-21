@@ -396,8 +396,8 @@ function shtm_render_tour_creator() {
             }
             break;
         default:
-            require_once( dirname(__FILE__) . '/controllers/tours_controller.php');
-            ToursController::index();
+            require_once( dirname(__FILE__) . '/controllers/abstract_controller.php');
+            AbstractController::redirect(RouteParams::default_page());
             break;
     }
 

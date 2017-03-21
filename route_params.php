@@ -20,7 +20,7 @@ class RouteParams {
     }
 
     public static function default_page() {
-        return self::index_places();
+        return self::index_tours();
     }
 
     private static function make_route($controller, $action, $id = null) {
