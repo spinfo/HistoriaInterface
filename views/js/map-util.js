@@ -38,3 +38,100 @@ MapUtil.parseCoordinates = function(elem) {
     }
     return result;
 }
+
+// Format an input value according to the precision we save on coordinates
+MapUtil.formatCoordValue = function(value) {
+    return Number.parseFloat(value).toFixed(6);
+}
+
+// LEAFLET DRAW CONFIGURATION
+// The following configures leaflet draw to only allow drawing/editing of a single item.
+MapUtil.create_leaflet_draw_for_single_item = function(
+    map,                         // the leaflet map to use
+    type,                        // type of object to use ('polyline', 'marker', 'circle', 'polygon' or 'rectangle')
+    binding,                     // A CoordinateFormBinding to update the form values
+    createInputElementsCallback, // A callback function to create input form elements
+    drawOptions,                 // Options to use for the leaflet drawControl
+) {
+    // a layer for all editable items (only one in this case)
+    var editableItems = new L.FeatureGroup();
+    map.addLayer(editableItems);
+
+    // initialize an edit config with a layer group of editable items
+    var editOptions = {
+        draw: false,
+        edit: {
+            featureGroup: editableItems
+        }
+    };
+    var drawControl = new L.Control.Draw(drawOptions);
+    var editControl = new L.Control.Draw(editOptions);
+    // at first we set the control to draw, this will change once a line is
+    // drawn (either by the user or programmatically)
+    map.addControl(drawControl);
+
+    // a hook called when a fresh line is drawn
+    map.on('draw:created', function(e) {
+        var type = e.layerType,
+            layer = e.layer;
+
+        // add all latlngs to the form binding and refresh the form
+        binding.clear();
+        // for layers with multiple latlngs, e.g. on type polyline
+        if(layer.hasOwnProperty('_latlngs')) {
+            layer._latlngs.forEach(function(latLng, idx) {
+                binding.addLatLng(latLng);
+            });
+        }
+        // for layers with single latlngs, e.g. on type 'marker'
+        if(layer.hasOwnProperty('_latlng')) {
+            binding.addLatLng(layer._latlng);
+        }
+        binding.display(createInputElementsCallback);
+
+        // the layer (i.e. the line) may now be edited
+        layer.addTo(editableItems);
+
+        // since there may only be one line edited disable the toolbar for
+        // drawing and enable the one for editing
+        drawControl.remove();
+        editControl.addTo(map);
+    });
+
+    // a hook called after saving the edited line
+    map.on('draw:edited', function(e) {
+        // layers updated
+        var layers = e.layers;
+
+        if(layers.length > 0) {
+            console.warn("More than one layer was edited.");
+        }
+
+        // remove the old latLngs from the form binding and add the new ones
+        binding.clear();
+        layers.eachLayer(function(layer) {
+            // for layers with multiple latlngs, e.g. on type polyline
+            if(layer.hasOwnProperty('_latlngs')) {
+                layer._latlngs.forEach(function(latLng, idx) {
+                    binding.addLatLng(latLng);
+                });
+            }
+            // for layers with single latlngs, e.g. on type 'marker'
+            if(layer.hasOwnProperty('_latlng')) {
+                binding.addLatLng(layer._latlng);
+            }
+        });
+        // tell the form binding to re-render the form
+        binding.display(createInputElementsCallback);
+    });
+
+    // a hook called after a layer has been removed from the map
+    map.on('draw:deleted', function(e) {
+        // remove all coordinates from the binding and refresh the form
+        binding.clear();
+        binding.display(createInputElementsCallback);
+        // remove the edit control and replace it by the draw control
+        editControl.remove();
+        drawControl.addTo(map);
+    });
+}

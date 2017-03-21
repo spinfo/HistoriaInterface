@@ -46,6 +46,23 @@ class PlacesController extends AbstractController {
 
         $place = $places->create();
 
+        $current_area_id = UserService::instance()->get_current_area_id();
+        if($current_area_id != DB::BAD_ID) {
+            $place->area_id = 1;
+        } else {
+            debug_log("No area selected. That should never happen.");
+            $current_area_id = Areas::instance()->last_id();
+        }
+        $area = Areas::instance()->get($current_area_id);
+        if(!is_null($area)) {
+            $center_lat = ($area->coordinate1->lat + $area->coordinate2->lat)/2;
+            $center_lon = ($area->coordinate1->lon + $area->coordinate2->lon)/2;
+            $place->coordinate->lat = $center_lat;
+            $place->coordinate->lon = $center_lon;
+        } else {
+            debug_log("Area not retrievabel from selection id.");
+        }
+
         $view = new View(ViewHelper::edit_place_view(), array(
             'heading' => 'Neuer Ort',
             'place' => $place,
@@ -66,7 +83,8 @@ class PlacesController extends AbstractController {
             if($current_area_id != DB::BAD_ID) {
                 $place->area_id = 1;
             } else {
-                throw new \Exception("Some area should always be selected.");
+                debug_log("No area selected. That should never happen.");
+                $current_area_id = Areas::instance()->last_id();
             }
             $result = $places->save($place);
             if(empty($result)) {

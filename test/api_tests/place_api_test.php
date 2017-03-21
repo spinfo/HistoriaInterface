@@ -5,12 +5,6 @@ require_once(dirname(__FILE__) . '/../wp_test_connection.php');
 
 // test for the presence of form fields needed for place creation
 function test_place_form_fields($con, $page_type) {
-    $con->ensure_xpath("//label[@for='shtm_name']", 1,
-        "Should have name label on $page_type.");
-    $con->ensure_xpath("//label[@for='shtm_lat']", 1,
-        "Should have latitude label on $page_type.");
-    $con->ensure_xpath("//label[@for='shtm_lon']", 1,
-        "Should have longitude label on $page_type.");
     $con->ensure_xpath("//input[@name='shtm_place[name]']", 1,
         "Should have name input on $page_type.");
     $con->ensure_xpath("//input[@name='shtm_place[lat]']", 1,
@@ -50,8 +44,7 @@ $post = array(
     'shtm_place[lat]' => $lat,
     'shtm_place[lon]' => $lon
 );
-// Coordinate values have a precision of exactly six digits after the decimal
-// point
+// Get the right precision for testing coordinate values
 $lat_repr = $helper->coord_value_string($lat);
 $lon_repr = $helper->coord_value_string($lon);
 
@@ -81,8 +74,9 @@ $admin_con->test_fetch($helper->tc_url('place', 'edit', $id), null, 200,
     "Should have status 200 on place edit.");
 $admin_con->test_simple_page("place edit");
 
-// Test for the presence of the right form fields
+// Test for the presence of the right form fields and the coordinate
 test_place_form_fields($admin_con, "place edit");
+$admin_con->test_coordinate($lat_repr, $lon_repr, "place edit");
 
 // Test for the right values in the form fields
 test_place_form_fields_values($admin_con,
@@ -115,10 +109,10 @@ $admin_con->test_simple_page("place new");
 $admin_con->test_page_heading("Neuer Ort", "place new");
 test_place_form_fields($admin_con, "place new");
 
-$empty_lonlat = $helper->coord_value_string(0.0);
-test_place_form_fields_values($admin_con, "",
-    $empty_lonlat, $empty_lonlat, "place new");
-
+test_place_form_fields($admin_con, "place new");
+$admin_con->ensure_xpath(
+    "//coordinate[@cid='-1' and not(@lat='') and not(@lon='')]", 1,
+    "Should have a coordinate with non-empty values but invalid id.");
 
 // TEST PLACE INDEX
 $admin_con->test_fetch($helper->tc_url('place', 'index'), null, 200,
@@ -141,6 +135,7 @@ $admin_con->test_fetch($helper->tc_url('place', 'delete', $id), null, 200,
     "Should have status 200 on place delete.");
 $admin_con->ensure_xpath("//div[@id='shtm_delete_place']", 1,
     "Should have a delete button on delete place.");
+$admin_con->test_coordinate($new_lat_repr, $new_lon_repr, "place delete");
 
 // error page should be shown for an invalid id
 $invalid_id = $helper->db_highest_id($helper->config->places_table) + 1;

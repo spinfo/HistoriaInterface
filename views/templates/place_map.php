@@ -9,15 +9,20 @@
 
     <?php $this->include($this->view_helper::map_util_js()) ?>
 
-    // parse the place's coordinate
-    latLng = MapUtil.parseCoordinates(document.getElementById('shtm_map'))[0];
+    // only create the map if we are not on an edit page
+    // (does it's own map creation)
+    url = window.location.href;
+    if(!url.includes('shtm_a=edit') && !url.includes('shtm_a=new')) {
 
-    // create a leaflet map and center it on the coordinate with a close zoom
-    var map = MapUtil.createMap('shtm_map');
-    map.setView(latLng, 17);
+        // parse the place's coordinate
+        coordLatLng = MapUtil.parseCoordinates(document.getElementById('shtm_map'))[0];
 
-    // add a marker for the coordinate
-    L.marker(latLng).addTo(map);
+        // create a leaflet map and center it on the coordinate with a close zoom
+        var map = MapUtil.createMap('shtm_map');
+        map.setView(coordLatLng, 15);
+
+        L.marker(coordLatLng).addTo(map);
+    }
 
 </script>
 

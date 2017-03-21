@@ -51,8 +51,10 @@
     // fields
     createInputElements = function(latLng, idx) {
         var inputs = [];
-        inputs.push(createCoordInputElem('lat', latLng.lat, idx));
-        inputs.push(createCoordInputElem('lon', latLng.lng, idx));
+        var lat = MapUtil.formatCoordValue(latLng.lat);
+        var lon = MapUtil.formatCoordValue(latLng.lng);
+        inputs.push(createCoordInputElem('lat', lat, idx));
+        inputs.push(createCoordInputElem('lon', lon, idx));
         var input = createCoordInputElem('id', latLng._shtm_cid, idx);
         input.setAttribute('type', 'hidden');
         inputs.push(input);
@@ -75,6 +77,7 @@
 
     // fit map to the binding OR if no track coordinates exist yet, fit it to
     // the mapstops OR if there are no mapstops yet, fit it to the area
+    // TODO: really do that
     var latLngs;
     if(binding.latLngs.length > 0) {
         latLngs = binding.latLngs;
@@ -83,19 +86,10 @@
     }
     map.fitBounds(L.latLngBounds(latLngs));
 
-    // LEAFLET DRAW CONFIGURATION
-    // The following configures leaflet draw, which allows us to edit the tour
-    // track.
-    // Initialize the FeatureGroup to store editable layers
-    var editableItems = new L.FeatureGroup();
-    map.addLayer(editableItems);
-
-    // Initialize two draw controls, one for editing and one for drawing
+    // Initialize options for drawing, set every other element to false
     var drawOptions = {
         draw: {
-            polyline: {
-                allowIntersection: true,
-            },
+            polyline: { allowIntersection: true },
             marker: false,
             circle: false,
             polygon: false,
@@ -103,72 +97,9 @@
         },
         edit: false
     };
-    var editOptions = {
-        draw: false,
-        edit: {
-            featureGroup: editableItems
-        }
-    }
-    var drawControl = new L.Control.Draw(drawOptions);
-    var editControl = new L.Control.Draw(editOptions);
-    // at first we set the control to draw, this will change once a line is
-    // drawn (either by the user or programmatically)
-    map.addControl(drawControl);
-
-    // a hook called when a fresh line is drawn
-    map.on('draw:created', function(e) {
-        var type = e.layerType,
-            layer = e.layer;
-
-        if(type != 'polyline') {
-            console.warn("Non-Polyline layer drawn.");
-            return;
-        }
-        // add all latlngs to the form binding and refresh the form
-        binding.clear();
-        layer._latlngs.forEach(function(latLng, idx) {
-            binding.addLatLng(latLng);
-        });
-        binding.display(createInputElements);
-
-        // the layer (i.e. the line) may now be edited
-        layer.addTo(editableItems);
-
-        // since there may only be one line edited disable the toolbar for
-        // drawing and enable the one for editing
-        drawControl.remove();
-        editControl.addTo(map);
-    });
-
-    // a hook called after saving the edited line
-    map.on('draw:edited', function(e) {
-        // layers updated
-        var layers = e.layers;
-
-        if(layers.length > 0) {
-            console.warn("More than one layer was edited.");
-        }
-
-        // remove the old latLngs from the form binding and add the new ones
-        binding.clear();
-        layers.eachLayer(function(layer) {
-            layer._latlngs.forEach(function(latLng, idx) {
-                binding.addLatLng(latLng);
-            });
-        });
-        // tell the form binding to re-render the form
-        binding.display(createInputElements);
-    });
-
-    // a hook called after a layer has been removed from the map
-    map.on('draw:deleted', function(e) {
-        // remove all coordinates from the binding and refresh the form
-        binding.clear();
-        binding.display(createInputElements);
-        // remove the edit control and replace it by the draw control
-        editControl.remove();
-        drawControl.addTo(map);
-    });
+    // create the leaflet draw environment
+    MapUtil.create_leaflet_draw_for_single_item(map, 'polyline', binding,
+        createInputElements, drawOptions);
 
     // initialize a polyline from the latLngs
     if(binding.latLngs.length > 0) {
@@ -176,7 +107,8 @@
         line.enable();
 
         // we need to do some manual initialization (leaflet-draw seems not to
-        // intend for us to programmatically create a drawing)
+        // intend for us to programmatically create a drawing), reference:
+        // https://github.com/Leaflet/Leaflet.draw/blob/master/src/draw/handler/Draw.Polyline.js
         line.addHooks();
         line._currentLatLng = binding.latLngs[0];
         binding.latLngs.forEach(function(latLng) {

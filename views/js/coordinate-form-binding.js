@@ -55,8 +55,11 @@ function CoordinateFormBinding(domElem) {
 // <input> tags to.
 CoordinateFormBinding.createWithElems = function(initialElementId, formElementId) {
     // create the binding
-    var tracksInputDiv = document.getElementById(formElementId);
-    var binding = new CoordinateFormBinding(tracksInputDiv);
+    var inputsDiv = document.getElementById(formElementId);
+    if(inputsDiv == null) {
+        console.error('bad formElementId: ' + formElementId);
+    }
+    var binding = new CoordinateFormBinding(inputsDiv);
     // parse coordinates into the binding
     var latLngs = MapUtil.parseCoordinates(document.getElementById(initialElementId));
     latLngs.forEach(function(latLng) {

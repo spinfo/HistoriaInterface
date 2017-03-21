@@ -71,6 +71,10 @@ class ViewHelper {
     public static function coordinate_form_binding_js() {
         return dirname(__FILE__) . '/views/js/coordinate-form-binding.js';
     }
+
+    public static function place_edit_map_js() {
+        return dirname(__FILE__) . '/views/js/place-edit-map.js';
+    }
 }
 
 ?>

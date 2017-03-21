@@ -10,13 +10,18 @@
         <label for="shtm_name">Name:</label>
         <input type="text" id="shtm_name" name="shtm_place[name]" value="<?php echo $this->place->name ?>">
     </div>
-    <div>
-        <label for="shtm_lat">Lat:</label>
-        <input type="text" id="shtm_lat" name="shtm_place[lat]" value="<?php printf("%.6f", $this->place->coordinate->lat) ?>">
-    </div>
-    <div>
-        <label for="shtm_lon">Lon:</label>
-        <input type="text" id="shtm_lon" name="shtm_place[lon]" value="<?php printf("%.6f", $this->place->coordinate->lon) ?>">
+
+    <div id="shtm_place_coordinate_inputs">
+        <div>
+            <div>
+                Lat:
+                <input type="text" name="shtm_place[lat]" value="<?php printf("%.6f", $this->place->coordinate->lat) ?>">
+            </div>
+            <div>
+                Lon:
+                <input type="text" name="shtm_place[lon]" value="<?php printf("%.6f", $this->place->coordinate->lon) ?>">
+            </div>
+        </div>
     </div>
 
     <div class="button">
@@ -24,3 +29,13 @@
     </div>
 
 </form>
+
+<script type="text/javascript">
+
+    // require the form binding script
+    <?php $this->include($this->view_helper::coordinate_form_binding_js()) ?>
+
+    // require the script to edit the map
+    <?php $this->include($this->view_helper::place_edit_map_js()) ?>
+
+</script>
