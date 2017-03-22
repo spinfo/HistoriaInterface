@@ -129,7 +129,9 @@ function shtm_install() {
     ) $charset_collate;";
 
     // sql for joining posts on mapstops
+    // a mapstop delete will cascade to this table
     $table_name = Mapstops::instance()->join_posts_table;
+    $mapstops_table = Mapstops::instance()->table;
     $mapstops_to_posts_sql = "CREATE TABLE $table_name (
         id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
         mapstop_id bigint(20) UNSIGNED NOT NULL,
@@ -138,7 +140,8 @@ function shtm_install() {
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id),
         KEY shtm_mapstops_to_posts (mapstop_id, post_id),
-        UNIQUE shtm_mapstop_unique_post (post_id)
+        UNIQUE shtm_mapstop_unique_post (post_id),
+        FOREIGN KEY (mapstop_id) REFERENCES $mapstops_table(id) ON DELETE CASCADE
     ) $charset_collate;";
 
     // collect queries
@@ -262,8 +265,8 @@ function shtm_create_test_data() {
     $values = array(
         'tour_id' => $tour_id,
         'place_id' => $place3->id,
-        'name' => "Heine-Denkmal (2012)",
-        'description' => "Das Heine-Denkmal des ..."
+        'name' => "Heinrich-Heine-Denkmal (1994)",
+        'description' => "Ein nachdenklicher Mann"
     );
     $mapstop_ids[] = DB::insert(Mapstops::instance()->table, $values);
 

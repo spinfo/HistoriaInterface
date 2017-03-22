@@ -266,6 +266,10 @@ $contrib_con->test_no_access(
     'contributor tries to update admin tour track');
 
 
+// cleanup created tours
+Tours::instance()->delete(Tours::instance()->get($t_id_admin, true, true));
+Tours::instance()->delete(Tours::instance()->get($t_id_contributor, true, true));
+
 // invalidate logins
 $admin_con->invalidate_login();
 $contrib_con->invalidate_login();

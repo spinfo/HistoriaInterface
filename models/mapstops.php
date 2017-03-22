@@ -98,13 +98,11 @@ class Mapstops extends AbstractCollection {
     protected function db_delete($mapstop) {
         DB::start_transaction();
 
-        // do the deletes
+        // do the deletes, the join relation to posts is automatically
+        // deleted with a database constraint
         $result = DB::delete_single($this->table, $mapstop->id);
-        if($result > 0) {
-            $result2 = $this->db_delete_post_ids($mapstop);
-        }
 
-        if($result > 0 && $result2) {
+        if($result > 0) {
             DB::commit_transaction();
             $mapstop->id = DB::BAD_ID;
             $mapstop->post_ids = null;
