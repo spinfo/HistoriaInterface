@@ -1,8 +1,6 @@
 
 <div id="shtm_map" class="shtm_map_left" style="height: 300px; width: 300px;">
-    <coordinate cid="<?php echo $this->place->coordinate->id ?>"
-            lat="<?php echo $this->place->coordinate->lat ?>"
-            lon="<?php echo $this->place->coordinate->lon ?>"></coordinate>
+     <?php $this->include($this->view_helper::coordinate_template(), array('coordinate' => $this->place->coordinate)) ?>
 </div>
 
 <script type="text/javascript">

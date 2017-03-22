@@ -110,7 +110,7 @@ test_place_form_fields($admin_con, "place new");
 
 test_place_form_fields($admin_con, "place new");
 $admin_con->ensure_xpath(
-    "//coordinate[@cid='-1' and not(@lat='') and not(@lon='')]", 1,
+    "//div[@data-cid='-1' and not(@data-lat='') and not(@data-lon='')]", 1,
     "Should have a coordinate with non-empty values but invalid id.");
 
 // TEST PLACE INDEX

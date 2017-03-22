@@ -3,17 +3,12 @@
 
 <div id="shtm_map" class="shtm_map_left" style="height: 500px; width: 500px;">
     <div id="shtm_map_area">
-        <coordinate cid="<?php echo $this->area->coordinate1->id ?>"
-            lat="<?php echo $this->area->coordinate1->lat ?>"
-            lon="<?php echo $this->area->coordinate1->lon ?>"></coordinate>
-
-        <coordinate cid="<?php echo $this->area->coordinate2->id ?>"
-            lat="<?php echo $this->area->coordinate2->lat ?>"
-            lon="<?php echo $this->area->coordinate2->lon ?>"></coordinate>
+         <?php $this->include($this->view_helper::coordinate_template(), array('coordinate' => $this->area->coordinate1)) ?>
+         <?php $this->include($this->view_helper::coordinate_template(), array('coordinate' => $this->area->coordinate2)) ?>
     </div>
     <div id="shtm_map_track">
         <?php foreach ($this->tour->coordinates as $c): ?>
-            <coordinate cid="<?php echo $c->id ?>" lat="<?php echo $c->lat ?>" lon="<?php echo $c->lon ?>"></coordinate>
+             <?php $this->include($this->view_helper::coordinate_template(), array('coordinate' => $c)) ?>
         <?php endforeach ?>
     </div>
     <div id="shtm_map_mapstops">
@@ -147,7 +142,7 @@
     var mapstopsGroup = L.layerGroup();
     for(var i = 0; i < mapstops.length; i++) {
         var mapstop = mapstops[i];
-        var marker = L.marker(mapstop.latLng, { zIndexOffset: -1000, opacity: 0.8 });
+        var marker = L.marker(mapstop.latLng, { zIndexOffset: -1000, opacity: 1.0 });
         marker.bindPopup('<b>' + mapstop.name + '</b><br>' + mapstop.description);
         mapstopsGroup.addLayer(marker);
     }

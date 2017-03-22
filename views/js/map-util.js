@@ -26,9 +26,9 @@ MapUtil.createMap = function(elementId) {
 // NOTE: adds the coordinate id as a further property '_shtm_cid' for later
 // retrieval
 MapUtil.parseCoordinate = function(elem) {
-    var cid = elem.getAttribute('cid');
-    var lat = elem.getAttribute('lat');
-    var lng = elem.getAttribute('lon');
+    var cid = elem.getAttribute('data-cid');
+    var lat = elem.getAttribute('data-lat');
+    var lng = elem.getAttribute('data-lon');
     var latLng = L.latLng(lat, lng);
     latLng._shtm_cid = cid;
     return latLng;
@@ -39,7 +39,7 @@ MapUtil.parseCoordinate = function(elem) {
 // retrieval
 MapUtil.parseCoordinates = function(elem) {
     var result = [];
-    var elems = elem.getElementsByTagName('coordinate');
+    var elems = elem.getElementsByClassName('coordinate');
     for(var i = 0; i < elems.length; i++) {
         result.push(MapUtil.parseCoordinate(elems[i]));
     }

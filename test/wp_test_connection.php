@@ -213,7 +213,9 @@ class WPTestConnection extends TestCase {
 
     // tests the presence of a coordinate tag with the specified lat/lon
     function test_coordinate($lat, $lon, $test_name) {
-        $this->ensure_xpath("//coordinate[@lat='$lat' and @lon='$lon']", null,
+        $condition = "@class='coordinate'";
+        $condition .= " and @data-lat='$lat' and @data-lon='$lon'";
+        $this->ensure_xpath("//div[$condition]", null,
             "Should have a coordinate with the right lat/lon ($test_name).");
     }
 
