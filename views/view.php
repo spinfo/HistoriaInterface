@@ -57,6 +57,10 @@ class View {
         return $included->render();
     }
 
+    public function coord_format($float) {
+        return sprintf("%.6f", floatval($float));
+    }
+
     public function datetime_format($datetime) {
         if(empty($datetime)) {
             return "";

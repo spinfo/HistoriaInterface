@@ -117,11 +117,13 @@ class WPTestConnection extends TestCase {
      * Tests for the existence of xpath nodes in a result retrieved earlier.
      * Fails if the node amount retrieved does not match the expected count.
      * (Disregards node count if set to null.)
+     *
+     * @return bool Whether the test passed or failed.
      */
     public function ensure_xpath($xpath, $expected_node_count, $msg) {
         if(!isset($this->result)) {
             $this->note_fail("No document to test: " . $msg);
-            return;
+            return false;
         }
 
         $nodes = $this->result->query($xpath);
@@ -129,18 +131,19 @@ class WPTestConnection extends TestCase {
         if(is_null($expected_node_count)) {
             if($nodes->length <= 0) {
                 $this->note_fail($msg . " (No nodes found for: '$xpath'.)");
-                return;
+                return false;
             }
         } else {
             if($nodes->length != $expected_node_count) {
                 $msg .= " (Expected $expected_node_count node(s),";
                 $msg .= " got $nodes->length on '$xpath'.)";
                 $this->note_fail($msg);
-                return;
+                return false;
             }
         }
 
         $this->note_pass($msg);
+        return true;
     }
 
     // performs tests common for normal pages retrieved by a simple GET
@@ -213,6 +216,10 @@ class WPTestConnection extends TestCase {
 
     // tests the presence of a coordinate tag with the specified lat/lon
     function test_coordinate($lat, $lon, $test_name) {
+        // format coordinates to database precision
+        $lat = $this->helper->coord_value_string($lat);
+        $lon = $this->helper->coord_value_string($lon);
+        // build an xpath condition and test it
         $condition = "@class='coordinate'";
         $condition .= " and @data-lat='$lat' and @data-lon='$lon'";
         $this->ensure_xpath("//div[$condition]", null,

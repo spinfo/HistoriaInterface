@@ -15,11 +15,11 @@
         <div>
             <div>
                 Lat:
-                <input type="text" name="shtm_place[lat]" value="<?php printf("%.6f", $this->place->coordinate->lat) ?>">
+                <input type="text" name="shtm_place[lat]" value="<?php echo $this->coord_format($this->place->coordinate->lat) ?>">
             </div>
             <div>
                 Lon:
-                <input type="text" name="shtm_place[lon]" value="<?php printf("%.6f", $this->place->coordinate->lon) ?>">
+                <input type="text" name="shtm_place[lon]" value="<?php echo $this->coord_format($this->place->coordinate->lon) ?>">
             </div>
         </div>
     </div>
