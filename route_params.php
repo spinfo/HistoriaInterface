@@ -85,16 +85,20 @@ class RouteParams {
         return self::make_route('tour', 'edit', $id);
     }
 
+    public static function edit_tour_track($id) {
+        return self::make_route('tour', 'edit_track', $id);
+    }
+
+    public static function edit_tour_stops($id) {
+        return self::make_route('tour', 'edit_stops', $id);
+    }
+
     public static function update_tour($id) {
         return self::make_route('tour', 'update', $id);
     }
 
     public static function delete_tour($id) {
         return self::make_route('tour', 'delete', $id);
-    }
-
-    public static function edit_tour_track($id) {
-        return self::make_route('tour', 'edit_track', $id);
     }
 
     public static function set_current_area($id = null) {

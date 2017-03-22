@@ -87,7 +87,7 @@ class ToursController extends AbstractController {
         $id = RouteParams::get_id_value();
         $tour = Tours::instance()->get($id);
         // determine the right view to use based on the result
-        $view = self::determine_edit_view($tour);
+        $view = self::determine_edit_view($tour, 'edit_info');
         // and render the view in page
         self::wrap_in_page_view($view)->render();
     }
@@ -97,23 +97,23 @@ class ToursController extends AbstractController {
         $id = RouteParams::get_id_value();
         $tour = Tours::instance()->get($id, true, true);
 
-        $view = self::determine_edit_track_view($tour);
+        $view = self::determine_edit_view($tour, 'edit_track');
 
         if(!empty($tour)) {
-            // TODO: there should be a better way to get these
-            $tour->coordinates = array();
-            foreach ($tour->coordinate_ids as $id) {
-                $tour->coordinates[] = Coordinates::instance()->get($id);
-            }
-            $tour->mapstops = array();
-            foreach ($tour->mapstop_ids as $id) {
-                $mapstop = Mapstops::instance()->get($id);
-                if(!empty($mapstop)) {
-                    $mapstop->place =
-                        Places::instance()->get($mapstop->place_id);
-                    $tour->mapstops[] = $mapstop;
-                }
-            }
+            self::get_related_objects_for($tour);
+        }
+        self::wrap_in_page_view($view)->render();
+    }
+
+    public static function edit_stops() {
+        // attempt to get the tour to edit
+        $id = RouteParams::get_id_value();
+        $tour = Tours::instance()->get($id, true, true);
+
+        $view = self::determine_edit_view($tour, 'edit_stops');
+
+        if(!empty($tour)) {
+            self::get_related_objects_for($tour);
         }
         self::wrap_in_page_view($view)->render();
     }
@@ -195,7 +195,7 @@ class ToursController extends AbstractController {
         self::wrap_in_page_view($view)->render();
     }
 
-    private static function determine_edit_track_view($tour) {
+    private static function determine_edit_view($tour, $action = 'edit_info') {
         $error_view = self::filter_if_not_editable($tour);
         if(!is_null($error_view)) {
             return $error_view;
@@ -203,29 +203,19 @@ class ToursController extends AbstractController {
         // the tour's area should always be accessible, but test anyway
         $area = Areas::instance()->get($tour->area_id);
         if(empty($area)) {
-            $e = new \Exception("Error not present for tour: '$tour->area_id'");
+            $e = new \Exception("Area not present for tour: '$tour->area_id'");
             return self::create_view_with_exception($e, 500);
         }
-        // success
-        return new View(ViewHelper::edit_tour_track_view(), array(
-            'tour' => $tour,
-            'area' => $area
-        ));
-    }
-
-    private static function determine_edit_view($tour) {
-        $error_view = self::filter_if_not_editable($tour);
-        if(!is_null($error_view)) {
-            return $error_view;
+        // success, choose a file based on the $action param
+        if($action == 'edit_info') {
+            $file = ViewHelper::edit_tour_view();
+        } else if($action == 'edit_track') {
+            $file = ViewHelper::edit_tour_track_view();
+        } else if($action == 'edit_stops') {
+            $file = ViewHelper::edit_tour_stops_view();
         }
-        // the tour's area should always be accessible, but test anyway
-        $area = Areas::instance()->get($tour->area_id);
-        if(empty($area)) {
-            $e = new \Exception("Error not present for tour: '$tour->area_id'");
-            return self::create_view_with_exception($e, 500);
-        }
-        // success
-        return new View(ViewHelper::edit_tour_view(), array(
+        // return the view with 'tour' and 'area' set
+        return new View($file, array(
             'tour' => $tour,
             'area' => $area
         ));
@@ -291,6 +281,24 @@ class ToursController extends AbstractController {
             return null;
         }
         return $result;
+    }
+
+    // Get objects related to the tour and set them on it. This might be better
+    // in a model method, but is currently only needed here.
+    private static function get_related_objects_for($tour) {
+        $tour->coordinates = array();
+        foreach ($tour->coordinate_ids as $id) {
+            $tour->coordinates[] = Coordinates::instance()->get($id);
+        }
+        $tour->mapstops = array();
+        foreach ($tour->mapstop_ids as $id) {
+            $mapstop = Mapstops::instance()->get($id);
+            if(!empty($mapstop)) {
+                $mapstop->place =
+                    Places::instance()->get($mapstop->place_id);
+                $tour->mapstops[] = $mapstop;
+            }
+        }
     }
 
     private static function datetime_from_input($input) {

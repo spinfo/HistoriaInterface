@@ -22,6 +22,14 @@ MapUtil.createMap = function(elementId) {
     return map;
 }
 
+// a uniform look for L.polyline (or the draw equivalent)
+MapUtil.lineShape = function() {
+    return {
+        color: '#0099cc',
+        opacity: 0.75
+    }
+}
+
 // parses a single coordinate tag with into a latLng array.
 // NOTE: adds the coordinate id as a further property '_shtm_cid' for later
 // retrieval

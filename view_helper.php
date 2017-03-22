@@ -42,6 +42,10 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/tour_edit_track.php';
     }
 
+    public static function edit_tour_stops_view() {
+        return dirname(__FILE__) . '/views/tour_edit_stops.php';
+    }
+
     public static function delete_tour_view() {
         return dirname(__FILE__) . '/views/tour_delete.php';
     }
@@ -61,6 +65,10 @@ class ViewHelper {
 
     public static function place_map_template() {
         return dirname(__FILE__) . '/views/templates/place_map.php';
+    }
+
+    public static function tour_map_template() {
+        return dirname(__FILE__) . '/views/templates/tour_map.php';
     }
 
     public static function coordinate_template() {

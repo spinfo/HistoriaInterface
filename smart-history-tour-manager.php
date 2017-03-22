@@ -381,6 +381,9 @@ function shtm_render_tour_creator() {
                 case 'edit_track':
                     ToursController::edit_track();
                     break;
+                case 'edit_stops':
+                    ToursController::edit_stops();
+                    break;
                 case 'update':
                     ToursController::update();
                     break;
@@ -449,7 +452,7 @@ function add_leaflet_js() {
     $is_script_page = false;
     if($controller == 'place') {
         $is_script_page = true;
-    } else if($controller == 'tour' && $action == 'edit_track') {
+    } else if($controller == 'tour' && ($action == 'edit_track' || $action == 'edit_stops')) {
         $is_script_page = true;
     }
 
