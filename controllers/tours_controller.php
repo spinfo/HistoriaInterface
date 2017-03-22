@@ -135,6 +135,9 @@ class ToursController extends AbstractController {
         self::wrap_in_page_view($view)->render();
     }
 
+    // this updates: either the tour's track (linked coordinates), that were
+    // edited on the 'edit_track' route or it updates the tour information, that
+    // was edited on the 'edit' route
     public static function update() {
         // get the tour to update
         $id = RouteParams::get_id_value();
@@ -193,6 +196,37 @@ class ToursController extends AbstractController {
             $view = $error_view;
         }
         self::wrap_in_page_view($view)->render();
+    }
+
+    // this just updates the order of mapstops of this tour, then redirects
+    // to the edit_stops route
+    // TODO: This doesn't work yed (and can't at the moment...)
+    public static function update_stops() {
+        // get the tour to update
+        $id = RouteParams::get_id_value();
+        $tour = Tours::instance()->get($id, true);
+
+        // if the tour itself is not editale, abort
+        $error_view = self::filter_if_not_editable($tour);
+        if(is_null($error_view)) {
+            $error = false;
+
+            $result = self::set_mapstop_ids_from_input($tour);
+            if($result) {
+                $result = Tours::instance()->update($tour);
+                if($result) {
+                    // MessageService::instance()->add_success("Positionen übernommen");
+                    self::redirect(RouteParams::edit_tour_stops($tour->id));
+                } else {
+                    MessageService::add_model_messages($tour);
+                    self::create_bad_request_view("Ungültiger Input");
+                }
+            } else {
+                self::create_bad_request_view("Ungültiger Input");
+            }
+        } else {
+            self::wrap_in_page_view($error_view)->render();
+        }
     }
 
     private static function determine_edit_view($tour, $action = 'edit_info') {
@@ -319,6 +353,38 @@ class ToursController extends AbstractController {
             return null;
         }
         return $result;
+    }
+
+    /**
+     * Mapstops ids are given as an array of [ "id" => "position" ]
+     * @param   obj $tour   the tour to compare agains
+     * @return  array   An array of ids if successful (empty array if not).
+     */
+    function set_mapstop_ids_from_input($tour) {
+        // parse the order of mapstop ids from the params
+        $new_mapstop_ids = array();
+        foreach ($_POST['shtm_tour']['mapstop_ids'] as $id => $position) {
+            $pos = intval($position);
+            if($pos > 0 && $pos <= count($tour->mapstop_ids)) {
+                $new_mapstop_ids[$pos - 1] = $id;
+            } else {
+                $error = true;
+                break;
+            }
+        }
+        // the arrays should be equal (disregarding positions)
+        if(empty(array_diff($tour->mapstop_ids, $new_mapstop_ids))) {
+            debug_log("Would update...");
+        } else {
+            $error = true;
+            debug_log("Would not update...");
+        }
+        if($error) {
+            return false;
+        } else {
+            $tour->mapstop_ids = $new_mapstop_ids;
+            return true;
+        }
     }
 
 }

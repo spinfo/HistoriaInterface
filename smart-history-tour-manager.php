@@ -390,6 +390,9 @@ function shtm_render_tour_creator() {
                 case 'update':
                     ToursController::update();
                     break;
+                case 'update_stops':
+                    ToursController::update_stops();
+                    break;
                 case 'delete':
                     ToursController::delete();
                     break;

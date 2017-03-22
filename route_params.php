@@ -97,6 +97,10 @@ class RouteParams {
         return self::make_route('tour', 'update', $id);
     }
 
+    public static function update_tour_stops($id) {
+        return self::make_route('tour', 'update_stops', $id);
+    }
+
     public static function delete_tour($id) {
         return self::make_route('tour', 'delete', $id);
     }

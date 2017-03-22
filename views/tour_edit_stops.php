@@ -3,22 +3,42 @@
 
 <?php $this->include($this->view_helper::tour_map_template()) ?>
 
-<form id="shtm_map_form" action=admin.php?<?php echo $this->route_params::update_tour($tour->id) ?> method="post"
-    class="shtm_right_from_map">
 
-    <?php foreach ($this->tour->mapstops as $mapstop): ?>
-        <b><?php echo $mapstop->name ?></b><br>
-        <?php echo $mapstop->description ?><br>
-        --------------------------------<br>
-    <?php endforeach ?>
+<form id="shtm_mapstop_positions_form" action=admin.php?<?php echo $this->route_params::update_tour_stops($tour->id) ?> method="post"
+    class="shtm_right_from_map shtm_form">
+
+    <div id="shtm_mapstops_menu">
+
+        <?php for ($i = 1; $i <= count($this->tour->mapstops); $i++): ?>
+            <?php $mapstop = $this->tour->mapstops[$i - 1] ?>
+
+            <div class="shtm_form_line" style="margin-bottom: 7px">
+
+                <div style="height: 100%; float: left; margin-right: 5px;">
+                    <select name="shtm_tour[mapstop_ids][<?php echo $mapstop->id ?>]"
+                        onChange="rerenderMapstops(this)">
+                        <?php for($j = 1; $j <= count($this->tour->mapstops) ; $j++): ?>
+                            <option <?php echo (($j == $i) ? 'selected="true"' : '') ?>><?php echo $j ?></option>
+                        <?php endfor ?>
+                    </select>
+                </div>
+
+                <div style="float: left">
+                    <b><?php echo $mapstop->name ?></b><br>
+                    <?php echo $mapstop->description ?><br>
+                </div>
+
+                <div style="clear: both"></div>
+            </div>
+        <?php endfor ?>
+
+    </div>
 
     <div class="shtm_button">
         <button type="submit">Speichern</button>
     </div>
 
 </form>
-
-
 
 <script type="text/javascript">
 
@@ -46,7 +66,7 @@
     var line = L.polyline(trackLatLngs, MapUtil.lineShape());
     line.addTo(map);
 
-    // fit the map to either mapstops, track or (if all else fails) the area
+    // fit the map to either mapstops, track or (if all else fails) to the area
     var latLngs;
     if(mapstops.length > 0) {
         latLngs = mapstops.map(function(mapstop) {
@@ -58,6 +78,43 @@
         latLngs = MapUtil.parseCoordinates(document.getElementById('shtm_map_area'));
     }
     map.fitBounds(L.latLngBounds(latLngs));
+
+    // the list of all mapstops with positions
+    var formLines = document.getElementsByClassName('shtm_form_line');
+
+    // add a callback to every select box that rearranges the items
+    var rerenderMapstops = function(elem) {
+        // the "form line" we want to change is two levels up
+        var elemLine = elem.parentNode.parentNode;
+        // read the form lines into an array for easier editing
+        var lines = [];
+        for(var i = 0; i < formLines.length; i++) {
+            lines.push(formLines[i]);
+        }
+        // determine the old and new positions
+        var oldPos = lines.indexOf(elemLine);
+        var newPos = elem.selectedIndex;
+        // remove at the old position and insert at the new position
+        lines.splice(oldPos, 1);
+        if(newPos == lines.length) {
+            lines.push(elemLine);
+        } else {
+            lines.splice(newPos, 0, elemLine);
+        }
+        // set the selection to approriate values (go two levels down again)
+        for(var i = 0; i < lines.length; i++) {
+            lines[i].children[0].children[0].children[i].selected = true;
+        }
+        // remove old order from DOM and put in the new one
+        var container = document.getElementById('shtm_mapstops_menu');
+        while(container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
+        for(var i = 0; i < lines.length; i++) {
+            container.append(lines[i]);
+        }
+    };
+
 
 </script>
 
