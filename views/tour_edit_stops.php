@@ -12,7 +12,7 @@
         --------------------------------<br>
     <?php endforeach ?>
 
-    <div class="button">
+    <div class="shtm_button">
         <button type="submit">Speichern</button>
     </div>
 

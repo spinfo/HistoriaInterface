@@ -8,7 +8,18 @@ function createCoordInputElem (key, value, index) {
     input.setAttribute('name', name);
     input.setAttribute('value', value);
     input.setAttribute('type', 'text');
+    input.setAttribute('id', 'shtm_place_' + key);
 
+    var label = document.createElement('label');
+    label.setAttribute('for', 'shtm_place_' + key);
+    if(key == 'lat') {
+        label.innerHTML = 'Lat: ';
+    } else if(key == 'lon') {
+        label.innerHTML = 'Lon: ';
+    }
+
+    div.setAttribute('class', 'shtm_form_line');
+    div.appendChild(label);
     div.appendChild(input);
     return div;
 };
@@ -19,11 +30,9 @@ createInputElements = function(latLng, idx) {
     var container = document.createElement('div');
 
     var div = createCoordInputElem('lat', MapUtil.formatCoordValue(latLng.lat), idx);
-    div.innerHTML = 'Lat: ' + div.innerHTML;
     container.appendChild(div);
 
     var div = createCoordInputElem('lon', MapUtil.formatCoordValue(latLng.lng), idx);
-    div.innerHTML = 'Lon: ' + div.innerHTML;
     container.appendChild(div);
 
     return container;
@@ -64,7 +73,7 @@ if(window.location.href.includes('shtm_a=edit')) {
     var marker = new L.Draw.Marker(map, drawOptions.draw.marker);
     marker._marker = L.marker(coordLatLng);
     marker._fireCreatedEvent();
-    map.setView(coordLatLng, 15);
+    map.setView(coordLatLng, 16);
 }
 // else if we are on the new place view:
 // the coordinate represents the area's center, just zoom a bit further out

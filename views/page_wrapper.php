@@ -33,28 +33,61 @@
             padding: 2%;
         }
 
+        /* header styles */
         .shtm_heading_line {
             margin-bottom: 15px;
         }
-
         .shtm_heading_line > h1, .shtm_heading_line > h2 {
             display: inline;
             padding-right: 15px;
         }
-
         .shtm_not_a_link {
             font-weight: bold;
             color: #AFAFAF;
         }
 
+        /* tables on the index pages */
         .shtm_index_table {
             margin-top: 12px;
         }
+        .shtm_index_table tr > td {
+            padding: 3px 7px;
+        }
+        .shtm_index_table > tbody > tr:nth-child(odd) {
+            background-color: #dfdfdf;
+        }
 
+        /* input forms */
+        form.shtm_form {
+            /*width: 100%;*/
+        }
+        form.shtm_form.shtm_place_form {
+            width: 50px;
+        }
+        form.shtm_form > div.shtm_form_line,
+        form.shtm_form > div > div.shtm_form_line,
+        form.shtm_form > div > div > div.shtm_form_line {
+            margin: 3px;
+            width: 100%;
+        }
+        form.shtm_form > div.shtm_form_line > label,
+        form.shtm_form > div > div.shtm_form_line > label,
+        form.shtm_form > div > div > div.shtm_form_line > label {
+            margin-top: 5px;
+            display: inline-block;
+            width: 10%;
+            height: 100%;
+            line-height: 100%;
+            vertical-align: top;
+        }
+        form.shtm_form > .shtm_button {
+            margin-top: 12px;
+        }
+
+        /* maps: display to the left */
         .shtm_map_left {
             float: left;
         }
-
         .shtm_right_from_map {
             margin-left: 20px;
             float: left;

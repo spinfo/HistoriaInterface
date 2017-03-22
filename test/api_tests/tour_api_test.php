@@ -192,9 +192,14 @@ function test_tour_update($con, $id, $post, $tour, $name) {
     if(isset($post['shtm_tour[name]'])) {
         // should have been rediract
         $con->test_redirect_param('shtm_a', 'edit');
-        // Everything we posted should reappear on the page
+        // Everything we posted should reappear on the page as an input
         foreach ($post as $key => $value) {
-            $con->test_input_field($key, $value, $name);
+            if ($key != 'shtm_tour[intro]') {
+                $con->test_input_field($key, $value, $name);
+            } else {
+                $xp = "//textarea[@name='$key' and text()='$value']";
+                $con->ensure_xpath($xp, 1, "Should have intro textarea");
+            }
         }
     } else {
         $con->test_redirect_param('shtm_a', 'edit_track');

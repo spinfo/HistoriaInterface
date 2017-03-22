@@ -1,19 +1,20 @@
 
 <h2>Tour erstellen</h2>
 
-<form action="admin.php?<?php echo $this->action_params ?>" method="post">
+<form action="admin.php?<?php echo $this->action_params ?>" method="post"
+    class="shtm_form">
 
     <div class="shtm_info_text">
         Geben Sie hier einen Namen und ein Gebiet für die Tour ein.<br>
         Der Name kann später noch geändert werden.)
     </div>
 
-    <div>
+    <div class="shtm_form_line">
         <label for="shtm_tour_name">Name:</label>
         <input type="text" id="shtm_tour_name" name="shtm_tour[name]" value="">
     </div>
 
-    <div>
+    <div class="shtm_form_line">
         <label for="shtm_tour_area">Gebiet: </label>
         <select id="shtm_tour_area" name="shtm_tour[area_id]">
             <?php foreach($this->areas_list as $area): ?>
@@ -29,7 +30,7 @@
         </select>
     </div>
 
-    <div class="button">
+    <div class="shtm_button">
         <button type="submit">Speichern</button>
     </div>
 </form>
