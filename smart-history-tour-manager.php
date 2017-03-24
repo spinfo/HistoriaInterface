@@ -177,7 +177,11 @@ function shtm_create_test_data() {
     $values = array("lat" => 51.357928, "lon" => 6.534190);
     $coord2_id = DB::insert(Coordinates::instance()->table, $values);
 
-    // Make the test area
+    // dummy coordinates for the test area
+    $coord3_id = DB::insert(Coordinates::instance()->table, $values);
+    $coord4_id = DB::insert(Coordinates::instance()->table, $values);
+
+    // Make one area for the example tour
     $values = array(
         "coordinate1_id" => $coord1_id,
         "coordinate2_id" => $coord2_id,
@@ -185,7 +189,15 @@ function shtm_create_test_data() {
     );
     $area_id = DB::insert(Areas::instance()->table, $values);
 
-    // Make the test places
+    // One area just for testing
+    $values = array(
+        "coordinate1_id" => $coord3_id,
+        "coordinate2_id" => $coord4_id,
+        "name" => "Test-Gebiet"
+    );
+    DB::insert(Areas::instance()->table, $values);
+
+    // Make the example places
     $values = array(
         "user_id" => $user_service->user_id(),
         "area_id" => $area_id,

@@ -3,9 +3,12 @@
 
 <?php $this->include($this->view_helper::tour_map_template()) ?>
 
-
 <form id="shtm_mapstop_positions_form" action=admin.php?<?php echo $this->route_params::update_tour_stops($tour->id) ?> method="post"
     class="shtm_right_from_map shtm_form">
+
+    <div style="margin-bottom: 12px">
+        <a href="admin.php?<?php echo $this->route_params::edit_tour_stops($tour->id) ?>">Stop hinzufügen</a>
+    </div>
 
     <div id="shtm_mapstops_menu">
 
@@ -24,7 +27,7 @@
                 </div>
 
                 <div style="float: left">
-                    <b><?php echo $mapstop->name ?></b><br>
+                    <b><?php echo $mapstop->name ?></b>&nbsp;<a href="admin.php?<?php echo $this->route_params::edit_tour_stops($tour->id) ?>">Bearbeiten</a><br>
                     <?php echo $mapstop->description ?><br>
                 </div>
 
@@ -82,7 +85,8 @@
     // the list of all mapstops with positions
     var formLines = document.getElementsByClassName('shtm_form_line');
 
-    // add a callback to every select box that rearranges the items
+    // add a callback to every select box that rearranges the options such that
+    // every position is present once and the order reflects the user's choice
     var rerenderMapstops = function(elem) {
         // the "form line" we want to change is two levels up
         var elemLine = elem.parentNode.parentNode;

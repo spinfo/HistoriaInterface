@@ -4,7 +4,7 @@
 <?php $this->include($this->view_helper::tour_map_template()) ?>
 
 <form id="shtm_map_form" class="shtm_form" action=admin.php?<?php echo $this->route_params::update_tour($tour->id) ?> method="post"
-    class="shtm_right_from_map">
+    class="shtm_right_from_map shtm_form">
 
     <div id="shtm_tour_track_inputs">
         <!-- input fields added dynamically -->
