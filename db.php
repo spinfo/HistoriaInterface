@@ -224,6 +224,22 @@ class DB {
     }
 
     /**
+     * Replaces all placeholders in sql by the supplied values, then runs the
+     * query.
+     *
+     * (This is a small wrapper around wpdb->query(), adds prepartion step.)
+     *
+     * @return int|false Number of rows affected or false on error
+     */
+    public static function query($sql, $values) {
+        global $wpdb;
+
+        $query = self::prepare($sql, $values);
+
+        return $wpdb->query($query);;
+    }
+
+    /**
      * @return int The id of the new obj of DB::BAD_ID on failure.
      */
     public static function insert($table_name, $values) {

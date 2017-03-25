@@ -114,6 +114,8 @@ function shtm_install() {
     ) $charset_collate;";
 
     // sql for the mapstop table
+    // NOTE: The key tour_id-position could in principle be made unique. This
+    // however is not well supported in update mechanisms and wasn't done.
     $table_name = Mapstops::instance()->table;
     $mapstops_sql = "CREATE TABLE $table_name (
         id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -121,10 +123,11 @@ function shtm_install() {
         place_id bigint(20) UNSIGNED NOT NULL,
         name text NOT NULL,
         description text NOT NULL,
+        position smallint UNSIGNED NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id),
-        KEY shtm_mapstops_tour_id (tour_id),
+        KEY shtm_mapstop_position_in_tour_id (tour_id, position),
         KEY shtm_mapstops_place_id (place_id)
     ) $charset_collate;";
 
@@ -262,7 +265,8 @@ function shtm_create_test_data() {
         'tour_id' => $tour_id,
         'place_id' => $place1->id,
         'name' => "Ein Posten ist vakant",
-        'description' => "Gedenksteine Heinrich Heine"
+        'description' => "Gedenksteine Heinrich Heine",
+        'position' => 1
     );
     $mapstop_ids[] = DB::insert(Mapstops::instance()->table, $values);
 
@@ -270,7 +274,8 @@ function shtm_create_test_data() {
         'tour_id' => $tour_id,
         'place_id' => $place2->id,
         'name' => "Heine-Denkmal (2012)",
-        'description' => "Das Heine-Denkmal des ..."
+        'description' => "Das Heine-Denkmal des ...",
+        'position' => 2
     );
     $mapstop_ids[] = DB::insert(Mapstops::instance()->table, $values);
 
@@ -278,7 +283,8 @@ function shtm_create_test_data() {
         'tour_id' => $tour_id,
         'place_id' => $place3->id,
         'name' => "Heinrich-Heine-Denkmal (1994)",
-        'description' => "Ein nachdenklicher Mann"
+        'description' => "Ein nachdenklicher Mann",
+        'position' => 3
     );
     $mapstop_ids[] = DB::insert(Mapstops::instance()->table, $values);
 

@@ -46,6 +46,10 @@ class Mapstops extends AbstractCollection {
         // gather the values to insert
         $values = $this->db_values($mapstop);
 
+        // determine the next position for this mapstop
+        $position = $this->db_next_position($mapstop->tour_id);
+        $values['position'] = $position;
+
         DB::start_transaction();
         // actually do the insert of the mapstop and it's posts
         $result_id = DB::insert($this->table, $values);
@@ -72,6 +76,9 @@ class Mapstops extends AbstractCollection {
             return false;
         }
         $values = $this->db_values($mapstop);
+
+        // as a mapstop's tour_id may never be updated, remove the key
+        unset($values['tour_id']);
 
         DB::start_transaction();
         // update the mapstop, then simply delete and reinsert the post ids
@@ -102,7 +109,11 @@ class Mapstops extends AbstractCollection {
         // deleted with a database constraint
         $result = DB::delete_single($this->table, $mapstop->id);
 
-        if($result > 0) {
+        // re-order the tour's mapstops' positions
+        $result_reorder = Tours::instance()->update_mapstop_positions(
+            $mapstop->tour_id, null);
+
+        if(($result === 1) && $result_reorder) {
             DB::commit_transaction();
             $mapstop->id = DB::BAD_ID;
             $mapstop->post_ids = null;
@@ -171,6 +182,32 @@ class Mapstops extends AbstractCollection {
             return false;
         }
         return true;
+    }
+
+
+    /**
+     * Returns the next position value a new mapstop should have within the
+     * given tour. Position values are always positive and start at 1.
+     *
+     * @return  int The next biggest position value or false on error.
+     */
+    private function db_next_position($tour_id) {
+        $select = "SELECT MAX(position) AS maxpos FROM $this->table";
+        $result = DB::get($select, array('tour_id' => $tour_id));
+
+        if(is_null($result) || !property_exists($result, 'maxpos')) {
+            debug_log("Bad position lookup for tour_id: '$tour_id'");
+            return false;
+        } else {
+            // there is no mapstop for the tour yet, so return 1.
+            if(is_null($result->maxpos)) {
+                return 1;
+            }
+            // there already is a position for the tour, return increment.
+            else {
+                return $result->maxpos + 1;
+            }
+        }
     }
 
 }

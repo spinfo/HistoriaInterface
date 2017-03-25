@@ -64,7 +64,7 @@ class ToursTest extends TestCase {
     public function test_get() {
         $tour = $this->tours[0];
 
-        $this->add_mapstop_to_tour($tour);
+        $this->helper->add_mapstops_to_tour($tour);
 
         $from_db = Tours::instance()->get($tour->id, true, true);
 
@@ -115,6 +115,73 @@ class ToursTest extends TestCase {
             "Tour update should have created coordinate.");
         $this->assert($new_id == $c_id_after,
             "New coordinate should have the right id on tour update.");
+    }
+
+    public function test_update_mapstop_positions() {
+        // retrieve the tour with mapstop ids
+        $tour = Tours::instance()->get($this->tours[0]->id, true);
+
+        $m_ids = $tour->mapstop_ids;
+
+        $this->assert(count($m_ids) === 3, "Should test three mapstop ids.");
+
+        for($i = 0; $i < 3; $i++) {
+            $ids = $m_ids;
+            array_push($ids, array_splice($ids, $i, 1)[0]);
+            $this->test_single_good_mapstop_position_update($tour, $ids);
+
+            $ids = $m_ids;
+            array_unshift($ids, array_splice($ids, $i, 1)[0]);
+            $this->test_single_good_mapstop_position_update($tour, $ids);
+
+            $ids = $m_ids;
+            array_splice($ids, 1, 0, array_splice($ids, $i, 1));
+            $this->test_single_good_mapstop_position_update($tour, $ids);
+        }
+
+        // get a new reference
+        $tour = Tours::instance()->get($this->tours[0]->id, true);
+
+        // updating positions with a missing id should fail
+        $ids = $m_ids;
+        array_pop($ids);
+        $this->test_single_bad_mapstop_position_update($tour, $ids);
+
+        // updating positions with a surplus id should fail
+        $ids = $m_ids;
+        $new_mapstop = $this->helper->make_mapstop(true);
+        Mapstops::instance()->insert($new_mapstop);
+        array_push($ids, $new_mapstop->id);
+        $this->test_single_bad_mapstop_position_update($tour, $ids);
+        Mapstops::instance()->delete($new_mapstop);
+
+        // updating another tour should invariably fail
+        $other = Tours::instance()->get(Tours::instance()->first_id(), true);
+        $this->assert($other->id != $tour->id,
+            "Should test positions update for different tours");
+        $this->test_single_bad_mapstop_position_update($other, $m_ids);
+    }
+
+    private function test_single_good_mapstop_position_update($tour, $new_ids) {
+        $res = Tours::instance()->update_mapstop_positions($tour->id, $new_ids);
+        $this->assert($res === true,
+            "Should return true on normal mapstop positions update.");
+
+        // test that ids are returned in the new order
+        $from_db = Tours::instance()->get($tour->id, true);
+        $this->assert($from_db->mapstop_ids === $new_ids,
+            "Mapstop ids from database should be identical to new values");
+    }
+
+    private function test_single_bad_mapstop_position_update($tour, $new_ids) {
+        $res = Tours::instance()->update_mapstop_positions($tour->id, $new_ids);
+        $this->assert($res === false,
+            "Should return false on bad mapstop positions update.");
+
+        // test that ids stayed int the tour's order
+        $from_db = Tours::instance()->get($tour->id, true);
+        $this->assert($from_db->mapstop_ids === $tour->mapstop_ids,
+            "Mapstop ids from database should be identical to old values");
     }
 
     public function test_bad_update() {
@@ -180,8 +247,8 @@ class ToursTest extends TestCase {
         // a clone to test values on
         $clone = clone $tour;
 
-        // add a mapstop to the tour to ensure it has at least one
-        $this->add_mapstop_to_tour($tour);
+        // add mapstops to the tour to ensure it has at least one
+        $this->helper->add_mapstops_to_tour($tour);
 
         // take count
         $old_tour_count = DB::count($this->table);
@@ -310,6 +377,7 @@ class ToursTest extends TestCase {
         $this->test_bad_create();
         $this->test_get();
         $this->test_update();
+        $this->test_update_mapstop_positions();
         $this->test_bad_update();
         $this->test_bad_delete();
         $this->test_delete();
@@ -348,21 +416,10 @@ class ToursTest extends TestCase {
                 "coordinate_ids should match ($test_name).");
         }
         if(!empty($expected->mapstop_ids)) {
-            // test for array equality (not identity) is sufficient
-            $this->assert($got->mapstop_ids == $expected->mapstop_ids,
+            // test for identity as the ids order is important
+            $this->assert($got->mapstop_ids === $expected->mapstop_ids,
                 "mapstop_ids should match ($test_name).");
         }
-    }
-
-    // add a mapstop to the database that is linked to the tour
-    private function add_mapstop_to_tour($tour) {
-        if(is_null($tour->mapstop_ids)) {
-            $tour->mapstop_ids = array();
-        }
-        $mapstop = $this->helper->make_mapstop();
-        $mapstop->tour_id = $tour->id;
-        Mapstops::instance()->insert($mapstop);
-        $tour->mapstop_ids[] = $mapstop->id;
     }
 
 }

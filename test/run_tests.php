@@ -86,4 +86,15 @@ foreach($shtm_test_cases as $test_case) {
     $test_case->report();
 }
 
+// cleanup is normally done by the tests themselves, but cleanup all wordpress
+// posts that might have been created by the test user
+$posts = get_posts(array(
+    'author' => $helper->get_test_user()->ID,
+    'numberposts' => -1,
+    'post_status' => 'draft'
+));
+foreach ($posts as $post) {
+    wp_delete_post($post->ID, true);
+}
+
 ?>

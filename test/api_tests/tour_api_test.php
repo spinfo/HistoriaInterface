@@ -266,9 +266,87 @@ $contrib_con->test_no_access(
     'contributor tries to update admin tour track');
 
 
-// cleanup created tours
+// TEST EDIT/UPDATE STOPS
+function test_edit_stops($con, $tour_id, $ids, $fetch = true, $name) {
+    if($fetch) {
+        $url = $con->helper->tc_url('tour', 'edit_stops', $tour_id);
+        $con->test_fetch($url, null, 200,
+            "Should have status 200 on edit stops ($name).");
+        $con->test_simple_page("edit stops ($name)");
+    }
+
+    // test that for each id and position there is a select option and that
+    // those options are selected that match the order of the input ids
+    $n = count($ids);
+    for($i = 1; $i < $n; $i++) {
+        $id = $ids[$i - 1];
+        $name_pt = "@name='shtm_tour[mapstop_ids][$id]'";
+        for($j = 1; $j < $n; $j++) {
+            $select_pt = 'not(@selected)';
+            if($i === $j) {
+                $select_pt = '@selected';
+            }
+            $xpath = "//select[$name_pt]/option[$select_pt and text() = '$j']";
+            $con->ensure_xpath($xpath, 1,
+                "Should have the right select option set ($name).");
+        }
+    }
+}
+
+
+function test_edit_and_update_stops($con, $tour_id, $name) {
+    // add four mapstops to the tour in question, retrieve created ids
+    $con->helper->add_mapstops_to_tour(Tours::instance()->get($tour_id), 4);
+    $ids = Tours::instance()->get($tour_id, true)->mapstop_ids;
+
+    // test that the edit page renders the options we created
+    test_edit_stops($con, $tour_id, $ids, true, "$name - before post");
+
+    // build a post where the ids are in the opposite order
+    $post = array();
+    $altered_ids = array();
+    for($i = 3, $n = 1; $i >= 0; $i--, $n++) {
+        $id = $ids[$i];
+        $altered_ids[] = $id;
+        $post["shtm_tour[mapstop_ids][$id]"] = $n;
+    }
+
+    $url = $con->helper->tc_url('tour', 'update_stops', $tour_id);
+    $con->test_fetch($url, $post, 200,
+        "Should have status 200 on tour update stops ($name).");
+
+    test_edit_stops($con, $tour_id, $altered_ids, false, "$name - after post");
+
+    return $post;
+}
+
+// test that the edit page works without any mapstops
+test_edit_stops($admin_con, $t_id_admin, array(), true, 'admin - empty stops');
+test_edit_stops($contrib_con, $t_id_contributor, array(), true,
+    'contributor - empty stops');
+
+// test the update of stops' positions, save the post used to later check that
+// the contributor cannot do the same
+$post = test_edit_and_update_stops($admin_con, $t_id_admin,
+    'admin updates own stops positions');
+test_edit_and_update_stops($contrib_con, $t_id_contributor,
+    'contributor updates own stops positions');
+
+// test that the contributor can neither edit nor update an admin's tour's
+// mapstop positions
+$contrib_con->test_no_access(
+    $helper->tc_url('tour', 'edit_stops', $t_id_admin), null,
+    'contributor tries to edit admin tour stops');
+$contrib_con->test_no_access(
+    $helper->tc_url('tour', 'update_stops', $t_id_admin), $post,
+    'contributor tries to update admin tour stops');
+
+
+
+// cleanup created tours, mapstops (implicitly) and posts
 Tours::instance()->delete(Tours::instance()->get($t_id_admin, true, true));
 Tours::instance()->delete(Tours::instance()->get($t_id_contributor, true, true));
+$helper->delete_wp_posts_created();
 
 // invalidate logins
 $admin_con->invalidate_login();

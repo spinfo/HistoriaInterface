@@ -7,6 +7,9 @@ require_once(dirname(__FILE__) . '/places.php');
 
 class Mapstop extends AbstractModel {
 
+    // A mapstop belongs to a single tour. This value should not change.
+    // This greatly simplifies other aspects of the data model, e.g. the
+    // mapstop's position within a tour.
     public $tour_id = -1;
 
     public $place_id = -1;
@@ -14,6 +17,12 @@ class Mapstop extends AbstractModel {
     public $name = "";
 
     public $description = "";
+
+    // NOTE: The mapstop does not have an explicit field for it's position.
+    // Though that field appears in the database table, it is only used to
+    // retrieve mapstops in the correct order, not to be directly changed or
+    // used with the mapstop.
+    // public $position;
 
     public $post_ids = array(-1);
 

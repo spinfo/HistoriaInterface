@@ -11,14 +11,28 @@ require_once(dirname(__FILE__) . '/../../logging.php');
 class MapstopsTest extends TestCase {
 
     public function test_create() {
-        $mapstop = $this->helper->make_mapstop();
-        $this->test_single_good_create($mapstop, "normal mapstop");
-        $this->mapstops[] = $mapstop;
+        // create a mapstop and manually set the tour id, so we can check for
+        // the correct setting of the mapstop.position value for an empty tour
+        $mapstop1 = $this->helper->make_mapstop();
+        $mapstop1->tour_id = $this->tour->id;
 
-        $mapstop = $this->helper->make_mapstop();
-        $mapstop->post_ids = array();
-        $this->test_single_good_create($mapstop, "mapstop without post ids");
-        $this->mapstops[] = $mapstop;
+        $mapstop2 = $this->helper->make_mapstop();
+        $mapstop2->tour_id = $this->tour->id;
+
+        // Test a normal create and a create without posts assigned
+        $this->test_single_good_create($mapstop1, "normal mapstop");
+        $this->mapstops[] = $mapstop1;
+
+        $mapstop2->post_ids = array();
+        $this->test_single_good_create($mapstop2, "mapstop without post ids");
+        $this->mapstops[] = $mapstop2;
+
+        // test that position values were correctly assigned to the tour and
+        // to the mapstops
+        $tour = Tours::instance()->get($this->tour->id, true);
+        $expected_ids = array($mapstop1->id, $mapstop2->id);
+        $this->assert($tour->mapstop_ids === $expected_ids,
+            "mapstops' ids should match the tour's mapstop_ids.");
     }
 
     private function test_single_good_create($mapstop, $test_name) {
@@ -39,9 +53,6 @@ class MapstopsTest extends TestCase {
     public function test_bad_create() {
         // create a new one for this, will not be persisted
         $mapstop = $this->helper->make_mapstop();
-
-        // make a clone to test the bad update doesn't change anything
-        $clone = clone $mapstop;
 
         $val = $mapstop->name;
         $mapstop->name = "";
@@ -93,11 +104,12 @@ class MapstopsTest extends TestCase {
     public function test_update() {
         $mapstop = $this->mapstops[0];
 
-        // make a mapstop with different place_ and tour_id
+        // make a mapstop with different place_id, keep, tour_id the same
+        // (updating a mapstop's tour id is not a real use case)
         $other = $this->helper->make_mapstop(true);
+        $other->tour_id = $mapstop->tour_id;
 
         $mapstop->place_id = $other->place_id;
-        $mapstop->tour_id = $other->tour_id;
         $mapstop->name = $other->name;
         $mapstop->description = $other->description;
         $mapstop->post_ids = $other->post_ids;
@@ -114,7 +126,6 @@ class MapstopsTest extends TestCase {
     }
 
     public function test_bad_update() {
-        // create a new one for this, will not be persisted
         $mapstop = $this->mapstops[0];
 
         // make a clone to test the bad update doesn't change anything
@@ -137,16 +148,24 @@ class MapstopsTest extends TestCase {
             "mapstop with invalid place_id");
         $mapstop->place_id = $val;
 
+        // check that a valid but changed tour_id is ignored on update
         $val = $mapstop->tour_id;
-        $mapstop->tour_id = "";
-        $this->test_single_bad_update($mapstop, $clone,
-            "mapstop with invalid tour_id");
+        $mapstop->tour_id = Tours::instance()->first_id();
+        $this->assert($val != $mapstop->tour_id, "Should test different tours");
+        Mapstops::instance()->update($mapstop);
+        $from_db = Mapstops::instance()->get($mapstop->id);
+        $this->assert($val === $from_db->tour_id,
+            "Should not be able to update a mapstop's tour.");
         $mapstop->tour_id = $val;
 
+        // Create another mapstop to test that we cannot update with the other's
+        // post_id assigned
         $other = $this->helper->make_mapstop();
+        // set tour id to include this mapstop in the tests for pos in the tour
+        $other->tour_id = $this->tour->id;
         Mapstops::instance()->insert($other);
         $val = $mapstop->post_ids;
-        $mapstop->post_ids[] = $other->post_ids[0];
+        array_push($mapstop->post_ids, $other->post_ids[0]);
         $this->test_single_bad_update($mapstop, $clone,
             "mapstop with other mapstops's post_id included");
         $mapstop->post_ids = $val;
@@ -162,12 +181,16 @@ class MapstopsTest extends TestCase {
             "Should return false on bad update ($test_name).");
 
         $from_db = Mapstops::instance()->get($mapstop->id);
-
         $this->test_mapstop_values($from_db, $good_clone,
             "Should not update values on bad update - $test_name");
     }
 
     private function test_delete() {
+        $ids = array_map(function($m) { return $m->id; }, $this->mapstops);
+        $tours_ids = Tours::instance()->get($this->tour->id, true)->mapstop_ids;
+        $this->assert($ids === $tours_ids,
+            "Before deletion test, our ids and the tour's ids should match");
+
         // test delete for each mapstop we created
         foreach($this->mapstops as $mapstop) {
             // save the id
@@ -189,6 +212,12 @@ class MapstopsTest extends TestCase {
             $post_ids = DB::list($select, array('mapstop_id' => $id), 0, 1);
             $this->assert(empty($post_ids),
                 "Post ids should be deleted on mapstop delete.");
+
+            // test that the tour's ids and our id's still match
+            array_shift($ids);
+            $tours_ids = Tours::instance()->get($this->tour->id, true)->mapstop_ids;
+            $this->assert($ids === $tours_ids,
+                "After a delete our ids and the tour's ids should match.");
         }
     }
 
@@ -202,11 +231,17 @@ class MapstopsTest extends TestCase {
         $this->test_bad_update();
         $this->test_delete();
 
-        // delete all the posts that the helper created for the mapstops
+        // cleanup, delete all the posts that the helper created as well as the
+        // mapstops's tour.
         $this->helper->delete_wp_posts_created();
+        Tours::instance()->delete($this->tour);
     }
 
     private function setup() {
+        // create a tour for the mapstops
+        $tour_id = Tours::instance()->insert($this->helper->make_tour());
+        $this->tour = Tours::instance()->get($tour_id, true, true);
+
         $this->name = "Mapstops Unit Test";
         $this->table = Mapstops::instance()->table;
         $this->join_table = Mapstops::instance()->join_posts_table;

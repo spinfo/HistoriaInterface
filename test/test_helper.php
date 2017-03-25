@@ -194,6 +194,19 @@ class TestHelper {
         return $tour;
     }
 
+    // add three mapstops to the database for the tour
+    public function add_mapstops_to_tour($tour, $n = 3) {
+        if(is_null($tour->mapstop_ids)) {
+            $tour->mapstop_ids = array();
+        }
+        for($i = 0; $i < $n; $i++) {
+            $mapstop = $this->make_mapstop();
+            $mapstop->tour_id = $tour->id;
+            Mapstops::instance()->insert($mapstop);
+            $tour->mapstop_ids[] = $mapstop->id;
+        }
+    }
+
     // remove all the worpress posts created by this helper
     public function delete_wp_posts_created() {
         $id = array_pop($this->posts_created);

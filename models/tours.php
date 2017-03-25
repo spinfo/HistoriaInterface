@@ -56,12 +56,7 @@ class Tours extends AbstractCollection {
         }
 
         if($get_mapstop_ids) {
-            $result->mapstop_ids = array();
-            $sql = "SELECT id FROM " . Mapstops::instance()->table;
-            $m_ids = DB::list($sql, array('tour_id' => $id));
-            foreach($m_ids as $id_result) {
-                $result->mapstop_ids[] = $id_result->id;
-            }
+            $result->mapstop_ids = $this->db_get_mapstops_ids($id);
         }
 
         if($get_coord_ids) {
@@ -261,6 +256,8 @@ class Tours extends AbstractCollection {
         }
     }
 
+    // TODO: Check that this really updates coordinates and does not always
+    // reinsert
     public function update_track($tour, $track_values) {
         if(!empty($track_values)) {
             $coords_to_set = array();
@@ -272,6 +269,54 @@ class Tours extends AbstractCollection {
             }
             $tour->coordinates = $coords_to_set;
         }
+    }
+
+     /**
+     * Update the tour's mapstop positions to match the order in the supplied
+     * array of mapstop ids.
+     *
+     * The mapstop ids supplied must match the actual tour's mapstop ids in
+     * count and value (though obviously not in position).
+     *
+     * If no mapstop ids are supplied, this will simply "fix" the positions to
+     * be a continuous range beginning at 1.
+     *
+     * @return bool Whether the update was successful or not
+     */
+    public function update_mapstop_positions($tour_id, $mapstop_ids = null) {
+        // if the supplied ids are empty, return immediately
+        if(is_array($mapstop_ids) && empty($mapstop_ids)) {
+            return true;
+        }
+        // Get the tour's current ids to have a value to compare against.
+        $old_ids = $this->db_get_mapstops_ids($tour_id);
+        // if no ids are given as a param, we will simply fix the current order
+        if(is_null($mapstop_ids)) {
+            $mapstop_ids = $old_ids;
+        }
+        // Complain and return if the update assumes different ids.
+        if(!empty(array_diff($old_ids, $mapstop_ids)) ||
+            !empty(array_diff($mapstop_ids, $old_ids))) {
+            debug_log("Bad input for tour's mapstop positions.");
+            return false;
+        }
+        // if there are no old ids, no update is necessary
+        if(empty($old_ids)) {
+            return true;
+        }
+        // Build a case-when sql that does the update in a single statement.
+        $sql = "UPDATE " . Mapstops::instance()->table;
+        $sql .= " SET position = CASE id";
+        for($i = 0; $i < count($mapstop_ids); $i++) {
+            $sql .= " WHEN %d THEN " . ($i + 1);
+        }
+        $sql .= " ELSE position END WHERE tour_id = %d";
+        // we can directly use the mapstop ids as the values to be inserted,
+        // appending the tour_id for the where-clause
+        array_push($mapstop_ids, $tour_id);
+        $result = DB::query($sql, $mapstop_ids);
+        // if any integer >= 0 is returned. the query did not error
+        return (is_int($result) && $result >= 0);
     }
 
     private function db_values($tour) {
@@ -296,13 +341,26 @@ class Tours extends AbstractCollection {
         return $values;
     }
 
-    // retrieve ids of all coordinates joined to the tour in the database
+    // retrieve ids of all coordinates' ids joined to the tour in the database
     private function db_get_coordinate_ids($tour_id) {
         $result = array();
         $sql = "SELECT coordinate_id FROM $this->join_coordinates_table";
         $id_results = DB::list($sql, array('tour_id' => $tour_id));
         foreach($id_results as $id_result) {
             $result[] = intval($id_result->coordinate_id);
+        }
+        return $result;
+    }
+
+    // retrieve all mapstops' ids joined to the tour in the database in the
+    // order given by their "position" value
+    private function db_get_mapstops_ids($tour_id) {
+        $result = array();
+        $sql = "SELECT id FROM " . Mapstops::instance()->table;
+        $sql .= " WHERE tour_id = %d ORDER BY position ASC";
+        $m_ids = DB::list_by_query($sql, array($tour_id));
+        foreach($m_ids as $id_result) {
+            $result[] = intval($id_result->id);
         }
         return $result;
     }
