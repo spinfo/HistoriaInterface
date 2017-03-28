@@ -92,6 +92,11 @@
             margin-left: 20px;
             float: left;
         }
+
+        /* revert "list-style: none" from somewhere in wordpress */
+        #shtm_container ul {
+            list-style: disc outside none;
+        }
     -->
 </style>
 

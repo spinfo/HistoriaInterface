@@ -50,6 +50,10 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/tour_delete.php';
     }
 
+    public static function delete_mapstop_view() {
+        return dirname(__FILE__) . '/views/mapstop_delete.php';
+    }
+
 
     public static function choose_current_area_template() {
         return dirname(__FILE__) . '/views/templates/choose_current_area.php';
@@ -61,6 +65,10 @@ class ViewHelper {
 
     public static function single_tour_header_template() {
         return dirname(__FILE__) . '/views/templates/single_tour_header.php';
+    }
+
+    public static function single_mapstop_header_template() {
+        return dirname(__FILE__) . '/views/templates/single_mapstop_header.php';
     }
 
     public static function place_map_template() {

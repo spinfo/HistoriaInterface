@@ -33,7 +33,7 @@ require_once(dirname(__FILE__) . '/test_case.php');
 
 // PARSE ARGUMENTS
 const UNIT_TESTS = array('places', 'areas', 'mapstops', 'tours');
-const API_TESTS = array('place_api', 'area_api', 'tour_api');
+const API_TESTS = array('place_api', 'area_api', 'tour_api', 'mapstop_api');
 
 // remove file name from args
 array_shift($argv);
@@ -44,14 +44,19 @@ if(empty($argv)) {
 } else {
     foreach ($argv as $arg) {
         if($arg == 'unit') {
+            // add all unit tests
             $to_run = array_merge($to_run, UNIT_TESTS);
         } else if($arg == 'api') {
+            // add all api tests
             $to_run = array_merge($to_run, API_TESTS);
         } else if(in_array($arg, UNIT_TESTS) || in_array($arg, API_TESTS)) {
+            // add a single test that should be run
             array_push($to_run, $arg);
         } else if ($arg == '--queries') {
+            // add a hook to wordpress to debug log every database query
             \add_filter('query', 'SmartHistoryTourManager\debug_log_query');
         } else {
+            // unknown arg, panic and fail
             echo "ERROR: unknown test: $arg" . PHP_EOL;
             exit(-1);
         }

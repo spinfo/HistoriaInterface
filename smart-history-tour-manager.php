@@ -305,8 +305,6 @@ function shtm_create_test_data() {
 register_activation_hook(__FILE__, 'SmartHistoryTourManager\shtm_install');
 register_activation_hook(__FILE__, 'SmartHistoryTourManager\shtm_create_test_data');
 
-// TODO: Write a hook after post delete to disjoin from mapstop
-
 /**
  * TOUR CREATOR
  * The Tour Creator is that part of the Smart History Manager used to create
@@ -419,6 +417,32 @@ function shtm_render_tour_creator() {
                     break;
                 default:
                     ToursController::index();
+                    break;
+            }
+            break;
+        case 'mapstop':
+            require_once( dirname(__FILE__) . '/controllers/mapstops_controller.php');
+            switch ($action) {
+                case 'new':
+                    MapstopsController::new();
+                    break;
+                case 'create':
+                    MapstopsController::create();
+                    break;
+                case 'edit':
+                    MapstopsController::edit();
+                    break;
+                case 'update':
+                    MapstopsController::update();
+                    break;
+                case 'delete':
+                    MapstopsController::delete();
+                    break;
+                case 'destroy':
+                    MapstopsController::destroy();
+                    break;
+                default:
+                    MapstopsController::index();
                     break;
             }
             break;

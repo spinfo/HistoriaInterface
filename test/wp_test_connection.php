@@ -203,19 +203,30 @@ class WPTestConnection extends TestCase {
         );
     }
 
-    // test for the correct status and messages on attempt to access a bad url
-    function test_no_access($url, $post, $name) {
+    public function test_not_found($url, $post, $name) {
+        $this->test_fetch($url, $post, 404,
+            "Should have status 404 ($name).");
+
+        $this->test_error_message('existiert nicht', $name);
+
+        $this->ensure_xpath("div//[contains(@class,'shtm_message_success')]", 0,
+            "Should not have success message on 404 ($name).");
+    }
+
+    // test for the correct status and messages on attempt to access a url not
+    // accessible to the user
+    public function test_no_access($url, $post, $name) {
         $this->test_fetch($url, $post, 403,
             "Should have status 403 on forbidden access ($name).");
 
         $this->test_error_message('Berechtigung', "forbidden access ($name).");
 
         $this->ensure_xpath("div//[contains(@class,'shtm_message_success')]", 0,
-            "Should not have success message on forbidden access ($name).");
+            "Should not have success message on 403 ($name).");
     }
 
     // tests the presence of a coordinate tag with the specified lat/lon
-    function test_coordinate($lat, $lon, $test_name) {
+    public function test_coordinate($lat, $lon, $test_name) {
         // format coordinates to database precision
         $lat = $this->helper->coord_value_string($lat);
         $lon = $this->helper->coord_value_string($lon);
@@ -228,7 +239,7 @@ class WPTestConnection extends TestCase {
 
     // test that the mapstop data is included on the page and that the right
     // coordinate data is present as well
-    function test_mapstop_tag($mapstop, $test_name) {
+    public function test_mapstop_tag($mapstop, $test_name) {
         $condition = "@data-mapstop-id='$mapstop->id'";
         $condition .= " and @data-mapstop-name='$mapstop->name'";
         $condition .= " and @data-mapstop-description='$mapstop->description'";

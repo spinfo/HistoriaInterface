@@ -24,29 +24,29 @@ abstract class AbstractController {
         MessageService::instance()->add_error(
             "Sie haben nicht die erforderlichen Berechtigungen für diese Aktion.");
         self::status_header(403);
-        $view = new View(ViewHelper::empty_view(), null);
-        return $view;
+        return self::error_view();
     }
 
     protected static function create_not_found_view($error_msg) {
         MessageService::instance()->add_error($error_msg);
         self::status_header(404);
-        $view = new View(ViewHelper::empty_view(), null);
-        return $view;
+        return self::error_view();
     }
 
     protected static function create_bad_request_view($error_msg) {
         MessageService::instance()->add_error($error_msg);
         self::status_header(400);
-        $view = new View(ViewHelper::empty_view(), null);
-        return $view;
+        return self::error_view();
     }
 
-    protected static function create_view_with_exception($exception, $status = 500) {
-        MessageService::instance()->add_error($exception->getMessage());
+    protected static function create_internal_error_view($msg, $status = 500) {
+        MessageService::instance()->add_error($msg);
         self::status_header($status);
-        $view = new View(ViewHelper::empty_view(), null);
-        return $view;
+        return self::error_view();
+    }
+
+    protected static function create_view_with_exception($e, $status = 500) {
+        return self::create_internal_error_view($e->getMessage(), $status);
     }
 
     protected static function status_header($status_code, $description = '') {
@@ -112,6 +112,11 @@ abstract class AbstractController {
         }
 
         return $result;
+    }
+
+    // convenience function to create a view specifically to show errors on
+    private static function error_view() {
+        return new View(ViewHelper::empty_view(), null);
     }
 
 }

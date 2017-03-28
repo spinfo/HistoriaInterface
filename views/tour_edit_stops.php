@@ -19,7 +19,7 @@
 
                 <div style="height: 100%; float: left; margin-right: 5px;">
                     <select name="shtm_tour[mapstop_ids][<?php echo $mapstop->id ?>]"
-                        onChange="rerenderMapstops(this)">
+                        onChange="rerenderMapstopPositions(this)">
                         <?php for($j = 1; $j <= count($this->tour->mapstops) ; $j++): ?>
                             <option <?php echo (($j == $i) ? 'selected="true"' : '') ?>><?php echo $j ?></option>
                         <?php endfor ?>
@@ -27,7 +27,7 @@
                 </div>
 
                 <div style="float: left">
-                    <b><?php echo $mapstop->name ?></b>&nbsp;<a href="admin.php?<?php echo $this->route_params::edit_tour_stops($tour->id) ?>">Bearbeiten</a><br>
+                    <b><?php echo $mapstop->name ?></b>&nbsp;<a href="admin.php?<?php echo $this->route_params::edit_mapstop($mapstop->id) ?>">Bearbeiten</a>&nbsp;|&nbsp;<a href="admin.php?<?php echo $this->route_params::delete_mapstop($mapstop->id) ?>">Löschen</a><br>
                     <?php echo $mapstop->description ?><br>
                 </div>
 
@@ -87,7 +87,7 @@
 
     // add a callback to every select box that rearranges the options such that
     // every position is present once and the order reflects the user's choice
-    var rerenderMapstops = function(elem) {
+    var rerenderMapstopPositions = function(elem) {
         // the "form line" we want to change is two levels up
         var elemLine = elem.parentNode.parentNode;
         // read the form lines into an array for easier editing

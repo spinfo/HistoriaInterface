@@ -34,7 +34,8 @@ class Mapstops extends AbstractCollection {
     public function db_get($id) {
         $sql = $this->select_sql();
         $sql .= "WHERE m.id = join_table.mapstop_id AND m.id = %d";
-        return DB::get_by_query($sql, array($id));
+        $result = DB::get_by_query($sql, array($id));
+        return (is_null($result->id)) ? null : $result;
     }
 
     protected function db_insert($mapstop) {

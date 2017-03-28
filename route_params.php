@@ -105,6 +105,30 @@ class RouteParams {
         return self::make_route('tour', 'delete', $id);
     }
 
+    public static function new_mapstop() {
+        return self::make_route('mapstop', 'new');
+    }
+
+    public static function create_mapstop() {
+        return self::make_route('mapstop', 'create');
+    }
+
+    public static function edit_mapstop($id) {
+        return self::make_route('mapstop', 'edit', $id);
+    }
+
+    public static function update_mapstop($id) {
+        return self::make_route('mapstop', 'update', $id);
+    }
+
+    public static function delete_mapstop($id) {
+        return self::make_route('mapstop', 'delete', $id);
+    }
+
+    public static function destroy_mapstop($id) {
+        return self::make_route('mapstop', 'destroy', $id);
+    }
+
     public static function set_current_area($id = null) {
         return self::params_to_route(self::set_current_area_params($id));
     }
@@ -151,7 +175,7 @@ class RouteParams {
     }
 
     public static function get_id_value() {
-        return $_GET[self::$key_id];
+        return intval($_GET[self::$key_id]);
     }
 
     public static function get_back_params_value() {
