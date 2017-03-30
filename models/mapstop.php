@@ -24,7 +24,7 @@ class Mapstop extends AbstractModel {
     // used with the mapstop.
     // public $position;
 
-    public $post_ids = array(-1);
+    public $post_ids = array();
 
     protected function do_validity_check() {
         $this->do_check(Tours::instance()->valid_id($this->tour_id),

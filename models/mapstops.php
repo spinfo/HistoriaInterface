@@ -152,7 +152,9 @@ class Mapstops extends AbstractCollection {
     public function update_values($mapstop, $array) {
         $array = (object) $array;
 
-        $mapstop->tour_id = intval($array->tour_id);
+        if(isset($array->tour_id)) {
+            $mapstop->tour_id = intval($array->tour_id);
+        }
         $mapstop->place_id = intval($array->place_id);
         $mapstop->name = strval($array->name);
         $mapstop->description = strval($array->description);

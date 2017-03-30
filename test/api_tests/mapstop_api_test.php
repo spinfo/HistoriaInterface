@@ -19,15 +19,84 @@ $shtm_test_cases[] = $contrib_con;
 
 
 // Create a tour that we can work with
-// TODO: Remove once this is done by testing the 'create' route
 $helper = new TestHelper();
 $t_admin = $helper->make_tour();
 $t_admin->user_id = $helper->get_test_user()->ID;
 $t_id_admin = Tours::instance()->insert($t_admin);
 
-$m_admin = $helper->make_mapstop();
-$m_admin->tour_id = $t_admin->id;
-$m_id_admin = Mapstops::instance()->insert($m_admin);
+
+
+// TEST NEW
+function test_new($con, $tour, $name) {
+    $url = $con->helper->tc_url('mapstop', 'new') . "&shtm_tour_id=$tour->id";
+    $con->test_fetch($url, null, 200,
+        "Should have status 200 on new mapstop ($name).");
+
+    $con->test_input_field('shtm_mapstop[name]', '', $name);
+    $con->test_textarea('shtm_mapstop[description]', '', $name);
+
+    // all places in the tour's area should be available to a new tour
+    $places = Places::instance()->list_by_area($tour->area_id);
+    $con->assert(!empty($places), "Should test on an area with places.");
+    foreach ($places as $p) {
+        $expr = "@value='$p->id'and contains(.,'$p->name') and not(@selected)";
+        $xp = "//select[@name='shtm_mapstop[place_id]']/option[$expr]";
+        $con->ensure_xpath($xp, 1, "Should be able to select place ($name).");
+    }
+
+    // if all places are taken we should be redirected to place->new, simulate
+    // that by creating a mapstop for every place in the area
+    $mapstops = array();
+    foreach ($places as $place) {
+        $mapstop = $con->helper->make_mapstop(false, 0);
+        $mapstop->place_id = $place->id;
+        $mapstop->tour_id = $tour->id;
+        Mapstops::instance()->insert($mapstop);
+        $mapstops[] = $mapstop;
+    }
+    $con->test_fetch($url, null, 200,
+        "Should have status 200 on new mapstop redirect to place new ($name).");
+    $con->test_redirect_params('place', 'new');
+    foreach ($mapstops as $mapstop) {
+        Mapstops::instance()->delete($mapstop);
+    }
+}
+
+test_new($admin_con, $t_admin, 'Admin visits mapstop new for own tour.');
+
+
+// TEST CREATE
+// test the creation of a mapstop, return the created mapstop
+function test_create($con, $post, $tour, $name) {
+    $url = $con->helper->tc_url('mapstop', 'create') ."&shtm_tour_id=$tour->id";
+
+    $id_before = Mapstops::instance()->last_id();
+    $con->test_fetch($url, $post, 200,
+        "Should have status 200 on mapstop create ($name).");
+    $id = Mapstops::instance()->last_id();
+    $con->assert($id > $id_before, "Should have created a mapstop ($name).");
+
+
+    $con->test_redirect_params('mapstop', 'edit', $id);
+
+    $mapstop = Mapstops::instance()->get(intval($id));
+    $con->assert(!empty($mapstop), "Should test new mapstop ($name).");
+
+    // test that all relevant values appear on the edit page
+    test_edit($con, $mapstop, $name, false);
+
+    return $mapstop;
+}
+
+$place = Places::instance()->list_by_area($t_admin->area_id, 0, 1)[0];
+$post = array(
+    'shtm_mapstop[place_id]' => $place->id,
+    'shtm_mapstop[name]' => 'mapstop-name ' . $helper->random_str(),
+    'shtm_mapstop[description]' => 'mapstop-desc ' . $helper->random_str(),
+);
+$m_admin = test_create($admin_con, $post, $t_admin,
+    'Admin creates mapstop for own tour');
+
 
 
 // TEST EDIT
@@ -71,6 +140,12 @@ function test_edit($con, $mapstop, $name, $do_fetch = true) {
     }
 }
 
+// create a few posts for the mapstop to properly test the edit
+$other = $helper->make_mapstop(false, 3);
+$m_admin->post_ids = $other->post_ids;
+Mapstops::instance()->update($m_admin);
+
+// test the edit
 test_edit($admin_con, $m_admin, 'Admin edits own mapstop');
 
 
@@ -125,8 +200,6 @@ function test_delete($con, $mapstop, $name) {
     $con->test_fetch($url, null, 200,
         "Should have status 200 on mapstop delete ($name).");
 
-    $con->ensure_xpath("//li[contains(., '$mapstop->id')]", 1,
-        "Should show id on mapstop delete ($name).");
     $con->ensure_xpath("//li[contains(., '$mapstop->name')]", 1,
         "Should show name on mapstop delete ($name).");
     $con->ensure_xpath("//li[contains(., '$mapstop->description')]", 1,
@@ -135,7 +208,7 @@ function test_delete($con, $mapstop, $name) {
 
 test_delete($admin_con, $m_admin, "admin for own mapstop");
 
-$url404 = $helper->tc_url('mapstop', 'delete', ($m_id_admin + 1));
+$url404 = $helper->tc_url('mapstop', 'delete', ($m_admin->id + 1));
 $admin_con->test_not_found($url404, null, "admin - delete invalid mapstop id");
 
 
@@ -153,9 +226,9 @@ function test_destroy($con, $id, $tour_id, $name) {
     $con->assert(!Mapstops::instance()->valid_id($id),
         "Should have removed the mapstop from db ($name).");
 }
-test_destroy($admin_con, $m_id_admin, $m_admin->tour_id, "admin - own mapstop");
+test_destroy($admin_con, $m_admin->id, $m_admin->tour_id, "admin - own mapstop");
 
-$url404 = $helper->tc_url('mapstop', 'destroy', ($m_id_admin + 1));
+$url404 = $helper->tc_url('mapstop', 'destroy', ($m_admin->id + 1));
 $admin_con->test_not_found($url404, null, "admin - destroy invalid mapstop id");
 
 // cleanup

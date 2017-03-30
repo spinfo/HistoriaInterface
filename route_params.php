@@ -33,13 +33,16 @@ class RouteParams {
         return self::index_tours();
     }
 
-    private static function make_route($controller, $action, $id = null) {
+    private static function make_route($controller, $action, $id = null, $tour_id = null) {
         $params = array(
             self::KEYS['controller'] => $controller,
             self::KEYS['action'] => $action
         );
         if(!is_null($id)) {
             $params[self::KEYS['id']] = $id;
+        }
+        if(!is_null($tour_id)) {
+            $params[self::KEYS['tour_id']] = $tour_id;
         }
         return self::params_to_route($params);
     }
@@ -116,16 +119,11 @@ class RouteParams {
     }
 
     public static function new_mapstop($tour_id) {
-        $values = array(
-            self::KEYS['controller'] => 'mapstop',
-            self::KEYS['action'] => 'new',
-            self::KEYS['tour_id'] => $tour_id
-        );
-        return self::params_to_route($values);
+        return self::make_route('mapstop', 'new', null, $tour_id);
     }
 
-    public static function create_mapstop() {
-        return self::make_route('mapstop', 'create');
+    public static function create_mapstop($tour_id) {
+        return self::make_route('mapstop', 'create', null, $tour_id);
     }
 
     public static function edit_mapstop($id) {
@@ -191,6 +189,10 @@ class RouteParams {
 
     public static function get_id_value() {
         return intval($_GET[self::KEYS['id']]);
+    }
+
+    public static function get_tour_id_value() {
+        return intval($_GET[self::KEYS['tour_id']]);
     }
 
     public static function get_back_params_value() {

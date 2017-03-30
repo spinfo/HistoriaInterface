@@ -1,6 +1,6 @@
 <div class="shtm_heading_line">
 
-    <?php if(!$this->route_params::is_current_page($this->route_params::new_mapstop())): ?>
+    <?php if(!$this->route_params::is_current_page($this->route_params::new_mapstop($this->mapstop->tour_id))): ?>
 
         <h2>Stop #<?php echo $this->mapstop->id ?></h2>
 

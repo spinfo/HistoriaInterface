@@ -14,6 +14,7 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/page_wrapper.php';
     }
 
+
     public static function index_places_view() {
         return dirname(__FILE__) . '/views/place_index.php';
     }
@@ -25,6 +26,8 @@ class ViewHelper {
     public static function delete_place_view() {
         return dirname(__FILE__) . '/views/place_delete.php';
     }
+
+
 
     public static function index_tours_view() {
         return dirname(__FILE__) . '/views/tour_index.php';
@@ -50,6 +53,12 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/tour_delete.php';
     }
 
+
+
+    public static function new_mapstop_view() {
+        return dirname(__FILE__) . '/views/mapstop_new.php';
+    }
+
     public static function edit_mapstop_view() {
         return dirname(__FILE__) . '/views/mapstop_edit.php';
     }
@@ -57,6 +66,7 @@ class ViewHelper {
     public static function delete_mapstop_view() {
         return dirname(__FILE__) . '/views/mapstop_delete.php';
     }
+
 
 
     public static function choose_current_area_template() {
@@ -86,6 +96,11 @@ class ViewHelper {
     public static function coordinate_template() {
         return dirname(__FILE__) . '/views/templates/coordinate.php';
     }
+
+    public static function mapstop_simple_form_template() {
+        return dirname(__FILE__) . '/views/templates/mapstop_simple_form.php';
+    }
+
 
 
     public static function map_util_js() {

@@ -128,7 +128,7 @@ class TestHelper {
         return get_user_by('login', $this->config->test_user_admin_name);
     }
 
-    public function make_mapstop($differ = false) {
+    public function make_mapstop($differ = false, $no_posts = 3) {
         $tours = Tours::instance();
         $places = Places::instance();
 
@@ -141,7 +141,7 @@ class TestHelper {
         $mapstop->name = "Mapstop Test Name " . $this->random_str();
         $mapstop->description = "Mapstop Test Desc ". $this->random_str();
         $mapstop->post_ids = array();
-        for($i = 0; $i < 3; $i++) {
+        for($i = 0; $i < $no_posts; $i++) {
             $mapstop->post_ids[] = $this->make_wp_post();
         }
         return $mapstop;

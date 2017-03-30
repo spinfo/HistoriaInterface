@@ -204,10 +204,11 @@ class WPTestConnection extends TestCase {
     }
 
     // test that there is a textarea with the correct name attribute and content
-    public function test_textarea($name_attr, $value_attr, $test_name) {
-        $this->ensure_xpath(
-            "//textarea[@name='$name_attr' and text()='$value_attr']", 1,
-            "Should have textarea: '$name_attr' => '$value_attr' ($test_name)."
+    public function test_textarea($name, $value, $test_name) {
+        $condition = "@name='$name' and ";
+        $condition .= (empty($value)) ? 'not(text())' : "text()='$value'";
+        $this->ensure_xpath("//textarea[$condition]", 1,
+            "Should have textarea: '$name' => '$value' ($test_name)."
         );
     }
 
