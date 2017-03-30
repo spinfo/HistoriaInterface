@@ -3,11 +3,11 @@
 
 <?php $this->include($this->view_helper::tour_map_template()) ?>
 
-<form id="shtm_mapstop_positions_form" action=admin.php?<?php echo $this->route_params::update_tour_stops($tour->id) ?> method="post"
+<form id="shtm_mapstop_positions_form" action=admin.php?<?php echo $this->route_params::update_tour_stops($this->tour->id) ?> method="post"
     class="shtm_right_from_map shtm_form">
 
     <div style="margin-bottom: 12px">
-        <a href="admin.php?<?php echo $this->route_params::edit_tour_stops($tour->id) ?>">Stop hinzufügen</a>
+        <a href="admin.php?<?php echo $this->route_params::new_mapstop($this->tour->id) ?>">Stop hinzufügen</a>
     </div>
 
     <div id="shtm_mapstops_menu">

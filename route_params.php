@@ -7,16 +7,26 @@ namespace SmartHistoryTourManager;
  */
 class RouteParams {
 
-    private static $key_controller = 'shtm_c';
-    private static $key_action = 'shtm_a';
-    private static $key_id = 'shtm_id';
-    private static $key_back_params = 'shtm_back_params';
+    // a list of parameter keys order by names
+    const KEYS = [
+        'controller' => 'shtm_c',
+        'action' => 'shtm_a',
+        'id' => 'shtm_id',
+        'tour_id' => 'shtm_tour_id',
+        'back_params' => 'shtm_back_params'
+    ];
 
     // build GET parametrs for a query by adding all params to the current GET
     // parameters
     // The "route" build here is just a string of GET parameters
-    private static function params_to_route($added_params = array()) {
-        return http_build_query(array_merge($_GET, $added_params));
+    private static function params_to_route($added_params = array(), $remove_others = true) {
+        $get = $_GET;
+        if($remove_others) {
+            foreach (self::KEYS as $name => $param_key) {
+                unset($get[$param_key]);
+            }
+        }
+        return http_build_query(array_merge($get, $added_params));
     }
 
     public static function default_page() {
@@ -25,11 +35,11 @@ class RouteParams {
 
     private static function make_route($controller, $action, $id = null) {
         $params = array(
-            self::$key_controller => $controller,
-            self::$key_action => $action
+            self::KEYS['controller'] => $controller,
+            self::KEYS['action'] => $action
         );
         if(!is_null($id)) {
-            $params[self::$key_id] = $id;
+            $params[self::KEYS['id']] = $id;
         }
         return self::params_to_route($params);
     }
@@ -105,8 +115,13 @@ class RouteParams {
         return self::make_route('tour', 'delete', $id);
     }
 
-    public static function new_mapstop() {
-        return self::make_route('mapstop', 'new');
+    public static function new_mapstop($tour_id) {
+        $values = array(
+            self::KEYS['controller'] => 'mapstop',
+            self::KEYS['action'] => 'new',
+            self::KEYS['tour_id'] => $tour_id
+        );
+        return self::params_to_route($values);
     }
 
     public static function create_mapstop() {
@@ -155,31 +170,31 @@ class RouteParams {
 
     public static function set_current_area_params($id = null) {
         $values = array(
-            self::$key_controller => 'area',
-            self::$key_action => 'set_current_area',
+            self::KEYS['controller'] => 'area',
+            self::KEYS['action'] => 'set_current_area',
             // encode the current params as back url
-            self::$key_back_params => urlencode(self::params_to_route())
+            self::KEYS['back_params'] => urlencode(self::params_to_route())
         );
         if(!empty($id)) {
-            $values[self::$key_id] = $id;
+            $values[self::KEYS['id']] = $id;
         }
         return array_merge($_GET, $values);
     }
 
     public static function get_controller_value() {
-        return $_GET[self::$key_controller];
+        return $_GET[self::KEYS['controller']];
     }
 
     public static function get_action_value() {
-        return $_GET[self::$key_action];
+        return $_GET[self::KEYS['action']];
     }
 
     public static function get_id_value() {
-        return intval($_GET[self::$key_id]);
+        return intval($_GET[self::KEYS['id']]);
     }
 
     public static function get_back_params_value() {
-        return $_GET[self::$key_back_params];
+        return $_GET[self::KEYS['back_params']];
     }
 }
 
