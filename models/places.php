@@ -26,17 +26,18 @@ final class Places extends AbstractCollection {
                 ON p.coordinate_id = c.id";
     }
 
-    public function list($offset, $limit) {
-        $where = UserService::instance()->access_conditions();
-
+    public function list($offset = 0, $limit = PHP_INT_MAX) {
         $current_area_id = UserService::instance()->get_current_area_id();
         if($current_area_id == DB::BAD_ID) {
             throw new \Exception(
                 "bad current area id. This should never happen.");
         } else {
-            $where['area_id'] = $current_area_id;
+            return self::list_by_area($current_area_id);
         }
+    }
 
+    public function list_by_area($area_id, $offset = 0, $limit = PHP_INT_MAX) {
+        $where = array('area_id' => $area_id);
         $rows = DB::list($this->select_sql(), $where, $offset, $limit);
 
         $places = array();

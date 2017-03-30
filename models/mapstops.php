@@ -19,21 +19,22 @@ class Mapstops extends AbstractCollection {
     }
 
     // sql to retrieve a single mapstop with post_ids joined in a single column
+    // NOTE: The posts order is equal to their insertion order.
     private function select_sql() {
         $sql = "
             SELECT
                 m.id, m.tour_id, m.place_id, m.name, m.description,
-                GROUP_CONCAT(join_table.post_id) AS post_ids
+                GROUP_CONCAT(m2p.post_id ORDER BY m2p.id ASC) AS post_ids
             FROM
                 $this->table AS m,
-                $this->join_posts_table AS join_table
+                $this->join_posts_table AS m2p
             ";
         return $sql;
     }
 
     public function db_get($id) {
         $sql = $this->select_sql();
-        $sql .= "WHERE m.id = join_table.mapstop_id AND m.id = %d";
+        $sql .= "WHERE m.id = m2p.mapstop_id AND m.id = %d";
         $result = DB::get_by_query($sql, array($id));
         return (is_null($result->id)) ? null : $result;
     }
@@ -83,6 +84,7 @@ class Mapstops extends AbstractCollection {
 
         DB::start_transaction();
         // update the mapstop, then simply delete and reinsert the post ids
+        // NOTE: This action determines the order of the posts.
         $result = DB::update($this->table, $mapstop->id, $values);
         if($result != false) {
             $result_delete = $this->db_delete_post_ids($mapstop);
@@ -155,13 +157,57 @@ class Mapstops extends AbstractCollection {
         $mapstop->name = strval($array->name);
         $mapstop->description = strval($array->description);
 
-        $mapstop->post_ids = array();
-        foreach(explode(',', $array->post_ids) as $id_str) {
-            $mapstop->post_ids[] = intval($id_str);
+        if(is_array($array->post_ids)) {
+            $mapstop->post_ids = array_map('intval', $array->post_ids);
+        } else if(is_string($array->post_ids)) {
+            $mapstop->post_ids = array();
+            foreach(explode(',', $array->post_ids) as $id_str) {
+                $mapstop->post_ids[] = intval($id_str);
+            }
         }
     }
 
+    // Returns an array of all post ids that are connected to mapstops
+    public function get_linked_post_ids() {
+        $sql =
+            "SELECT GROUP_CONCAT(post_id) AS ids FROM $this->join_posts_table";
+        $result = DB::get($sql);
+        if(empty($result) || !isset($result->ids) || empty($result->ids)) {
+            debug_log("Could not retrieve any post ids joined to mapstops.");
+            return array();
+        } else {
+            $ids = explode(',', $result->ids);
+            return array_map('intval', $ids);
+        }
+    }
+
+    /**
+     * Retrieve all places that the mapstop could possibly take. These are all
+     * places in the same area, that are not taken by other mapstops in the same
+     * tour.
+     *
+     * NOTE: This includes the place that the mapstop currently occupies.
+     */
+    public function get_possible_places($mapstop) {
+        // get all places in the area
+        $tour = Tours::instance()->get($mapstop->tour_id);
+        $places = Places::instance()->list_by_area($tour->area_id);
+        // get place ids taken by the other mapstops in the tour
+        $taken = array();
+        $sql = "SELECT place_id FROM $this->table WHERE tour_id = $tour->id";
+        $rows = DB::list_by_query($sql);
+        foreach ($rows as $row) {
+            $taken[] = $row->place_id;
+        }
+        // only those places are options, that are not used in the same tour
+        $places = array_filter($places, function($p) use($mapstop, $taken) {
+            return ($p->id == $mapstop->place_id) || !in_array($p->id, $taken);
+        });
+        return $places;
+    }
+
     // insert connected post ids, return false on error
+    // NOTE: This action determines the order of the posts (= insertion order).
     private function db_insert_post_ids($mapstop, $mapstop_id) {
         foreach($mapstop->post_ids as $post_id) {
             $values = array('mapstop_id' => $mapstop_id, 'post_id' => $post_id);
@@ -178,8 +224,8 @@ class Mapstops extends AbstractCollection {
     private function db_delete_post_ids($mapstop) {
         $where = array('mapstop_id' => $mapstop->id);
         $result = DB::delete($this->join_posts_table, $where);
-        if($result != count($mapstop->post_ids)) {
-            debug_log("Wrong row count on mapstop-to-post-relation delete.");
+        if($result === false) {
+            debug_log("Error deleting mapstop to post relation.");
             return false;
         }
         return true;

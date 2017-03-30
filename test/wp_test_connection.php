@@ -203,6 +203,14 @@ class WPTestConnection extends TestCase {
         );
     }
 
+    // test that there is a textarea with the correct name attribute and content
+    public function test_textarea($name_attr, $value_attr, $test_name) {
+        $this->ensure_xpath(
+            "//textarea[@name='$name_attr' and text()='$value_attr']", 1,
+            "Should have textarea: '$name_attr' => '$value_attr' ($test_name)."
+        );
+    }
+
     public function test_not_found($url, $post, $name) {
         $this->test_fetch($url, $post, 404,
             "Should have status 404 ($name).");
@@ -249,6 +257,15 @@ class WPTestConnection extends TestCase {
         $place = Places::instance()->get($mapstop->place_id);
         $this->test_coordinate($place->coordinate->lat, $place->coordinate->lon,
             "coordinate data - $test_name");
+    }
+
+    // shorthand for testing the normal redirect params: controller, action, id
+    public function test_redirect_params($controller, $action, $id = null) {
+        $this->test_redirect_param('shtm_c', $controller);
+        $this->test_redirect_param('shtm_a', $action);
+        if(!is_null($id)) {
+            $this->test_redirect_param('shtm_id', $id);
+        }
     }
 
     /**

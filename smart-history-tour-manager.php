@@ -1,6 +1,8 @@
 <?php
 namespace SmartHistoryTourManager;
 
+require_once(dirname(__FILE__) . '/logging.php');
+
 /*
 Plugin Name: Smart History Tour Manager
 Plugin URI: http://www.example.com/no-uri-yet
@@ -110,7 +112,8 @@ function shtm_install() {
         coordinate_id bigint(20) UNSIGNED NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
-        PRIMARY KEY  (id)
+        PRIMARY KEY  (id),
+        KEY shtm_tour_to_coordinates (tour_id)
     ) $charset_collate;";
 
     // sql for the mapstop table
@@ -144,7 +147,7 @@ function shtm_install() {
         PRIMARY KEY  (id),
         KEY shtm_mapstops_to_posts (mapstop_id, post_id),
         UNIQUE shtm_mapstop_unique_post (post_id),
-        FOREIGN KEY (mapstop_id) REFERENCES $mapstops_table(id) ON DELETE CASCADE
+        CONSTRAINT wp_shtm_mapstops_to_posts_ibfk_1 FOREIGN KEY (mapstop_id) REFERENCES $mapstops_table(id) ON DELETE CASCADE
     ) $charset_collate;";
 
     // collect queries
@@ -288,14 +291,43 @@ function shtm_create_test_data() {
     );
     $mapstop_ids[] = DB::insert(Mapstops::instance()->table, $values);
 
-    // link each mapstop to two wp posts
-    // use id values of posts that come with default wordpress install
-    $post_ids = array(1,2,3,4,5,6,7,8,10,11,12,19,20,21);
-    foreach ($mapstop_ids as $mapstop_id) {
-        for($i = 0; $i < 2; $i++) {
+    // an array of arrays of example posts, each subarray belongs to one stop
+    // keys are wp name slugs to identify the posts between (re-)activations
+    $posts = array();
+    $posts[] = array(
+        'shtm-example-post-m1p1' => '<h1>Ein Posten ist vakant</h1><p>An der Außenseite des Hörsaals 3A findet sich ein Gedenkstein, der an Heinrich Heine erinnert. Die Zeilen stammen aus dem Gedicht „Enfant Perdu“. Heinrich Heine wurde am 13. Dezember 1797 in Düsseldorf geboren, der „letzte Dichter der Romantik“ wurde wegen seiner jüdischen Herkunft in Deutschland über Jahrzehnte angefeindet. Die 1965 gegründete Düsseldorfer Universität stritt von 1968 bis 1988 um die Benennung nach dem Dichter. Die folgende Seite zitiert das Gedicht vollständig:</p>',
+        'shtm-example-post-m1p2' => '<p>Verlorner Posten in dem Freiheitskriege,<br>Hielt ich seit dreißig Jahren treulich aus.<br>Ich kämpfte ohne Hoffnung, daß ich siege,<br>Ich wußte, nie komm ich gesund nach Haus.<br></p><p>Ich wachte Tag und Nacht – Ich konnt nicht schlafen,<br>Wie in dem Lagerzelt der Freunde Schar – <br>(Auch hielt das laute Schnarchen dieser Braven<br>Mich wach, wenn ich ein bißchen schlummrig war).<br></p><p>In jenen Nächten hat Langweil ergriffen<br>Mich oft, auch Furcht – (nur Narren fürchten nichts) –<br>Sie zu verscheuchen, hab ich dann gepfiffen<br>Die frechen Reime eines Spottgedichts.<br></p><p>Ja, wachsam stand ich, das Gewehr im Arme,<br>Und nahte irgendein verdächtger Gauch,<br>So schoß ich gut und jagt ihm eine warme,<br>Brühwarme Kugel in den schnöden Bauch.<br></p><p>Mitunter freilich mocht es sich ereignen,<br>Daß solch ein schlechter Gauch gleichfalls sehr gut<br>Zu schießen wußte – ach, ich kann’s nicht leugnen – <br>Die Wunden klaffen – es verströmt mein Blut.<br></p><p>Ein Posten ist vakant! …</p>',
+        'shtm-example-post-m1p3' => '<div><img style="display: block;margin: 0 auto;max-width: 100%" src="file:///android_asset/campus_bau_zentrum_1973.jpg"></div><div><img style="display: block;margin: 0 auto;max-width: 100%" src="file:///android_asset/philfak_bau_um_1973.jpg"></div>'
+    );
+    $posts[] = array(
+        'shtm-example-post-m2p1' => '<h1>Heine-Denkmal (2012)</h1><p><audio src="file:///storage/emulated/0/Android/data/de.smarthistory/files/rec_20170123-1542.wav" controls style="width: 100%"></audio></p><p>Das Heinrich-Heine-Denkmal des renommierten Künstlers Bert Gerresheim wurde 2012 auf dem Campus der<a href="lexikon:///l1.html">Heinrich-Heine-Universität</a>aufgestellt. Es ist vier Meter hoch und wiegt drei Tonnen. Die Schere erinnert daran, dass Heines Schriften lange Zeit in Deutschland zensiert wurden. Die Schelle ist eine Narrenschelle und nimmt die Selbstbezeichnung Heines als „Narr des Glücks“ auf. Gerresheim fasziniert an Heine, dass dieser ein Symbol für die Gespaltenheit der Moderne ist, er irritiere und verletze.</p><p>Gestiftet wurde das Denkmal von Lutz Aengevelt, seinem Bruder Wulff und der Rheinische Post Mediengruppe.</p>',
+    );
+    $posts[] = array(
+        'shtm-example-post-m3p1' => '<h1>Ein nachdenklicher Mann</h1><div><img style="display: block;margin: 0 auto;max-width: 100%" src="file:///android_asset/Heinrich-heine_1.jpg"></div><p>Seit 1994 steht auf dem Campus der<a href="lexikon:///l1.html">Heinrich-Heine-Universität</a>vor dem Gebäude der Universitäts- und Landesbibliothek ein Denkmal für Heinrich Heine. Es ist eine vergrößerte Nachbildung eines Werkstattmodells des Bildhauers Hugo Lederer. Dieser hatte das Modell für ein Heine-Denkmal der Stadt Hamburg entworfen. Nachdem das 1926 aufgestellte Denkmal 1933 von den Nationalsozialisten demontiert wurde, wurde es 1943 für die Rüstungsproduktion verschrottet und eingeschmolzen. Das Werkstattmodell, das nun als Vorbild für die Vergrößerung diente, gehörte ursprünglich dem Düsseldorfer Rechtsanwalt Friedrich Maase. Das Denkmal stellt Heine im Alter von 21 Jahren dar, als ihm der Zugang zur Promotion aufgrund seines jüdischen Glaubens verwehrt wurde.</p>',
+        'shtm-example-post-m3p2' => '<p>Die Geschichte Düsseldorfer Denkmäler und Skulpturen findet sich in der Publikation:<i>Ars Publica Düsseldorf : Geschichte der Kunstwerke und kulturellen Zeichen im öffentlichen Raum der Landeshauptstadt von Wolfgang Funken (Essen 2012)</i></p>',
+    );
+
+    // link each mapstop to it's posts
+    for($i = 0; $i < count($mapstop_ids); $i++) {
+        $mapstop_id = $mapstop_ids[$i];
+        foreach ($posts[$i] as $name => $content) {
+            // insert posts or get existing ids by slug
+            $old = get_posts(array('post_status' => 'draft', 'name' => $name));
+            if(empty($old)) {
+                $values = array(
+                    'post_title' => "Example post ($name)",
+                    'post_status' => 'draft',
+                    'post_content' => $content,
+                    'post_name' => $name,
+                );
+                $post_id = wp_insert_post($values);
+            } else {
+                $post_id = $old[0]->ID;
+            }
+            // insert the connection to the mapstop
             $values = array(
                 'mapstop_id' => $mapstop_id,
-                'post_id' => array_shift($post_ids)
+                'post_id' => $post_id
             );
             DB::insert(Mapstops::instance()->join_posts_table, $values);
         }

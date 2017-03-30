@@ -10,7 +10,7 @@ require_once( dirname(__FILE__) . '/../route_params.php');
 
 class ToursController extends AbstractController {
 
-    CONST TOUR_META_WHITELIST = array(
+    CONST TOUR_META_PARAMS = array(
         'shtm_tour' => array(
             'name' => '',
             'intro' => '',
@@ -280,7 +280,7 @@ class ToursController extends AbstractController {
                 }
             }
         } else {
-            $result = self::filter_params(self::TOUR_META_WHITELIST, $_POST);
+            $result = self::filter_params(self::TOUR_META_PARAMS, $_POST);
             if(empty($result)) {
                 return null;
             } else {

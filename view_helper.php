@@ -50,6 +50,10 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/tour_delete.php';
     }
 
+    public static function edit_mapstop_view() {
+        return dirname(__FILE__) . '/views/mapstop_edit.php';
+    }
+
     public static function delete_mapstop_view() {
         return dirname(__FILE__) . '/views/mapstop_delete.php';
     }

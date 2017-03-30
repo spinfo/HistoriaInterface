@@ -57,8 +57,7 @@ function test_tour_create($con, $post, $name) {
     $con->test_success_message("Tour erstellt!", $name);
 
     // should redirect to the edit page of the tour
-    $con->test_redirect_param('shtm_c', 'tour');
-    $con->test_redirect_param('shtm_a', 'edit');
+    $con->test_redirect_params('tour', 'edit');
     $id = $con->test_redirect_param('shtm_id');
 
     // test that the id exists in the database
@@ -81,8 +80,7 @@ function test_bad_create($con, $post, $name) {
     $con->test_error_message("Nicht gespeichert", $name);
 
     // should have redirect back to new page
-    $con->test_redirect_param('shtm_c', 'tour');
-    $con->test_redirect_param('shtm_a', 'new');
+    $con->test_redirect_params('tour', 'new');
 
     $id_after = Tours::instance()->last_id();
     $con->assert($id_before == $id_after, "Should not have created any tour.");
@@ -197,8 +195,7 @@ function test_tour_update($con, $id, $post, $tour, $name) {
             if ($key != 'shtm_tour[intro]') {
                 $con->test_input_field($key, $value, $name);
             } else {
-                $xp = "//textarea[@name='$key' and text()='$value']";
-                $con->ensure_xpath($xp, 1, "Should have intro textarea");
+                $con->test_textarea($key, $value, $name);
             }
         }
     } else {

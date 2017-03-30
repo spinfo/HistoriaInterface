@@ -78,6 +78,12 @@ abstract class AbstractController {
      *
      * Always return null if any of the keys in the accepted array is missing
      * and report that error to the message service
+     *
+     * @param array $accepted   An array with a whitelist of keys and example
+     *                          values of the correct type.
+     * @param array $input      The input params to parse (e.g. $_POST, $_GET)
+     *
+     * @return  array|null  An array of all params found or null on error
      */
     protected static function filter_params($accepted, $input) {
         $result = array();

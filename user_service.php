@@ -145,6 +145,49 @@ class UserService {
         return get_userdata($id);
     }
 
+    /**
+     * Get all posts the current user may link to a mapstop. Avalilable posts
+     * for contributors are those that belong to them and are not connected, for
+     * admins they are all posts, that are not connected to mapstops.
+     *
+     * Only posts with a 'draft' status are returned as these are the only ones
+     * used by us.
+     *
+     * @param int   $user_id    The user to get posts for. If null, the current
+     *                          user's posts will be fetched.
+     *
+     * @return  array   An array of WP_Posts or an empty array if an o
+     */
+    public function get_available_posts() {
+        $args = array(
+           'numberposts' => -1,
+           'post_status' => 'draft',
+           'exclude' => Mapstops::instance()->get_linked_post_ids(),
+        );
+        if(!$this->is_admin()) {
+            $args['author'] = $this->user_id();
+        }
+        $result = get_posts($args);
+        return $result;
+    }
+
+    // TODO: This belongs somewhere else
+    public function get_posts($post_ids) {
+        // retrieve posts one by one to preserve the order of the input ids
+        $result = array();
+        foreach ($post_ids as $id) {
+            $posts = get_posts(array(
+                'p' => $id,
+                'post_status' => 'draft',
+                'numberposts' => 1,
+            ));
+            if(!empty($posts)) {
+                $result[] = $posts[0];
+            }
+        }
+        return $result;
+    }
+
     private function get_roles($id = null) {
         $roles = array();
         if (isset($id)) {

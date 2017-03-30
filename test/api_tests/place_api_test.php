@@ -51,11 +51,11 @@ $lon_repr = $helper->coord_value_string($lon);
 $admin_con->test_fetch($helper->tc_url('place', 'create'), $post, 200,
     "Should have status 200 on place creation.");
 
-// Test for the success message
+// Test for the success message and determine the id
 $admin_con->test_success_message("Ort erstellt", "place create");
+$id = $helper->db_highest_id($helper->config->places_table);
 // Test for the redirect to place edit
-$admin_con->test_redirect_param('shtm_c', 'place');
-$admin_con->test_redirect_param('shtm_a', 'edit');
+$admin_con->test_redirect_params('place', 'edit', $id);
 
 // test a bad create with incomplete post
 $bad_post = array(
@@ -68,7 +68,6 @@ $admin_con->ensure_xpath("//div[contains(@class, 'shtm_message_error')]", null,
     "Should show error message on bad place creation.");
 
 // TEST PLACE EDIT
-$id = $helper->db_highest_id($helper->config->places_table);
 $admin_con->test_fetch($helper->tc_url('place', 'edit', $id), null, 200,
     "Should have status 200 on place edit.");
 $admin_con->test_simple_page("place edit");

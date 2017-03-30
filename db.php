@@ -245,7 +245,7 @@ class DB {
     public static function insert($table_name, $values) {
         global $wpdb;
         $result = $wpdb->insert($table_name, $values);
-        if($result == false) {
+        if($result === false) {
             debug_log("DB: Error inserting into ${table_name}.");
             return self::BAD_ID;
         }
@@ -257,7 +257,7 @@ class DB {
      */
     public static function delete_single($table_name, $id) {
         $result = self::delete($table_name, array('id' => $id));
-        if ($result != 1) {
+        if ($result !== 1) {
             debug_log(
                 "DB: Wrong row count on delete: $result ($table_name, $id).");
             return false;
@@ -274,6 +274,7 @@ class DB {
         if($result === false) {
             debug_log(
                 "DB: Error deleting from $table_name with clause: '$where'.");
+            return false;
         }
         return $result;
     }
