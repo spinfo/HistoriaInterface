@@ -106,6 +106,12 @@
     <div id="shtm_page_wrapper_heading" class="shtm_heading_line">
         <h1>SmartHistory</h1>
 
+        <?php if($this->route_params::is_current_page($this->route_params::index_areas())): ?>
+            <span class="shtm_not_a_link">Gebiete</span> |
+        <?php else: ?>
+            <a href="admin.php?<?php echo $this->route_params::index_areas() ?>">Gebiete</a> |
+        <?php endif ?>
+
         <?php if($this->route_params::is_current_page($this->route_params::index_places())): ?>
             <span class="shtm_not_a_link">Orte</span> |
         <?php else: ?>

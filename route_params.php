@@ -12,6 +12,7 @@ class RouteParams {
         'controller' => 'shtm_c',
         'action' => 'shtm_a',
         'id' => 'shtm_id',
+        'area_id' => 'shtm_area_id',
         'tour_id' => 'shtm_tour_id',
         'back_params' => 'shtm_back_params'
     ];
@@ -33,7 +34,13 @@ class RouteParams {
         return self::index_tours();
     }
 
-    private static function make_route($controller, $action, $id = null, $tour_id = null) {
+    private static function make_route(
+        $controller,
+        $action,
+        $id = null,
+        $tour_id = null,
+        $area_id = null)
+    {
         $params = array(
             self::KEYS['controller'] => $controller,
             self::KEYS['action'] => $action
@@ -43,6 +50,9 @@ class RouteParams {
         }
         if(!is_null($tour_id)) {
             $params[self::KEYS['tour_id']] = $tour_id;
+        }
+        if(!is_null($area_id)) {
+            $params[self::KEYS['area_id']] = $area_id;
         }
         return self::params_to_route($params);
     }
@@ -54,8 +64,37 @@ class RouteParams {
         return $result;
     }
 
-    public static function index_places() {
-        return self::make_route('place', 'index');
+    public static function index_areas() {
+        return self::make_route('area', 'index');
+    }
+
+    public static function new_area() {
+        return self::make_route('area', 'new');
+    }
+
+    public static function create_area() {
+        return self::make_route('area', 'create');
+    }
+
+    public static function edit_area($id) {
+        return self::make_route('area', 'edit', $id);
+    }
+
+    public static function update_area($id) {
+        return self::make_route('area', 'update', $id);
+    }
+
+    public static function delete_area($id) {
+        return self::make_route('area', 'delete', $id);
+    }
+
+    public static function destroy_area($id) {
+        return self::make_route('area', 'destroy', $id);
+    }
+
+    // TODO: Remove default setting once area_id is fully supported
+    public static function index_places($area_id = -1) {
+        return self::make_route('place', 'index', null, null, $area_id);
     }
 
     public static function new_place() {
@@ -82,8 +121,9 @@ class RouteParams {
         return self::make_route('place', 'destroy', $id);
     }
 
-    public static function index_tours() {
-        return self::make_route('tour', 'index');
+    // TODO: Remove default setting once area_id is fully supported
+    public static function index_tours($area_id = -1) {
+        return self::make_route('tour', 'index', null, null, $area_id);
     }
 
     public static function new_tour() {

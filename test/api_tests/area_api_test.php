@@ -39,6 +39,44 @@ function test_set_current_area($test_con, $name) {
 test_set_current_area($admin_con, "admin");
 test_set_current_area($contrib_con, "contributor");
 
+
+// TEST INDEX
+function test_index($con, $for_admin, $name) {
+    $con->test_fetch($con->helper->tc_url('area', 'index'), null, 200,
+        "Should have status 200 on tour index ($name).");
+
+    $areas = Areas::instance()->list_simple();
+    $con->assert(!empty($areas), "Should test with area(s) present");
+    foreach($areas as $area) {
+        $con->ensure_xpath("//td[text()='$area->id']", 1,
+            "Should show area id ($name).");
+        $con->ensure_xpath("//td[text()='$area->name']", 1,
+            "Should show area name ($name).");
+        $con->ensure_xpath("//td/a[contains(@href, 'area_id=$area->id')]", 1,
+            "Should link to the area's tours  ($name).");
+    }
+
+    // test admin fields
+    $n = $for_admin ? count($areas) : 0;
+    $con->ensure_xpath("//a[text()='Bearbeiten']", $n,
+        "Should show $n edit links ($name).");
+    $con->ensure_xpath("//a[text()='Löschen']", $n,
+        "Should show $n delete links ($name).");
+
+    $n = $for_admin ? 1 : 0;
+    $con->ensure_xpath("//a[text()='Gebiet hinzufügen']", $n,
+        "Should show $n links to add area ($name).");
+}
+
+
+
+test_index($admin_con, true, 'Admin visits area index');
+test_index($contrib_con, false, 'contributor visits area index');
+
+
+
+
+// CLEANUP
 // invalidate logins
 $admin_con->invalidate_login();
 $contrib_con->invalidate_login();

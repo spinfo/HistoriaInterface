@@ -15,6 +15,19 @@ class ViewHelper {
     }
 
 
+    public static function index_areas_view() {
+        return dirname(__FILE__) . '/views/area_index.php';
+    }
+
+    public static function edit_area_view() {
+        return dirname(__FILE__) . '/views/area_edit.php';
+    }
+
+    public static function delete_area_view() {
+        return dirname(__FILE__) . '/views/area_delete.php';
+    }
+
+
     public static function index_places_view() {
         return dirname(__FILE__) . '/views/place_index.php';
     }

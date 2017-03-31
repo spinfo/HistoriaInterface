@@ -374,6 +374,38 @@ function shtm_render_tour_creator() {
     $action = RouteParams::get_action_value();
 
     switch($controller) {
+        case 'area':
+            require_once( dirname(__FILE__) . '/controllers/areas_controller.php');
+            switch($action) {
+                case 'index':
+                    AreasController::index();
+                    break;
+                case 'new':
+                    AreasController::new();
+                    break;
+                case 'create':
+                    AreasController::create();
+                    break;
+                case 'edit':
+                    AreasController::edit();
+                    break;
+                case 'update':
+                    AreasController::update();
+                    break;
+                case 'delete':
+                    AreasController::delete();
+                    break;
+                case 'destroy':
+                    AreasController::destroy();
+                    break;
+                case 'set_current_area':
+                    AreasController::set_current_area();
+                    break;
+                default:
+                    AreasController::index();
+                    break;
+            }
+            break;
         case 'place':
             require_once( dirname(__FILE__) . '/controllers/places_controller.php');
             switch ($action) {
@@ -400,17 +432,6 @@ function shtm_render_tour_creator() {
                     break;
                 default:
                     PlacesController::index();
-                    break;
-            }
-            break;
-        case 'area':
-            require_once( dirname(__FILE__) . '/controllers/areas_controller.php');
-            switch($action) {
-                case 'set_current_area':
-                    AreasController::set_current_area();
-                    break;
-                default:
-                    error_log("Missing action for area controller.");
                     break;
             }
             break;

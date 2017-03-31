@@ -66,6 +66,18 @@ abstract class AbstractCollection {
     }
 
     /**
+     * Counts the amount of entries in the collections table using the where
+     * conditions.
+     *
+     * @param $where    array   An array of conditions, e.g. [ 'place_id' => 3]
+     *
+     * @return bool|int The count's result on success or false on error
+     */
+    public function count($where) {
+        return DB::count($this->table, $where);
+    }
+
+    /**
      * Fetches the model from the database (delegates to collection->db_get())
      * and returns it or null on error.
      *
