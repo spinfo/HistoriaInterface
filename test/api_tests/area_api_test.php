@@ -41,9 +41,73 @@ test_set_current_area($admin_con, "admin");
 test_set_current_area($contrib_con, "contributor");
 
 
-// TODO: Remove this after the new route is tested
-$a_admin = $helper->make_area();
-$a_id_admin = Areas::instance()->insert($a_admin);
+// TEST NEW
+function test_new($con, $name) {
+    $url = $con->helper->tc_url('area', 'new');
+    $con->test_fetch($url, null, 200,
+        "Should have status 200 on area new ($name).");
+
+    // test for the presence of input fields
+    $empty_coord_value = $con->helper->coord_value_string(0.0);
+    $con->test_input_field('shtm_area[name]', '', $name);
+    $con->test_input_field('shtm_area[c1_lat]', $empty_coord_value, $name);
+    $con->test_input_field('shtm_area[c1_lon]', $empty_coord_value, $name);
+    $con->test_input_field('shtm_area[c2_lat]', $empty_coord_value, $name);
+    $con->test_input_field('shtm_area[c2_lon]', $empty_coord_value, $name);
+}
+
+test_new($admin_con, 'Admin visits area new');
+
+// the contributor should not be able to visit area new
+$contrib_con->test_no_access($helper->tc_url('area', 'new'), null,
+    'Contributor tries to visit area new');
+
+
+
+// TEST CREATE
+function make_area_post_data($area) {
+    return array(
+        'shtm_area[name]' => $area->name,
+        'shtm_area[c1_lat]' => $area->coordinate1->lat,
+        'shtm_area[c1_lon]' => $area->coordinate1->lon,
+        'shtm_area[c2_lat]' => $area->coordinate2->lat,
+        'shtm_area[c2_lon]' => $area->coordinate2->lon
+    );
+}
+
+function test_create($con, $name) {
+    $area = $con->helper->make_area();
+
+    $post = make_area_post_data($area);
+    $id_before = Areas::instance()->last_id();
+    $url = $con->helper->tc_url('area', 'create');
+    $con->test_fetch($url, $post, 200,
+        "Should have status 200 on area create ($name).");
+
+    // Should have redirected to the edit route with a new id
+    $con->test_redirect_params('area', 'edit');
+    $id = $con->test_redirect_param('shtm_id');
+    $con->assert($id > $id_before, "Should give new id on redirect ($name).");
+
+    $from_db = Areas::instance()->get($id);
+    $con->assert(!empty($from_db), "Should be able to get the new area ($name).");
+
+    // test the edit page we were redirected to for both area version to check
+    // that values match
+    test_edit($con, $area, $name, false);
+    test_edit($con, $from_db, $name, false);
+
+    return $from_db;
+}
+
+
+// Create a new area by testing the create route
+$a_admin = test_create($admin_con, 'Admin creates area');
+
+// The contributor should not be able to do this
+$post = make_area_post_data($a_admin);
+$contrib_con->test_no_access($helper->tc_url('area', 'create'), $post,
+    'Contributor tries to create tour.');
 
 
 // TEST EDIT & UPDATE
@@ -54,7 +118,7 @@ function test_edit($con, $area, $name, $do_fetch = true) {
             "Should have status 200 on area edit ($name).");
     }
 
-    // test for the presence of correct inputs
+    // test for the presence of correct input values
     $con->test_input_field('shtm_area[name]', $area->name, $name);
     $con->test_input_field('shtm_area[c1_lat]',
         $con->helper->coord_value_string($area->coordinate1->lat), $name);
@@ -69,13 +133,7 @@ function test_edit($con, $area, $name, $do_fetch = true) {
 function test_update($con, $area, $name) {
     $other = $con->helper->make_area();
 
-    $post = array(
-        'shtm_area[name]' => $other->name,
-        'shtm_area[c1_lat]' => $other->coordinate1->lat,
-        'shtm_area[c1_lon]' => $other->coordinate1->lon,
-        'shtm_area[c2_lat]' => $other->coordinate2->lat,
-        'shtm_area[c2_lon]' => $other->coordinate2->lon
-    );
+    $post = make_area_post_data($other);
 
     $url = $con->helper->tc_url('area', 'update', $area->id);
     $con->test_fetch($url, $post, 200,
@@ -93,15 +151,15 @@ $post = test_update($admin_con, $a_admin, 'Admin updates own area.');
 $a_admin = Areas::instance()->get($a_admin->id);
 
 // Test the 404s
-$url = $helper->tc_url('area', 'edit', $a_id_admin + 1);
+$url = $helper->tc_url('area', 'edit', $a_admin->id + 1);
 $admin_con->test_not_found($url, null, "Admin edits invalid area id");
-$url = $helper->tc_url('area', 'update', $a_id_admin + 1);
+$url = $helper->tc_url('area', 'update', $a_admin->id + 1);
 $admin_con->test_not_found($url, $post, "Admin updates invalid area id");
 
-// Test the 4032
-$url = $helper->tc_url('area', 'edit', $a_id_admin);
+// Test the 403s
+$url = $helper->tc_url('area', 'edit', $a_admin->id);
 $contrib_con->test_no_access($url, null, "Contributor edits admin's area");
-$url = $helper->tc_url('area', 'update', $a_id_admin);
+$url = $helper->tc_url('area', 'update', $a_admin->id);
 $contrib_con->test_no_access($url, $post, "Contributor updates admin's area");
 
 

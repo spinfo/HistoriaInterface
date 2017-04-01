@@ -155,7 +155,7 @@
     // we are on the new view (or something went wrong), center on somewhere in
     // Germany and zoom out far
     else {
-        map.setView([50.5,10.5], 3);
+        map.setView([50.5,10.5], 4);
     }
 
 

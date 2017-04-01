@@ -7,6 +7,7 @@ require_once(dirname(__FILE__) . '/../user_service.php');
 require_once(dirname(__FILE__) . '/../views/view.php');
 require_once(dirname(__FILE__) . '/../view_helper.php');
 require_once(dirname(__FILE__) . '/../models/areas.php');
+require_once(dirname(__FILE__) . '/../models/area.php');
 require_once(dirname(__FILE__) . '/../models/tours.php');
 
 class AreasController extends AbstractController {
@@ -41,11 +42,30 @@ class AreasController extends AbstractController {
     }
 
     public static function new() {
+        $area = new Area();
 
+        $error_view = self::filter_if_not_editable($area, null);
+        if(is_null($error_view)) {
+            $view = new View(ViewHelper::edit_area_view(), array(
+                'action_params' => RouteParams::create_area($id),
+                'area' => $area
+            ));
+        } else {
+            $view = $error_view;
+        }
+        self::wrap_in_page_view($view)->render();
     }
 
     public static function create() {
+        $area = new Area();
 
+        $error_view = self::filter_if_not_editable($area, null);
+        if(is_null($error_view)) {
+            $view = self::handle_insert_or_update($area);
+        } else {
+            $view = $error_view;
+        }
+        self::wrap_in_page_view($view)->render();
     }
 
     public static function edit() {
@@ -131,13 +151,13 @@ class AreasController extends AbstractController {
     private static function handle_insert_or_update($area) {
         $params = self::read_area_params();
         if(empty($params)) {
-            return self::create_bad_request_view("Änderungen nicht übernommen");
+            return self::create_bad_request_view("Nicht gespeichert.");
         }
         Areas::instance()->update_values($area, $params);
         $result = Areas::instance()->save($area);
         if(empty($result)) {
             MessageService::instance()->add_model_messages($area);
-            return self::create_bad_input_view("Änderungen nicht übernommen");
+            return self::create_bad_request_view("Nicht gespeichert.");
         }
         MessageService::instance()->add_success("Gespeichert.");
         self::redirect(RouteParams::edit_area($area->id));
