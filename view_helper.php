@@ -86,6 +86,10 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/templates/choose_current_area.php';
     }
 
+    public static function single_area_header_template() {
+        return dirname(__FILE__) . '/views/templates/single_area_header.php';
+    }
+
     public static function single_place_header_template() {
         return dirname(__FILE__) . '/views/templates/single_place_header.php';
     }
@@ -96,6 +100,10 @@ class ViewHelper {
 
     public static function single_mapstop_header_template() {
         return dirname(__FILE__) . '/views/templates/single_mapstop_header.php';
+    }
+
+    public static function area_map_template() {
+        return dirname(__FILE__) . '/views/templates/area_map.php';
     }
 
     public static function place_map_template() {

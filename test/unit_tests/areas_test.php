@@ -18,7 +18,7 @@ class AreasTest extends TestCase {
     }
 
     public function test_create() {
-        $area = $this->make_area();
+        $area = $this->helper->make_area();
 
         $id_before = $this->helper->db_highest_id(Areas::instance()->table);
         $result = Areas::instance()->save($area);
@@ -48,7 +48,7 @@ class AreasTest extends TestCase {
     public function test_list_simple() {
         $n = 3;
         for($i = 0; $i < $n; $i++) {
-            $this->areas[] = Areas::instance()->save($this->make_area());
+            $this->areas[] = Areas::instance()->save($this->helper->make_area());
         }
         $result = Areas::instance()->list_simple();
 
@@ -80,7 +80,7 @@ class AreasTest extends TestCase {
         // get the area created in test_create()
         $area = $this->areas[0];
         // make a new area and set the old one's values to the new one's
-        $new_area = $this->make_area();
+        $new_area = $this->helper->make_area();
         $area->name = $new_area->name;
         $area->coordinate1->lat = $new_area->coordinate1->lat;
         $area->coordinate1->lon = $new_area->coordinate1->lon;
@@ -179,7 +179,7 @@ class AreasTest extends TestCase {
     }
 
     public function test_transactional_insert() {
-        $area = $this->make_area();
+        $area = $this->helper->make_area();
 
         // invalidate one coordinate and test
         $lat = $area->coordinate2->lat;
@@ -312,14 +312,6 @@ class AreasTest extends TestCase {
                 $this->log("\t${msg}");
             }
         }
-    }
-
-    private function make_area() {
-        $area = new Area();
-        $area->name = 'Area Test Name ' . $this->helper->random_str();
-        $area->coordinate1 = $this->helper->random_coordinate();
-        $area->coordinate2 = $this->helper->random_coordinate();
-        return $area;
     }
 }
 

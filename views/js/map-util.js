@@ -30,6 +30,14 @@ MapUtil.lineShape = function() {
     }
 }
 
+// a uniform look for L.Rectangle (or the draw equivalent)
+MapUtil.rectangleShape = function() {
+    return {
+        color: "#ff7800",
+        weight: 1
+    }
+}
+
 // parses a single coordinate tag with into a latLng array.
 // NOTE: adds the coordinate id as a further property '_shtm_cid' for later
 // retrieval
@@ -112,15 +120,16 @@ MapUtil.create_leaflet_draw_for_single_item = function(
             layer = e.layer;
 
         // add all latlngs to the form binding and refresh the form
+        // add all latlngs to the form binding and refresh the form
         binding.clear();
-        // for layers with multiple latlngs, e.g. on type polyline
-        if(layer.hasOwnProperty('_latlngs')) {
+        if(type === 'rectangle') {
+            binding.addLatLng(layer._bounds._southWest);
+            binding.addLatLng(layer._bounds._northEast);
+        } else if(type === 'polyline') {
             layer._latlngs.forEach(function(latLng, idx) {
                 binding.addLatLng(latLng);
             });
-        }
-        // for layers with single latlngs, e.g. on type 'marker'
-        if(layer.hasOwnProperty('_latlng')) {
+        } else if(type === 'marker') {
             binding.addLatLng(layer._latlng);
         }
         binding.display(createInputElementsCallback);
@@ -137,7 +146,8 @@ MapUtil.create_leaflet_draw_for_single_item = function(
     // a hook called after saving the edited line
     map.on('draw:edited', function(e) {
         // layers updated
-        var layers = e.layers;
+        var layers = e.layers,
+            layer = e.layer;
 
         if(layers.length > 0) {
             console.warn("More than one layer was edited.");
@@ -146,14 +156,19 @@ MapUtil.create_leaflet_draw_for_single_item = function(
         // remove the old latLngs from the form binding and add the new ones
         binding.clear();
         layers.eachLayer(function(layer) {
+            // for layers with bounds, e.g. on type rectangle
+            if(layer.hasOwnProperty('_bounds')) {
+                binding.addLatLng(layer._bounds._southWest);
+                binding.addLatLng(layer._bounds._northEast);
+            }
             // for layers with multiple latlngs, e.g. on type polyline
-            if(layer.hasOwnProperty('_latlngs')) {
+            else if(layer.hasOwnProperty('_latlngs')) {
                 layer._latlngs.forEach(function(latLng, idx) {
                     binding.addLatLng(latLng);
                 });
             }
             // for layers with single latlngs, e.g. on type 'marker'
-            if(layer.hasOwnProperty('_latlng')) {
+            else if(layer.hasOwnProperty('_latlng')) {
                 binding.addLatLng(layer._latlng);
             }
         });

@@ -173,7 +173,7 @@ class Areas extends AbstractCollection {
         return $area;
     }
 
-    private function update_values($area, $array) {
+    public function update_values($area, $array) {
         $array = (object) $array;
 
         $area->name = strval($array->name);

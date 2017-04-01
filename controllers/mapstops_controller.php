@@ -168,8 +168,8 @@ class MapstopsController extends AbstractController {
     }
 
     /**
-     * @return View     A view for the error encountered or not at all
-     *                  (redirects on to edit() success)
+     * @return View     A view for the error encountered on error. Should not
+     *                  return at all on success (redirects to edit route).
      */
     private static function handle_insert_or_update($mapstop, $tour) {
         // check that the place id is correct

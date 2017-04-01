@@ -163,6 +163,14 @@ class TestHelper {
         return $id;
     }
 
+    public function make_area() {
+        $area = new Area();
+        $area->name = 'Area Test Name ' . $this->random_str();
+        $area->coordinate1 = $this->random_coordinate();
+        $area->coordinate2 = $this->random_coordinate();
+        return $area;
+    }
+
     public function make_place() {
         $place = new Place();
         $place->user_id = $this->get_test_user()->ID;

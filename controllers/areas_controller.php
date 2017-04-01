@@ -49,11 +49,32 @@ class AreasController extends AbstractController {
     }
 
     public static function edit() {
+        $id = RouteParams::get_id_value();
+        $area = Areas::instance()->get($id);
 
+        $error_view = self::filter_if_not_editable($area, $id);
+        if(is_null($error_view)) {
+            $view = new View(ViewHelper::edit_area_view(), array(
+                'action_params' => RouteParams::update_area($id),
+                'area' => $area
+            ));
+        } else {
+            $view = $error_view;
+        }
+        self::wrap_in_page_view($view)->render();
     }
 
     public static function update() {
+        $id = RouteParams::get_id_value();
+        $area = Areas::instance()->get($id);
 
+        $error_view = self::filter_if_not_editable($area, $id);
+        if(is_null($error_view)) {
+            $view = self::handle_insert_or_update($area);
+        } else {
+            $view = $error_view;
+        }
+        self::wrap_in_page_view($view)->render();
     }
 
     public static function delete() {
@@ -82,6 +103,44 @@ class AreasController extends AbstractController {
             }
         }
         self::wrap_in_page_view($view)->render();
+    }
+
+    private static function filter_if_not_editable($area, $id) {
+        if(empty($area)) {
+            return self::create_not_found_view(
+                "Gebiet existiert nicht: '$id'.");
+        } else if(!UserService::instance()->is_admin()) {
+            return self::create_access_denied_view();
+        }
+        return null;
+    }
+
+    private static function read_area_params() {
+        $filtered = self::filter_params(self::AREA_PARAMS, $_POST);
+        if(is_null($filtered)) {
+            return null;
+        } else {
+            return $filtered['shtm_area'];
+        }
+    }
+
+    /**
+     * @return View     A view for the error encountered on error. Should not
+     *                  return at all on success (redirects to edit route).
+     */
+    private static function handle_insert_or_update($area) {
+        $params = self::read_area_params();
+        if(empty($params)) {
+            return self::create_bad_request_view("Änderungen nicht übernommen");
+        }
+        Areas::instance()->update_values($area, $params);
+        $result = Areas::instance()->save($area);
+        if(empty($result)) {
+            MessageService::instance()->add_model_messages($area);
+            return self::create_bad_input_view("Änderungen nicht übernommen");
+        }
+        MessageService::instance()->add_success("Gespeichert.");
+        self::redirect(RouteParams::edit_area($area->id));
     }
 
 }

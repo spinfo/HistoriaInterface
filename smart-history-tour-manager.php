@@ -177,10 +177,10 @@ function shtm_create_test_data() {
 
     $user_service = UserService::instance();
 
-    $values = array("lat" => 51.120429, "lon" => 7.086940);
+    $values = array("lat" => 51.120429, "lon" => 6.534190);
     $coord1_id = DB::insert(Coordinates::instance()->table, $values);
 
-    $values = array("lat" => 51.357928, "lon" => 6.534190);
+    $values = array("lat" => 51.357928, "lon" => 7.086940);
     $coord2_id = DB::insert(Coordinates::instance()->table, $values);
 
     // dummy coordinates for the test area
@@ -551,9 +551,11 @@ function add_leaflet_js() {
     $action = RouteParams::get_action_value();
 
     $is_script_page = false;
-    if($controller == 'place') {
+    if($controller == 'place' && $action != 'index') {
         $is_script_page = true;
     } else if($controller == 'tour' && ($action == 'edit_track' || $action == 'edit_stops')) {
+        $is_script_page = true;
+    } else if($controller == 'area' && $action != 'index') {
         $is_script_page = true;
     }
 

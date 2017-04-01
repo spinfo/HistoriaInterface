@@ -6,7 +6,7 @@
 
     <div class="shtm_info_text">
         Geben Sie hier einen Namen und ein Gebiet für die Tour ein.<br>
-        Der Name kann später noch geändert werden.)
+        Der Name kann später noch geändert werden.
     </div>
 
     <div class="shtm_form_line">

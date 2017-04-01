@@ -75,7 +75,7 @@
         form.shtm_form > div > div > div.shtm_form_line > label {
             margin-top: 5px;
             display: inline-block;
-            width: 10%;
+            width: 12%;
             height: 100%;
             line-height: 100%;
             vertical-align: top;

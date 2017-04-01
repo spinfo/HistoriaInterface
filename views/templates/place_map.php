@@ -7,7 +7,7 @@
 
     <?php $this->include($this->view_helper::map_util_js()) ?>
 
-    // only create the map if we are not on an edit page
+    // only create the map if we are not on an edit/new page
     // (does it's own map creation)
     url = window.location.href;
     if(!url.includes('shtm_a=edit') && !url.includes('shtm_a=new')) {
