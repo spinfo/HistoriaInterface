@@ -7,6 +7,20 @@
 <form action=admin.php?<?php echo $this->action_params ?> method="post"
     class="shtm_right_from_map shtm_form shtm_place_form">
 
+    <?php if($this->route_params::is_current_page($this->route_params::new_place())): ?>
+        <?php $this->include($this->view_helper::area_selection_template(), array(
+                'name' => 'shtm_place[area_id]',
+                'areas' => $this->areas,
+                'selected_area_id' => $this->current_area_id,
+        )) ?>
+    <?php else: ?>
+        <div class="shtm_form_line">
+            <label>Gebiet: <?php echo $this->area->name ?></label>
+        </div>
+    <?php endif ?>
+
+
+
     <div class="shtm_form_line">
         <label for="shtm_name">Name:</label>
         <input type="text" id="shtm_name" name="shtm_place[name]" value="<?php echo $this->place->name ?>">

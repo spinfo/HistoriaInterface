@@ -39,6 +39,7 @@ $name = 'test name ' . $helper->random_str();
 $lat = $helper->random_float(-90, 90);
 $lon = $helper->random_float(-180, 180);
 $post = array(
+    'shtm_place[area_id]' => Areas::instance()->first_id(),
     'shtm_place[name]' => $name,
     'shtm_place[lat]' => $lat,
     'shtm_place[lon]' => $lon

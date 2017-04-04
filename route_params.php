@@ -20,18 +20,28 @@ class RouteParams {
     // build GET parametrs for a query by adding all params to the current GET
     // parameters
     // The "route" build here is just a string of GET parameters
+    // If $remove others is given, all of our parameters, i.e. the ones of this
+    // plugin are removed before
     private static function params_to_route($added_params = array(), $remove_others = true) {
-        $get = $_GET;
         if($remove_others) {
-            foreach (self::KEYS as $name => $param_key) {
-                unset($get[$param_key]);
-            }
+            $get = self::current_get_params(array_values(self::KEYS));
+        } else {
+            $get = self::current_get_params();
         }
         return http_build_query(array_merge($get, $added_params));
     }
 
     public static function default_page() {
         return self::index_tours();
+    }
+
+    // returns a copy of the current get parameters, omitting the given keys
+    public static function current_get_params($omit = array()) {
+        $get = $_GET;
+        foreach($omit as $omit_key) {
+            unset($get[$omit_key]);
+        }
+        return $get;
     }
 
     private static function make_route(
@@ -92,9 +102,12 @@ class RouteParams {
         return self::make_route('area', 'destroy', $id);
     }
 
-    // TODO: Remove default setting once area_id is fully supported
-    public static function index_places($area_id = -1) {
-        return self::make_route('place', 'index', null, null, $area_id);
+    public static function index_places($area_id = null) {
+        if(empty($area_id)) {
+            return self::make_route('place', 'index');
+        } else {
+            return self::make_route('place', 'index', null, null, $area_id);
+        }
     }
 
     public static function new_place() {
@@ -121,9 +134,12 @@ class RouteParams {
         return self::make_route('place', 'destroy', $id);
     }
 
-    // TODO: Remove default setting once area_id is fully supported
-    public static function index_tours($area_id = -1) {
-        return self::make_route('tour', 'index', null, null, $area_id);
+    public static function index_tours($area_id = null) {
+        if(empty($area_id)) {
+            return self::make_route('tour', 'index');
+        } else {
+            return self::make_route('tour', 'index', null, null, $area_id);
+        }
     }
 
     public static function new_tour() {
@@ -182,10 +198,6 @@ class RouteParams {
         return self::make_route('mapstop', 'destroy', $id);
     }
 
-    public static function set_current_area($id = null) {
-        return self::params_to_route(self::set_current_area_params($id));
-    }
-
     /**
      * Return true if the current page has all get parameters that are in the
      * given parameter string, else false.
@@ -206,18 +218,6 @@ class RouteParams {
         return $result;
     }
 
-    public static function set_current_area_params($id = null) {
-        $values = array(
-            self::KEYS['controller'] => 'area',
-            self::KEYS['action'] => 'set_current_area',
-            // encode the current params as back url
-            self::KEYS['back_params'] => urlencode(self::params_to_route())
-        );
-        if(!empty($id)) {
-            $values[self::KEYS['id']] = $id;
-        }
-        return array_merge($_GET, $values);
-    }
 
     public static function get_controller_value() {
         return $_GET[self::KEYS['controller']];
@@ -233,6 +233,10 @@ class RouteParams {
 
     public static function get_tour_id_value() {
         return intval($_GET[self::KEYS['tour_id']]);
+    }
+
+    public static function get_area_id_value() {
+        return intval($_GET[self::KEYS['area_id']]);
     }
 
     public static function get_back_params_value() {

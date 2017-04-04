@@ -1,9 +1,9 @@
 
-<h2>Orte</h2>
-
 <?php $this->include($this->view_helper::choose_current_area_template()) ?>
 
 <div>
+    <h2>Orte</h2>
+
     <a href="?<?php echo $this->route_params::new_place() ?>">Ort hinzufügen</a>
 </div>
 

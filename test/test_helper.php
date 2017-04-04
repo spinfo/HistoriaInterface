@@ -40,7 +40,7 @@ class TestHelper {
     }
 
     // sets up a url for the tour creator admin page
-    public function tc_url($controller, $action, $id = null, $back_param_str = null) {
+    public function tc_url($controller, $action, $id = null, $back_param_str = null, $area_id = null) {
         $url = $this->config->wp_url . $this->config->tour_creator_prefix;
         $url .= '&shtm_c=' . $controller;
         $url .= '&shtm_a=' . $action;
@@ -49,6 +49,9 @@ class TestHelper {
         }
         if(isset($back_param_str)) {
             $url .= '&shtm_back_params=' . urlencode($back_param_str);
+        }
+        if(isset($area_id)) {
+            $url .= '&shtm_area_id=' . $area_id;
         }
         return $url;
     }

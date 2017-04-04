@@ -398,9 +398,6 @@ function shtm_render_tour_creator() {
                 case 'destroy':
                     AreasController::destroy();
                     break;
-                case 'set_current_area':
-                    AreasController::set_current_area();
-                    break;
                 default:
                     AreasController::index();
                     break;

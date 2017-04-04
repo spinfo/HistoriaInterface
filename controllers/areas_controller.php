@@ -105,26 +105,6 @@ class AreasController extends AbstractController {
 
     }
 
-    // set the current area in the wp options and redirect to the previous page
-    public static function set_current_area() {
-        $user_service = UserService::instance();
-        $id = intval(RouteParams::get_id_value());
-
-        $view = null;
-        if(!$user_service->is_logged_in()) {
-            $view = self::create_access_denied_view();
-        } else {
-            try {
-                $user_service->set_current_area_id($id);
-                $back_page = RouteParams::get_back_params_value();
-                self::redirect(urldecode($back_page), 302);
-            } catch (UserServiceException $e) {
-                $view = self::create_view_with_exception($e, 400);
-            }
-        }
-        self::wrap_in_page_view($view)->render();
-    }
-
     private static function filter_if_not_editable($area, $id) {
         if(empty($area)) {
             return self::create_not_found_view(

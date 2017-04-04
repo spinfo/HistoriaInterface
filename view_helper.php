@@ -36,8 +36,12 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/place_index.php';
     }
 
+    public static function new_place_view() {
+        return dirname(__FILE__) . '/views/place_edit_or_new.php';
+    }
+
     public static function edit_place_view() {
-        return dirname(__FILE__) . '/views/place_edit.php';
+        return dirname(__FILE__) . '/views/place_edit_or_new.php';
     }
 
     public static function delete_place_view() {
@@ -124,6 +128,10 @@ class ViewHelper {
 
     public static function mapstop_simple_form_template() {
         return dirname(__FILE__) . '/views/templates/mapstop_simple_form.php';
+    }
+
+    public static function area_selection_template() {
+        return dirname(__FILE__) . '/views/templates/area_selection.php';
     }
 
 

@@ -2,6 +2,8 @@
 namespace SmartHistoryTourManager;
 
 require_once( dirname(__FILE__) . '/../view_helper.php');
+require_once( dirname(__FILE__) . '/../user_service.php');
+require_once( dirname(__FILE__) . '/../route_params.php');
 
 /**
  * A class to wrap methods used by all controllers.
@@ -71,6 +73,33 @@ abstract class AbstractController {
         wp_redirect($url, $status);
         exit;
     }
+
+    /**
+     * Handles getting the current area id. If an area id exists as a get param
+     * that area is taken to be the current user's area and saved in the user
+     * preferences. If no area is given by the GET parameters, the user services
+     * is asked for the current area id.
+     *
+     * @return int  Always a valid area id. (As long as there is at least one.)
+     */
+    public static function determine_area_id() {
+        $area_id = RouteParams::get_area_id_value();
+        if($area_id < 1 || !Areas::instance()->valid_id($area_id)) {
+            try {
+                $area_id = UserService::instance()->get_current_area_id();
+            } catch(UserServiceException $e) {
+                return Areas::instance()->first_id();
+            }
+        } else {
+            try {
+                UserService::instance()->set_current_area_id($area_id);
+            } catch(UserServiceException $e) {
+                debug_log("Error saving the area_id from GET params: $area_id");
+            }
+        }
+        return $area_id;
+    }
+
 
     /**
      * Filter an input array based on another array supplying valid keys and

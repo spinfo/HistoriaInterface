@@ -23,19 +23,17 @@ class PlacesController extends AbstractController {
     );
 
     public static function index() {
-        $places = Places::instance();
-        $areas = Areas::instance();
-        $user_service = UserService::instance();
+        $current_area_id = self::determine_area_id();
 
-        $places_list = $places->list(0, PHP_INT_MAX);
-        $areas_list = $areas->list_simple();
+        $places_list = Places::instance()->list_by_area($current_area_id);
+        $areas_list = Areas::instance()->list_simple();
 
         $view = new View(ViewHelper::index_places_view(),
             array(
                 'user_service' => UserService::instance(),
                 'places_list' => $places_list,
                 'areas_list' => $areas_list,
-                'current_area_id' => $user_service->get_current_area_id(),
+                'current_area_id' => $current_area_id,
             )
         );
         self::wrap_in_page_view($view)->render();
@@ -46,13 +44,8 @@ class PlacesController extends AbstractController {
 
         $place = $places->create();
 
-        $current_area_id = UserService::instance()->get_current_area_id();
-        if($current_area_id != DB::BAD_ID) {
-            $place->area_id = 1;
-        } else {
-            debug_log("No area selected. That should never happen.");
-            $current_area_id = Areas::instance()->last_id();
-        }
+        $current_area_id = self::determine_area_id();
+        $place->area_id = $current_area_id;
         $area = Areas::instance()->get($current_area_id);
         if(!is_null($area)) {
             $center_lat = ($area->coordinate1->lat + $area->coordinate2->lat)/2;
@@ -63,8 +56,9 @@ class PlacesController extends AbstractController {
             debug_log("Area not retrievabel from selection id.");
         }
 
-        $view = new View(ViewHelper::edit_place_view(), array(
-            'heading' => 'Neuer Ort',
+        $view = new View(ViewHelper::new_place_view(), array(
+            'areas' => Areas::instance()->list_simple(),
+            'current_area_id' => $current_area_id,
             'place' => $place,
             'action_params' => RouteParams::create_place()
         ));
@@ -75,23 +69,16 @@ class PlacesController extends AbstractController {
         $places = Places::instance();
 
         $place_params = self::get_place_params();
+        $area_id = intval($_POST['shtm_place']['area_id']);
         $view = null;
-        if(!empty($place_params)) {
+        if(!empty($place_params) && Places::instance()->valid_id($area_id)) {
             $place = $places->create($place_params);
+            $place->area_id = $area_id;
             $place->user_id = UserService::instance()->user_id();
-            $current_area_id = UserService::instance()->get_current_area_id();
-            if($current_area_id != DB::BAD_ID) {
-                $place->area_id = 1;
-            } else {
-                debug_log("No area selected. That should never happen.");
-                $current_area_id = Areas::instance()->last_id();
-            }
             $result = $places->save($place);
             if(empty($result)) {
                 MessageService::instance()->add_error("Ort nicht erstellt.");
-                foreach($place->messages as $key => $val) {
-                    MessageService::instance()->add_error("place: $key");
-                }
+                MessageService::instance()->add_model_messages($place);
             } else {
                 MessageService::instance()->add_success("Ort erstellt!");
                 self::redirect(RouteParams::edit_place($place->id));
@@ -118,6 +105,7 @@ class PlacesController extends AbstractController {
             } else {
                 if($user_service->user_may_edit_place($place)) {
                     $view = new View(ViewHelper::edit_place_view(), array(
+                            'area' => Areas::instance()->get($place->area_id),
                             'heading' => 'Ort bearbeiten',
                             'place' => $place,
                             'action_params' => RouteParams::update_place($place->id)
@@ -219,7 +207,6 @@ class PlacesController extends AbstractController {
         }
         self::wrap_in_page_view($view)->render();
     }
-
 
     private static function get_place_params() {
         $result = self::filter_params(self::PLACE_PARAMS_WHITELIST, $_POST);

@@ -27,7 +27,8 @@ class ToursController extends AbstractController {
     public static function index() {
         $user_service = UserService::instance();
 
-        $tours_list = Tours::instance()->list(0, PHP_INT_MAX);
+        $current_area_id = self::determine_area_id();
+        $tours_list = Tours::instance()->list_by_area($area_id);
         $areas_list = Areas::instance()->list_simple();
 
         $view = new View(ViewHelper::index_tours_view(),
@@ -35,7 +36,7 @@ class ToursController extends AbstractController {
                 'user_service' => UserService::instance(),
                 'tours_list' => $tours_list,
                 'areas_list' => $areas_list,
-                'current_area_id' => $user_service->get_current_area_id(),
+                'current_area_id' => $current_area_id,
             )
         );
         self::wrap_in_page_view($view)->render();
@@ -44,9 +45,11 @@ class ToursController extends AbstractController {
     // just renders an empty form for a tour's name and area
     public static function new() {
         $areas_list = Areas::instance()->list_simple();
+        $current_area_id = self::determine_area_id();
         $view = new View(ViewHelper::new_tour_view(), array(
             'action_params' => RouteParams::create_tour(),
             'areas_list' => $areas_list,
+            'current_area_id' => $current_area_id,
         ));
         self::wrap_in_page_view($view)->render();
     }

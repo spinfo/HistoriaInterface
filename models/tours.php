@@ -19,8 +19,7 @@ class Tours extends AbstractCollection {
         $this->join_coordinates_table = DB::table_name('tours_to_coordinates');
     }
 
-    // TODO: Very similiar to places->list, refactor
-    public function list($offset, $limit, $area_id = DB::BAD_ID) {
+    public function list_by_area($area_id) {
         $where = UserService::instance()->access_conditions();
 
         if(empty($area_id) || $area_id == DB::BAD_ID) {
@@ -33,7 +32,7 @@ class Tours extends AbstractCollection {
         $where['area_id'] = $area_id;
 
         $sql = "SELECT * FROM $this->table";
-        $rows = DB::list($sql, $where, $offset, $limit);
+        $rows = DB::list($sql, $where, 0, PHP_INT_MAX);
 
         $tours = array();
         foreach($rows as $count => $row) {
@@ -41,10 +40,6 @@ class Tours extends AbstractCollection {
             $tours[] = $tour;
         }
         return $tours;
-    }
-
-    public function list_by_area($area_id) {
-        return $this->list(0, PHP_INT_MAX, $area_id);
     }
 
     /**
