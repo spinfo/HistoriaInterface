@@ -234,6 +234,18 @@ class WPTestConnection extends TestCase {
             "Should not have success message on 403 ($name).");
     }
 
+    // test for the correct status and the existence of an error message on
+    // a bad request
+    public function test_bad_request($url, $post, $name) {
+        $this->test_fetch($url, $post, 401,
+            "Should have status 401 on bad request ($name).");
+
+        $this->test_error_message('', $name);
+
+        $this->ensure_xpath("div//[contains(@class,'shtm_message_success')]", 0,
+            "Should not have any success message on 401 ($name).");
+    }
+
     // tests the presence of a coordinate tag with the specified lat/lon
     public function test_coordinate($lat, $lon, $test_name) {
         // format coordinates to database precision

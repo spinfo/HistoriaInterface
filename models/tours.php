@@ -20,16 +20,17 @@ class Tours extends AbstractCollection {
     }
 
     // TODO: Very similiar to places->list, refactor
-    public function list($offset, $limit) {
+    public function list($offset, $limit, $area_id = DB::BAD_ID) {
         $where = UserService::instance()->access_conditions();
 
-        $current_area_id = UserService::instance()->get_current_area_id();
-        if($current_area_id == DB::BAD_ID) {
-            throw new \Exception(
-                "bad current area id. This should never happen.");
-        } else {
-            $where['area_id'] = $current_area_id;
+        if(empty($area_id) || $area_id == DB::BAD_ID) {
+            $area_id = UserService::instance()->get_current_area_id();
+            if($area_id == DB::BAD_ID) {
+                throw new \Exception(
+                    "bad current area id. This should never happen.");
+            }
         }
+        $where['area_id'] = $area_id;
 
         $sql = "SELECT * FROM $this->table";
         $rows = DB::list($sql, $where, $offset, $limit);
@@ -40,6 +41,10 @@ class Tours extends AbstractCollection {
             $tours[] = $tour;
         }
         return $tours;
+    }
+
+    public function list_by_area($area_id) {
+        return $this->list(0, PHP_INT_MAX, $area_id);
     }
 
     /**

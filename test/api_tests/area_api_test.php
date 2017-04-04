@@ -42,7 +42,7 @@ test_set_current_area($contrib_con, "contributor");
 
 
 // TEST NEW
-function test_new($con, $name) {
+function test_new_area($con, $name) {
     $url = $con->helper->tc_url('area', 'new');
     $con->test_fetch($url, null, 200,
         "Should have status 200 on area new ($name).");
@@ -56,7 +56,7 @@ function test_new($con, $name) {
     $con->test_input_field('shtm_area[c2_lon]', $empty_coord_value, $name);
 }
 
-test_new($admin_con, 'Admin visits area new');
+test_new_area($admin_con, 'Admin visits area new');
 
 // the contributor should not be able to visit area new
 $contrib_con->test_no_access($helper->tc_url('area', 'new'), null,
@@ -75,7 +75,7 @@ function make_area_post_data($area) {
     );
 }
 
-function test_create($con, $name) {
+function test_create_area($con, $name) {
     $area = $con->helper->make_area();
 
     $post = make_area_post_data($area);
@@ -90,19 +90,20 @@ function test_create($con, $name) {
     $con->assert($id > $id_before, "Should give new id on redirect ($name).");
 
     $from_db = Areas::instance()->get($id);
-    $con->assert(!empty($from_db), "Should be able to get the new area ($name).");
+    $con->assert(!empty($from_db),
+        "Should be able to get the new area ($name).");
 
     // test the edit page we were redirected to for both area version to check
     // that values match
-    test_edit($con, $area, $name, false);
-    test_edit($con, $from_db, $name, false);
+    test_edit_area($con, $area, $name, false);
+    test_edit_area($con, $from_db, $name, false);
 
     return $from_db;
 }
 
 
 // Create a new area by testing the create route
-$a_admin = test_create($admin_con, 'Admin creates area');
+$a_admin = test_create_area($admin_con, 'Admin creates area');
 
 // The contributor should not be able to do this
 $post = make_area_post_data($a_admin);
@@ -111,7 +112,7 @@ $contrib_con->test_no_access($helper->tc_url('area', 'create'), $post,
 
 
 // TEST EDIT & UPDATE
-function test_edit($con, $area, $name, $do_fetch = true) {
+function test_edit_area($con, $area, $name, $do_fetch = true) {
     if($do_fetch) {
         $url = $con->helper->tc_url('area', 'edit', $area->id);
         $con->test_fetch($url, null, 200,
@@ -130,7 +131,7 @@ function test_edit($con, $area, $name, $do_fetch = true) {
         $con->helper->coord_value_string($area->coordinate2->lon), $name);
 }
 
-function test_update($con, $area, $name) {
+function test_update_area($con, $area, $name) {
     $other = $con->helper->make_area();
 
     $post = make_area_post_data($other);
@@ -140,14 +141,14 @@ function test_update($con, $area, $name) {
         "Should have status 200 on area update ($name).");
 
     $con->test_redirect_params('area', 'edit', $id);
-    test_edit($con, $other, $name, false);
+    test_edit_area($con, $other, $name, false);
 
     return $post;
 }
 
 // Test edit and update for admin, re-fetch area to get the updated model
-test_edit($admin_con, $a_admin, 'Admin visits own area edit.');
-$post = test_update($admin_con, $a_admin, 'Admin updates own area.');
+test_edit_area($admin_con, $a_admin, 'Admin visits own area edit.');
+$post = test_update_area($admin_con, $a_admin, 'Admin updates own area.');
 $a_admin = Areas::instance()->get($a_admin->id);
 
 // Test the 404s
@@ -165,7 +166,7 @@ $contrib_con->test_no_access($url, $post, "Contributor updates admin's area");
 
 
 // TEST INDEX
-function test_index($con, $for_admin, $name) {
+function test_index_areas($con, $for_admin, $name) {
     $con->test_fetch($con->helper->tc_url('area', 'index'), null, 200,
         "Should have status 200 on area index ($name).");
 
@@ -192,11 +193,77 @@ function test_index($con, $for_admin, $name) {
         "Should show $n links to add area ($name).");
 }
 
+test_index_areas($admin_con, true, 'Admin visits area index');
+test_index_areas($contrib_con, false, 'contributor visits area index');
 
 
-test_index($admin_con, true, 'Admin visits area index');
-test_index($contrib_con, false, 'contributor visits area index');
 
+// TEST DELETE & DESTROY
+function create_tour_for_area($area) {
+    $tour = $con->helper->make_tour();
+    $tour->area_id = $area->id;
+    return Tours::instance()->save($tour);
+}
+
+function test_delete_area($con, $area, $name) {
+    // Some vars for both test conditions (with and without tour connected)
+    $url = $con->helper->tc_url('area', 'delete', $area->id);
+    $button_xp = "//button[@type='submit' and text()='Löschen']";
+    $name_xp = "//li[contains(@text, $area->name)]";
+
+    // assert that the area has no tour at first
+    $tours = Tours::instance()->list_by_area($area->id);
+    $con->assert(empty($areas),
+        "Should at first test area without tours ($name).");
+
+    // Fetching the delete page for an area without tours should get us the
+    // normal delete page with a delete button
+    $con->test_fetch($url, null, 200,
+        "Should have status 200 on area delete withour tour ($name).");
+    $con->ensure_xpath($button_xp, 1, "Should have a delete button ($name).");
+    $con->ensure_xpath($name_xp, 1, "Should show the areas name ($name).");
+
+    // The delete page for an area with tours then should not show any buttons
+    // but only an info text, detaling that the tour cannot be deleted
+    $tour = create_tour_for_area($area);
+    $tours = Tours::instance()->list_by_area($area->id);
+    $con->assert(count($tours) === 1,
+        "Should then test area with a tour ($name).");
+    $con->test_fetch($url, null, 200,
+        "Should have status 200 on area delete with tour ($name).");
+    $con->ensure_xpath($button_xp, 0, "Should not have delete button ($name).");
+    $con->ensure_xpath($name_xp, 1, "Should show the areas name ($name).");
+    $con->ensure_xpath("//div[contains(@class, 'shtm_message_info')]", 1,
+        "Should show infor message on area delete with tour ($name).");
+}
+
+function test_destroy_area($con, $area, $name) {
+    $url = $con->helper->tc_url('area', 'delete', $area->id);
+    $count = Areas::instance()->count();
+
+    // assert that the area has a tour at first
+    $tours = Tours::instance()->list_by_area($area->id);
+    $con->assert(count($tours) === 1,
+        "Should at first test area with a tour ($name).");
+
+    // trying to destroy an area with tours should result in an error
+    $con->test_bad_request($url, null, $name);
+    $con->assert($count === Areas::instance()->count(),
+        "Should not have removed any areas ($name).");
+
+    // now delete the tour and test the actual destroy
+    Tours::instance()->delete($tours[0]);
+    $tours = Tours::instance()->list_by_area($area->id);
+    $con->assert(empty($areas), "Should then test area without tours ($name).");
+
+    $con->test_fetch($url, null, 200,
+        "Should have status 200 on tour destroy ($name).");
+    $con->test_redirect_params('area', 'index');
+    $con->assert((Areas::instance()->count() - $count) === 1,
+        "Should have destroyed an area ($name).");
+    $con->assert(!Areas::instance()->valid_id($area->id),
+        "Area id should now be invalid ($name).");
+}
 
 
 
