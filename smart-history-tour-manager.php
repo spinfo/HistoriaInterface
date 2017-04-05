@@ -539,6 +539,15 @@ function check_session_messages() {
 add_action('init', 'SmartHistoryTourManager\check_session_messages');
 
 
+// if a post is put into the trash we might need to delete mapstop joins
+function delete_mapstop_join($post_id) {
+    require_once(dirname(__FILE__) . '/db.php');
+    require_once(dirname(__FILE__) . '/models/mapstops.php');
+
+    $where = array('post_id' => $post_id);
+    DB::delete(Mapstops::instance()->join_posts_table, $where);
+}
+add_action('wp_trash_post', 'SmartHistoryTourManager\delete_mapstop_join');
 
 // conditionally adds the leaflet dependencies to certain admin pages
 function add_leaflet_js() {

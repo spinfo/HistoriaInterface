@@ -266,14 +266,17 @@ class DB {
     }
 
     /**
-     * @return int|false The number of rows updated, or false on error.
+     * @param   array   $where  An array of where conditions, e.g.: area_id => 2
+     *
+     * @return int|false The number of rows deleted, or false on error.
      */
     public static function delete($table_name, $where) {
         global $wpdb;
         $result = $wpdb->delete($table_name, $where);
         if($result === false) {
-            debug_log(
-                "DB: Error deleting from $table_name with clause: '$where'.");
+            $msg = "DB: Error deleting from $table_name with: ";
+            $msg .= var_export($where, true);
+            debug_log($msg);
             return false;
         }
         return $result;
