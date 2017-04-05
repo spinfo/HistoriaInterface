@@ -71,7 +71,7 @@ class PlacesController extends AbstractController {
         $place_params = self::get_place_params();
         $area_id = intval($_POST['shtm_place']['area_id']);
         $view = null;
-        if(!empty($place_params) && Places::instance()->valid_id($area_id)) {
+        if(!empty($place_params) && Areas::instance()->valid_id($area_id)) {
             $place = $places->create($place_params);
             $place->area_id = $area_id;
             $place->user_id = UserService::instance()->user_id();
@@ -84,6 +84,10 @@ class PlacesController extends AbstractController {
                 self::redirect(RouteParams::edit_place($place->id));
             }
         } else {
+            if(!Areas::instance()->valid_id($area_id)) {
+                $msg = "Invalid area id: '$area_id'.";
+                MessageService::instance()->add_error($msg);
+            }
             $view = self::create_bad_request_view("Ungültiger Input");
         }
 
