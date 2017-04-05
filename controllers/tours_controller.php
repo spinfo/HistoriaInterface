@@ -121,23 +121,6 @@ class ToursController extends AbstractController {
         self::wrap_in_page_view($view)->render();
     }
 
-    // stub
-    public static function delete() {
-        // attempt to get the view by id
-        $id = RouteParams::get_id_value();
-        $tour = Tours::instance()->get($id);
-        // filter for basic errors
-        $error_view = self::filter_if_not_editable($tour);
-        if(!empty($error_view)) {
-            $view = $error_view;
-        } else {
-            $view = new View(ViewHelper::delete_tour_view(), array(
-                'tour' => $tour,
-            ));
-        }
-        self::wrap_in_page_view($view)->render();
-    }
-
     // this updates: either the tour's track (linked coordinates), that were
     // edited on the 'edit_track' route or it updates the tour information, that
     // was edited on the 'edit' route
@@ -225,6 +208,52 @@ class ToursController extends AbstractController {
             }
         }
         self::wrap_in_page_view($error_view)->render();
+    }
+
+    public static function delete() {
+        // attempt to get the tour by id
+        $id = RouteParams::get_id_value();
+        $tour = Tours::instance()->get($id);
+        // filter for basic errors
+        $error_view = self::filter_if_not_editable($tour);
+        if(!empty($error_view)) {
+            $view = $error_view;
+        } else {
+            $view = new View(ViewHelper::delete_tour_view(), array(
+                'tour' => $tour,
+            ));
+        }
+        self::wrap_in_page_view($view)->render();
+    }
+
+    public static function destroy() {
+        // attempt to get the tour by id
+        $id = RouteParams::get_id_value();
+        $tour = Tours::instance()->get($id, true, true);
+        // filter for basic errors
+        $error_view = self::filter_if_not_editable($tour);
+        if(is_null($error_view)) {
+            // attempt the delete
+            try {
+                $result = Tours::instance()->delete($tour);
+                if(empty($result)) {
+                    // this should in fact never be reached, as the same
+                    // exception type should have been thrown before, but let's
+                    // be paranoid.
+                    throw new DB_Exception('Unbekannter Fehler');
+                } else {
+                    MessageService::instance()->add_success('Tour gelöscht.');
+                    self::redirect(RouteParams::index_tours());
+                }
+            } catch(DB_Exception $e) {
+                $msg = 'Tour nicht gelöscht (' . $e->getMessage() . ')';
+                MessageService::instance()->add_error($msg);
+                self::redirect(RouteParams::delete_tour($tour->id));
+            }
+        } else {
+            $view = $error_view;
+        }
+        self::wrap_in_page_view($view)->render();
     }
 
     private static function determine_edit_view($tour, $action = 'edit_info') {

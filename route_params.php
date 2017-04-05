@@ -174,6 +174,10 @@ class RouteParams {
         return self::make_route('tour', 'delete', $id);
     }
 
+    public static function destroy_tour($id) {
+        return self::make_route('tour', 'destroy', $id);
+    }
+
     public static function new_mapstop($tour_id) {
         return self::make_route('mapstop', 'new', null, $tour_id);
     }

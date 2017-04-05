@@ -339,10 +339,50 @@ $contrib_con->test_no_access(
     'contributor tries to update admin tour stops');
 
 
+// TEST DELETE & DESTROY
+function test_tour_delete($con, $id, $name) {
+    $url = $con->helper->tc_url('tour', 'delete', $id);
+    $tour = Tours::instance()->get($id);
 
-// cleanup created tours, mapstops (implicitly) and posts
-Tours::instance()->delete(Tours::instance()->get($t_id_admin, true, true));
-Tours::instance()->delete(Tours::instance()->get($t_id_contributor, true, true));
+    $con->test_fetch($url, null, 200,
+        "Should have status 200 on tour delete ($name).");
+    $con->ensure_xpath("//li[contains(., '$tour->name')]", 1,
+        "Should show the tours name on delete ($name).");
+}
+
+function test_tour_destroy($con, $id, $name) {
+    $url = $con->helper->tc_url('tour', 'destroy', $id);
+
+    $count_before = Tours::instance()->count();
+    $con->test_fetch($url, null, 200,
+        "Should have status 200 on tour delete ($name).");
+
+    $con->test_redirect_params('tour', 'index');
+
+    $con->assert(($count_before - Tours::instance()->count()) === 1,
+        "Should have deleted one tour ($name).");
+    $con->assert(!Tours::instance()->valid_id($id),
+        "Tour id should no longer be valid.");
+}
+
+// test the contributor gets a 403 on deleting or destroying the admin's tour
+$url = $helper->tc_url('tour', 'delete', $t_id_admin);
+$contrib_con->test_no_access($url, null,
+    "Contributor tries to delete admin's tour");
+
+$url = $helper->tc_url('tour', 'destroy', $t_id_admin);
+$contrib_con->test_no_access($url, null,
+    "Contributor tries to destroy admin's tour");
+
+// test that the delete/destroys work
+test_tour_delete($contrib_con, $t_id_contributor, 'Contributor deletes tour');
+test_tour_delete($admin_con, $t_id_admin, 'Admin deletes tour');
+
+test_tour_destroy($contrib_con, $t_id_contributor, 'Contributor destroys tour');
+test_tour_destroy($admin_con, $t_id_admin, 'Admin destroys tour');
+
+
+// cleanup created posts
 $helper->delete_wp_posts_created();
 
 // invalidate logins
