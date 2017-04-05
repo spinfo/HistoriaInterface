@@ -53,7 +53,7 @@ class UserService {
         } else if ($this->is_contributor()) {
             $conditions['user_id'] = $this->user_id();
         } else {
-            $conditions['true'] = false;
+            $conditions['true'] = 'false';
         }
 
         return $conditions;

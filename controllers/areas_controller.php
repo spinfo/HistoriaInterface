@@ -98,11 +98,62 @@ class AreasController extends AbstractController {
     }
 
     public static function delete() {
+        $id = RouteParams::get_id_value();
+        $area = Areas::instance()->get($id);
 
+        $error_view = self::filter_if_not_editable($area, $id);
+        if(is_null($error_view)) {
+            $tours = Tours::instance()->list_by_area($area->id);
+            $view = new View(ViewHelper::delete_area_view(), array(
+                'area' => $area,
+                'tours' => $tours,
+            ));
+        } else {
+            $view = $error_view;
+        }
+        self::wrap_in_page_view($view)->render();
     }
 
     public static function destroy() {
+        $id = RouteParams::get_id_value();
+        $area = Areas::instance()->get($id);
 
+        $error_view = self::filter_if_not_editable($area, $id);
+        if(is_null($error_view)) {
+            // make sure, that there is no tour connected
+            $count = Tours::instance()->count(array('area_id' => $area->id));
+            if($count === 0) {
+                $places = Places::instance()->list_by_area($area->id);
+                // delete the places, this should not fail normally, but issue
+                // a warning if it does
+                foreach ($places as $place) {
+                    try {
+                        Places::instance()->delete($place);
+                    } catch(DB_Exception $e) {
+                        $msg = "Konnte Ort '$place->id' nicht löschen.";
+                        $msg .= ' (' . $e->getMessage() . ')';
+                        MessageService::instance()->add_warning($msg);
+                    }
+                }
+                // Now delete the area itself
+                try {
+                    $result = Areas::instance()->delete($area);
+                    MessageService::instance()->add_success('Gebiet gelöscht');
+                    self::redirect(RouteParams::index_areas());
+                } catch(DB_Exception $e) {
+                    $msg = 'Fehler beim Löschen. (' . $e->getMessage() . ')';
+                    MessageService::instance()->add_error($msg);
+                    self::redirect(RouteParams::delete_area($area->id));
+                }
+            } else {
+                $msg = "Gebiet mit Tour(en) kann nicht gelöscht werden.";
+                $view = self::create_bad_request_view($smg);
+            }
+        } else {
+            $view = $error_view;
+        }
+        // this is only reached when an error occured
+        self::wrap_in_page_view($view)->render();
     }
 
     private static function filter_if_not_editable($area, $id) {

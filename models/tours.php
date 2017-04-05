@@ -20,8 +20,6 @@ class Tours extends AbstractCollection {
     }
 
     public function list_by_area($area_id) {
-        $where = UserService::instance()->access_conditions();
-
         if(empty($area_id) || $area_id == DB::BAD_ID) {
             $area_id = UserService::instance()->get_current_area_id();
             if($area_id == DB::BAD_ID) {

@@ -175,8 +175,8 @@ test_index_areas($contrib_con, false, 'contributor visits area index');
 
 
 // TEST DELETE & DESTROY
-function create_tour_for_area($area) {
-    $tour = $con->helper->make_tour();
+function create_tour_for_area($area, $helper) {
+    $tour = $helper->make_tour();
     $tour->area_id = $area->id;
     return Tours::instance()->save($tour);
 }
@@ -185,11 +185,10 @@ function test_delete_area($con, $area, $name) {
     // Some vars for both test conditions (with and without tour connected)
     $url = $con->helper->tc_url('area', 'delete', $area->id);
     $button_xp = "//button[@type='submit' and text()='Löschen']";
-    $name_xp = "//li[contains(@text, $area->name)]";
+    $name_xp = "//li[contains(., '$area->name')]";
 
     // assert that the area has no tour at first
-    $tours = Tours::instance()->list_by_area($area->id);
-    $con->assert(empty($areas),
+    $con->assert(Tours::instance()->count(array('area_id' => $area->id)) === 0,
         "Should at first test area without tours ($name).");
 
     // Fetching the delete page for an area without tours should get us the
@@ -201,21 +200,20 @@ function test_delete_area($con, $area, $name) {
 
     // The delete page for an area with tours then should not show any buttons
     // but only an info text, detaling that the tour cannot be deleted
-    $tour = create_tour_for_area($area);
-    $tours = Tours::instance()->list_by_area($area->id);
-    $con->assert(count($tours) === 1,
+    $tour = create_tour_for_area($area, $con->helper);
+    $con->assert(Tours::instance()->count(array('area_id' => $area->id)) === 1,
         "Should then test area with a tour ($name).");
     $con->test_fetch($url, null, 200,
         "Should have status 200 on area delete with tour ($name).");
     $con->ensure_xpath($button_xp, 0, "Should not have delete button ($name).");
     $con->ensure_xpath($name_xp, 1, "Should show the areas name ($name).");
-    $con->ensure_xpath("//div[contains(@class, 'shtm_message_info')]", 1,
-        "Should show infor message on area delete with tour ($name).");
+    $con->ensure_xpath("//div[contains(@class, 'shtm_message_warning')]", 1,
+        "Should show info message on area delete with tour ($name).");
 }
 
 function test_destroy_area($con, $area, $name) {
-    $url = $con->helper->tc_url('area', 'delete', $area->id);
-    $count = Areas::instance()->count();
+    $url = $con->helper->tc_url('area', 'destroy', $area->id);
+    $count_at_start = Areas::instance()->count();
 
     // assert that the area has a tour at first
     $tours = Tours::instance()->list_by_area($area->id);
@@ -224,28 +222,43 @@ function test_destroy_area($con, $area, $name) {
 
     // trying to destroy an area with tours should result in an error
     $con->test_bad_request($url, null, $name);
-    $con->assert($count === Areas::instance()->count(),
+    $con->assert($count_at_start === Areas::instance()->count(),
         "Should not have removed any areas ($name).");
 
     // now delete the tour and test the actual destroy
-    Tours::instance()->delete($tours[0]);
+    $tour = Tours::instance()->get($tours[0]->id, true, true);
+    Tours::instance()->delete($tour);
     $tours = Tours::instance()->list_by_area($area->id);
-    $con->assert(empty($areas), "Should then test area without tours ($name).");
+    $con->assert(count($tours) === 0,
+        "Should then test area without tours ($name).");
 
     $con->test_fetch($url, null, 200,
         "Should have status 200 on tour destroy ($name).");
     $con->test_redirect_params('area', 'index');
-    $con->assert((Areas::instance()->count() - $count) === 1,
+    $con->assert(($count_at_start - Areas::instance()->count()) === 1,
         "Should have destroyed an area ($name).");
     $con->assert(!Areas::instance()->valid_id($area->id),
         "Area id should now be invalid ($name).");
 }
 
+// Test the 404s
+$url = $helper->tc_url('area', 'delete', $a_admin->id + 1);
+$admin_con->test_not_found($url, null, "Admin tries to delete invalid area");
+$url = $helper->tc_url('area', 'destroy', $a_admin->id + 1);
+$admin_con->test_not_found($url, null, "Admin tries to destroy invalid area");
+
+// Test the 403s
+$url = $helper->tc_url('area', 'delete', $a_admin->id);
+$contrib_con->test_no_access($url, null, "Contributor deletes admin's area");
+$url = $helper->tc_url('area', 'destroy', $a_admin->id);
+$contrib_con->test_no_access($url, null, "Contributor destroys admin's area");
+
+// Test that the admin can in fact delete/destroy
+test_delete_area($admin_con, $a_admin, 'Admin visits area delete');
+test_destroy_area($admin_con, $a_admin, 'Admin destroys area');
 
 
 // CLEANUP
-Areas::instance()->delete($a_admin);
-
 // invalidate logins
 $admin_con->invalidate_login();
 $contrib_con->invalidate_login();

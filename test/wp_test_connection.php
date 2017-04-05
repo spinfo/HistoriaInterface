@@ -237,7 +237,7 @@ class WPTestConnection extends TestCase {
     // test for the correct status and the existence of an error message on
     // a bad request
     public function test_bad_request($url, $post, $name) {
-        $this->test_fetch($url, $post, 401,
+        $this->test_fetch($url, $post, 400,
             "Should have status 401 on bad request ($name).");
 
         $this->test_error_message('', $name);

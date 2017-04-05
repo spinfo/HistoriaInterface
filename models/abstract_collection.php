@@ -73,7 +73,7 @@ abstract class AbstractCollection {
      *
      * @return bool|int The count's result on success or false on error
      */
-    public function count($where) {
+    public function count($where = array()) {
         return DB::count($this->table, $where);
     }
 
@@ -165,7 +165,8 @@ abstract class AbstractCollection {
     }
 
     /**
-     * Performs basic checking on the input model, then delegates the
+     * Performs basic checking on the input model, then delegates the delete to
+     * the child class.
      *
      * @return object|null  The deleted model with id values set to DB::BAD_ID
      *                      on success or null on error.
