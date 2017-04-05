@@ -371,12 +371,14 @@ class ToursController extends AbstractController {
             $result = \DateTime::createFromFormat('d.m.Y H:i:s', $input, $utc);
         } catch(\Exception $e) {
             $msg = "Falsches Datumsformat: '$input' (" . $e->getMessage() . ')';
+            $msg .= "<br>Bitte nutzen Sie das Format: 'JJJJ.MM.TT HH:MM:SS'.";
             MessageService::instance()->add_error($msg);
             return null;
         }
         if(empty($result)) {
-            $msg = "Falsches Datumsformat: '$input'";
-            MessageService::instance()->add_error($msg);
+            $msg = "Falsches Datumsformat: '$input'.";
+            $msg .= "<br>Bitte nutzen Sie das Format: 'JJJJ.MM.TT HH:MM:SS'.";
+            MessageService::instance()->add_warning($msg);
             return null;
         }
         return $result;
