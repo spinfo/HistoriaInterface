@@ -14,6 +14,7 @@
             <th>Name</th>
             <th>Latitude</th>
             <th>Longitude</th>
+            <th>Verwaltet von</th>
             <th></th>
             <th></th>
         </tr>
@@ -25,6 +26,7 @@
             <td><?php echo $place->name ?></td>
             <td><?php echo $place->coordinate->lat ?></td>
             <td><?php echo $place->coordinate->lon ?></td>
+            <td><?php echo $this->user_service->get_user($place->user_id)->user_login ?></td>
             <td>
                 <?php if($this->user_service->user_may_edit_place($place)): ?>
                     <a href="?<?php echo $this->route_params::edit_place($place->id) ?>">Bearbeiten</a>

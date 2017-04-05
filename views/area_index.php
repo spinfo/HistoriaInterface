@@ -12,7 +12,8 @@
         <tr>
             <th>id</th>
             <th>Name</th>
-            <th>#Touren</th>
+            <th>Touren</th>
+            <th>Orte</th>
             <?php if($this->user_service->is_admin()): ?>
                 <th><!-- Bearbeiten --></th>
                 <th><!-- Löschen --></th>
@@ -27,6 +28,11 @@
             <td>
                 <a href="?<?php echo $this->route_params::index_tours($area->id) ?>" title="Touren im Gebiet">
                     <?php echo $this->tour_counts[$area->id] ?>
+                </a>
+            </td>
+            <td>
+                <a href="?<?php echo $this->route_params::index_places($area->id) ?>" title="Orte im Gebiet">
+                    <?php echo $this->place_counts[$area->id] ?>
                 </a>
             </td>
             <?php if($this->user_service->is_admin()): ?>

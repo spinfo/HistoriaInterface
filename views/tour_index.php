@@ -13,8 +13,8 @@
         <tr>
             <th>id</th>
             <th>Name</th>
-            <th>Einführung</th>
             <th>Typ</th>
+            <th>Autor*in</th>
             <th><!-- Bearbeiten --></th>
             <th><!-- Löschen --></th>
         </tr>
@@ -23,9 +23,9 @@
     <?php foreach($this->tours_list as $tour): ?>
         <tr>
             <td><?php echo $tour->id ?></td>
-            <td><?php echo $this->trim_text($tour->name, 40) ?></td>
-            <td><?php echo $this->trim_text($tour->intro, 40) ?></td>
+            <td><?php echo $this->trim_text($tour->name, 60) ?></td>
             <td><?php echo $this->tour_type_name($tour->type) ?></td>
+            <td><?php echo $this->user_service->get_user($tour->user_id)->user_login ?></td>
             <td>
                 <?php if($this->user_service->user_may_edit_tour($tour)): ?>
                     <a href="?<?php echo $this->route_params::edit_tour($tour->id) ?>">Bearbeiten</a>

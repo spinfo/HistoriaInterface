@@ -28,15 +28,18 @@ class AreasController extends AbstractController {
         $user_service = UserService::instance();
         $areas = Areas::instance()->list_simple();
         $tour_counts = array();
+        $place_counts = array();
         foreach($areas as $area) {
-            $count = Tours::instance()->count(array('area_id' => $area->id));
-            $tour_counts[$area->id] = $count;
+            $where = array('area_id' => $area->id);
+            $tour_counts[$area->id] = Tours::instance()->count($where);
+            $place_counts[$area->id] = Places::instance()->count($where);
         }
 
         $view = new View(ViewHelper::index_areas_view(), array(
             'user_service' => $user_service,
             'areas' => $areas,
-            'tour_counts' => $tour_counts
+            'tour_counts' => $tour_counts,
+            'place_counts' => $place_counts,
         ));
         self::wrap_in_page_view($view)->render();
     }

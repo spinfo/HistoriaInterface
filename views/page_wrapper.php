@@ -50,7 +50,7 @@
         .shtm_index_table {
             margin-top: 12px;
         }
-        .shtm_index_table tr > td {
+        .shtm_index_table tr > td, .shtm_index_table tr > th {
             padding: 3px 7px;
         }
         .shtm_index_table > tbody > tr:nth-child(odd) {
