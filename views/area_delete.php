@@ -18,29 +18,27 @@
     </ul>
 
     <form action=admin.php?<?php echo $this->route_params::destroy_area($this->area->id) ?> method="post">
-
-    <?php if(count($this->tours) === 0): ?>
-        <div class="shtm_button">
-            <button type="submit">Löschen</button>
-        </div>
-    <?php else: ?>
-        <div class="shtm_message shtm_message_warning">
-            Das Gebiet kann nicht gelöscht werden, da es noch mit mindestens einer Tour verknüpft ist.
-            <br>
-            <a target="_blank" href="admin.php?<?php echo $this->route_params::index_tours($this->area->id) ?>">Touren im Gebiet</a>:
-            <div style="padding-left: 12px">
-                <ul>
-                    <?php foreach ($this->tours as $tour): ?>
-                        <li>
-                            <a target="_blank" href="admin.php?<?php echo $this->route_params::edit_tour($tour->id) ?>">
-                                <?php echo $tour->name ?>
-                            </a>
-                        </li>
-                    <?php endforeach ?>
-                </ul>
+        <?php if(count($this->tours) === 0): ?>
+            <div class="shtm_button">
+                <button type="submit">Löschen</button>
             </div>
-        </div>
-    <?php endif ?>
-
+        <?php else: ?>
+            <div class="shtm_message shtm_message_warning">
+                Das Gebiet kann nicht gelöscht werden, da es noch mit mindestens einer Tour verknüpft ist.
+                <br>
+                <a target="_blank" href="admin.php?<?php echo $this->route_params::index_tours($this->area->id) ?>">Touren im Gebiet</a>:
+                <div style="padding-left: 12px">
+                    <ul>
+                        <?php foreach ($this->tours as $tour): ?>
+                            <li>
+                                <a target="_blank" href="admin.php?<?php echo $this->route_params::edit_tour($tour->id) ?>">
+                                    <?php echo $tour->name ?>
+                                </a>
+                            </li>
+                        <?php endforeach ?>
+                    </ul>
+                </div>
+            </div>
+        <?php endif ?>
     </form>
 </div>

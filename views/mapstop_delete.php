@@ -15,10 +15,8 @@
     </ul>
 
     <form action=admin.php?<?php echo $this->route_params::destroy_mapstop($this->mapstop->id) ?> method="post">
-
-    <div class="shtm_button">
-        <button type="submit">Stop Löschen</button>
-    </div>
-
+        <div class="shtm_button">
+            <button type="submit">Stop Löschen</button>
+        </div>
     </form>
 </div>
