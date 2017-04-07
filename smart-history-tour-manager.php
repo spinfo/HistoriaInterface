@@ -168,6 +168,12 @@ function shtm_install() {
 // TODO: remove after testing
 function shtm_create_test_data() {
     require_once(dirname(__FILE__) . '/models/areas.php');
+
+    // only proceed, if there is no data present at the moment
+    if(Areas::instance()->count() > 0) {
+        return;
+    }
+
     require_once(dirname(__FILE__) . '/models/coordinates.php');
     require_once(dirname(__FILE__) . '/models/places.php');
     require_once(dirname(__FILE__) . '/models/mapstops.php');
