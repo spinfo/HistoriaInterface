@@ -136,10 +136,8 @@
     drawOptions.draw.rectangle.shapeOptions = MapUtil.rectangleShape();
 
     // create the leaflet draw environment
-    MapUtil.create_leaflet_draw_for_single_item(map, 'marker', binding,
+    MapUtil.create_leaflet_draw_for_single_item(map, 'rectangle', binding,
         createInputElements, drawOptions);
-
-
 
     // if we are on the edit view, init rectangle to edit
     if(window.location.href.includes('shtm_a=edit')) {

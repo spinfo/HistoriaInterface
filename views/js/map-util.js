@@ -114,14 +114,7 @@ MapUtil.create_leaflet_draw_for_single_item = function(
     // drawn (either by the user or programmatically)
     map.addControl(drawControl);
 
-    // a hook called when a fresh line is drawn
-    map.on('draw:created', function(e) {
-        var type = e.layerType,
-            layer = e.layer;
-
-        // add all latlngs to the form binding and refresh the form
-        // add all latlngs to the form binding and refresh the form
-        binding.clear();
+    var addLayerLatLngsToBinding = function(layer, binding) {
         if(type === 'rectangle') {
             binding.addLatLng(layer._bounds._southWest);
             binding.addLatLng(layer._bounds._northEast);
@@ -133,8 +126,17 @@ MapUtil.create_leaflet_draw_for_single_item = function(
             binding.addLatLng(layer._latlng);
         }
         binding.display(createInputElementsCallback);
+    }
 
-        // the layer (i.e. the line) may now be edited
+    // a hook called when a fresh object is drawn
+    map.on('draw:created', function(e) {
+        var layer = e.layer;
+
+        // add all latlngs to the form binding and refresh the form
+        binding.clear();
+        addLayerLatLngsToBinding(layer, binding);
+
+        // the layer may now be edited
         layer.addTo(editableItems);
 
         // since there may only be one line edited disable the toolbar for
@@ -143,11 +145,10 @@ MapUtil.create_leaflet_draw_for_single_item = function(
         editControl.addTo(map);
     });
 
-    // a hook called after saving the edited line
+    // a hook called after saving the edited object
     map.on('draw:edited', function(e) {
         // layers updated
-        var layers = e.layers,
-            layer = e.layer;
+        var layers = e.layers;
 
         if(layers.length > 0) {
             console.warn("More than one layer was edited.");
@@ -156,21 +157,7 @@ MapUtil.create_leaflet_draw_for_single_item = function(
         // remove the old latLngs from the form binding and add the new ones
         binding.clear();
         layers.eachLayer(function(layer) {
-            // for layers with bounds, e.g. on type rectangle
-            if(layer.hasOwnProperty('_bounds')) {
-                binding.addLatLng(layer._bounds._southWest);
-                binding.addLatLng(layer._bounds._northEast);
-            }
-            // for layers with multiple latlngs, e.g. on type polyline
-            else if(layer.hasOwnProperty('_latlngs')) {
-                layer._latlngs.forEach(function(latLng, idx) {
-                    binding.addLatLng(latLng);
-                });
-            }
-            // for layers with single latlngs, e.g. on type 'marker'
-            else if(layer.hasOwnProperty('_latlng')) {
-                binding.addLatLng(layer._latlng);
-            }
+            addLayerLatLngsToBinding(layer, binding);
         });
         // tell the form binding to re-render the form
         binding.display(createInputElementsCallback);
