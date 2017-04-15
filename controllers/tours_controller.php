@@ -25,20 +25,44 @@ class ToursController extends AbstractController {
     );
 
     public static function index() {
-        $user_service = UserService::instance();
-
         $current_area_id = self::determine_area_id();
         $tours_list = Tours::instance()->list_by_area($area_id);
         $areas_list = Areas::instance()->list_simple();
 
         $view = new View(ViewHelper::index_tours_view(),
             array(
-                'user_service' => UserService::instance(),
                 'tours_list' => $tours_list,
                 'areas_list' => $areas_list,
                 'current_area_id' => $current_area_id,
             )
         );
+        self::wrap_in_page_view($view)->render();
+    }
+
+    public function report() {
+        // attempt to get the the tour to display the report on
+        $id = RouteParams::get_id_value();
+        $tour = Tours::instance()->get($id, true, true);
+
+        if(!empty($tour)) {
+            self::get_related_objects_for($tour);
+            // add the area data, which should always be present
+            $tour->area = Areas::instance()->get($tour->area_id);
+            $content = array('tour' => $tour);
+            // respond with just the yaml and exit, if requested
+            if($_SERVER['HTTP_CONTENT_TYPE'] === 'text/yaml') {
+                $view = new View(ViewHelper::tour_report_yaml_template(),
+                    $content);
+                ob_end_clean();
+                $view->render();
+                exit();
+            } else {
+                $view = new View(ViewHelper::tour_report_view(), $content);
+            }
+        } else {
+            $msg = "Tour '$tour->id' existiert nicht.";
+            $view = self::create_not_found_view($msg);
+        }
         self::wrap_in_page_view($view)->render();
     }
 

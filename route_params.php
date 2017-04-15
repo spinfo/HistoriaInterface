@@ -142,6 +142,10 @@ class RouteParams {
         }
     }
 
+    public static function tour_report($id) {
+        return self::make_route('tour', 'report', $id);
+    }
+
     public static function new_tour() {
         return self::make_route('tour', 'new');
     }

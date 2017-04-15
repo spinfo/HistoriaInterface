@@ -54,6 +54,10 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/tour_index.php';
     }
 
+    public static function tour_report_view() {
+        return dirname(__FILE__) . '/views/tour_report.php';
+    }
+
     public static function new_tour_view() {
         return dirname(__FILE__) . '/views/tour_new.php';
     }
@@ -132,6 +136,10 @@ class ViewHelper {
 
     public static function area_selection_template() {
         return dirname(__FILE__) . '/views/templates/area_selection.php';
+    }
+
+    public static function tour_report_yaml_template() {
+        return dirname(__FILE__) . '/views/templates/tour_report_yaml.php';
     }
 
 

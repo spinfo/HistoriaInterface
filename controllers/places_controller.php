@@ -30,7 +30,6 @@ class PlacesController extends AbstractController {
 
         $view = new View(ViewHelper::index_places_view(),
             array(
-                'user_service' => UserService::instance(),
                 'places_list' => $places_list,
                 'areas_list' => $areas_list,
                 'current_area_id' => $current_area_id,
@@ -96,7 +95,6 @@ class PlacesController extends AbstractController {
 
     public static function edit() {
         $places = Places::instance();
-        $user_service = UserService::instance();
 
         $view;
         $id = RouteParams::get_id_value();
@@ -107,7 +105,7 @@ class PlacesController extends AbstractController {
             if(empty($place)) {
                 $view = self::create_not_found_view("Kein Objekt für id: $id.");
             } else {
-                if($user_service->user_may_edit_place($place)) {
+                if(UserService::instance()->user_may_edit_place($place)) {
                     $view = new View(ViewHelper::edit_place_view(), array(
                             'area' => Areas::instance()->get($place->area_id),
                             'heading' => 'Ort bearbeiten',
@@ -154,7 +152,6 @@ class PlacesController extends AbstractController {
 
     public static function delete() {
         $places = Places::instance();
-        $user_service = UserService::instance();
 
         $id = RouteParams::get_id_value();
         $place = $places->get($id);
@@ -163,7 +160,7 @@ class PlacesController extends AbstractController {
         if(empty($place)) {
             $view = self::create_not_found_view("Kein Ort mit id: $id.");
         } else {
-            if($user_service->user_may_edit_place($place)) {
+            if(UserService::instance()->user_may_edit_place($place)) {
                 $view = new View(ViewHelper::delete_place_view(), array(
                     'action_params' => RouteParams::destroy_place($place->id),
                     'place' => $place
@@ -177,7 +174,6 @@ class PlacesController extends AbstractController {
 
     public static function destroy() {
         $places = Places::instance();
-        $user_service = UserService::instance();
 
         $id = RouteParams::get_id_value();
         $place = $places->get($id);
@@ -188,7 +184,7 @@ class PlacesController extends AbstractController {
             MessageService::instance()->add_error("Kein Ort mit id: '$id'");
             $view = new View(ViewHelper::empty_view(), null);
         } else {
-            if($user_service->user_may_edit_place($place)) {
+            if(UserService::instance()->user_may_edit_place($place)) {
                 // actual delete happens here
                 $result = $places->delete($place);
 

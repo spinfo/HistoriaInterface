@@ -97,6 +97,17 @@
         #shtm_container ul {
             list-style: disc outside none;
         }
+
+        xmp.shtm_tour_report {
+            background: #FFF;
+            padding: 12px;
+            width: 70%;
+            overflow: auto;
+            /* white-space: pre-wrap;
+            white-space: moz-pre-wrap;
+            white-space: -o-pre-wrap;
+            word-wrap: break-word;*/
+        }
     -->
 </style>
 

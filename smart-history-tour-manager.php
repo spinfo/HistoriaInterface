@@ -444,6 +444,9 @@ function shtm_render_tour_creator() {
                 case 'index':
                     ToursController::index();
                     break;
+                case 'report':
+                    ToursController::report();
+                    break;
                 case 'new':
                     ToursController::new();
                     break;

@@ -25,7 +25,6 @@ class AreasController extends AbstractController {
 
 
     public static function index() {
-        $user_service = UserService::instance();
         $areas = Areas::instance()->list_simple();
         $tour_counts = array();
         $place_counts = array();
@@ -36,7 +35,6 @@ class AreasController extends AbstractController {
         }
 
         $view = new View(ViewHelper::index_areas_view(), array(
-            'user_service' => $user_service,
             'areas' => $areas,
             'tour_counts' => $tour_counts,
             'place_counts' => $place_counts,

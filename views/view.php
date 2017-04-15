@@ -3,6 +3,7 @@ namespace SmartHistoryTourManager;
 
 require_once( dirname(__FILE__) . '/../route_params.php');
 require_once( dirname(__FILE__) . '/../view_helper.php');
+require_once( dirname(__FILE__) . '/../user_service.php');
 
 /**
  * A simple solution to render html templates.
@@ -24,9 +25,11 @@ class View {
     public function __construct($file, $args = array()) {
         $this->file = $file;
         $this->args = $args;
-        // every view gets a route params object and a view helper
+        // every view gets a route params object, a view helper and the
+        // user service
         $this->route_params = new RouteParams();
         $this->view_helper = new ViewHelper();
+        $this->user_service = UserService::instance();
     }
 
     // this allows templates to call $this->arg instead of $this->args['arg']
@@ -104,6 +107,14 @@ class View {
             $trimmed_text .= '...';
         }
         return $trimmed_text;
+    }
+
+    public function print_yaml($value) {
+        if(is_string($value)) {
+            echo "\"" . addslashes($value) . "\"" . PHP_EOL;
+        } else {
+            echo $value . PHP_EOL;
+        }
     }
 }
 
