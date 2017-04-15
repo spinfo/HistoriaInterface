@@ -8,7 +8,9 @@ namespace SmartHistoryTourManager;
  *  ARG: 'api'          all api tests
  *  ARG: 'test-name'    the test by that name, e.g. 'places' or 'place_api'
  *
- *  ARG: --queries      Debug log all database queries.
+ *  ARG: --queries      Debug log all database queries. (This works for unit
+ *                      but not for api tests, as logging is still done by the
+ *                      server then.)
  *
  * EXAMPLE: Running
  *
@@ -32,7 +34,8 @@ require_once(dirname(__FILE__) . '/test_case.php');
 
 
 // PARSE ARGUMENTS
-const UNIT_TESTS = array('places', 'areas', 'mapstops', 'tours');
+const UNIT_TESTS = array('places', 'areas', 'mapstops', 'tours',
+    'tour_records');
 const API_TESTS = array('place_api', 'area_api', 'tour_api', 'mapstop_api',
     'change_area_api');
 

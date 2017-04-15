@@ -28,6 +28,7 @@ function shtm_install() {
     require_once(dirname(__FILE__) . '/models/places.php');
     require_once(dirname(__FILE__) . '/models/mapstops.php');
     require_once(dirname(__FILE__) . '/models/tours.php');
+    require_once(dirname(__FILE__) . '/models/tour_records.php');
 
     // get the table name prefix for tables as well as the default charset
     // from wp, add our name to the prefix
@@ -150,10 +151,30 @@ function shtm_install() {
         CONSTRAINT wp_shtm_mapstops_to_posts_ibfk_1 FOREIGN KEY (mapstop_id) REFERENCES $mapstops_table(id) ON DELETE CASCADE
     ) $charset_collate;";
 
+    // sql for the tour records table
+    $table_name = TourRecords::instance()->table;
+    $tour_records_sql = "CREATE TABLE $table_name (
+        id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+        tour_id bigint(20) UNSIGNED NOT NULL,
+        area_id bigint(20) UNSIGNED NOT NULL,
+        user_id bigint(20) UNSIGNED NOT NULL,
+        name text NOT NULL,
+        is_active boolean NOT NULL,
+        content text NOT NULL,
+        media_url text NOT NULL,
+        download_size bigint(20) UNSIGNED NOT NULL,
+        created_at timestamp DEFAULT now(),
+        updated_at timestamp DEFAULT now() ON UPDATE now(),
+        PRIMARY KEY  (id),
+        KEY shtm_tour_record_area_active (area_id, is_active),
+        KEY shtm_tour_record_tour (tour_id)
+    ) $charset_collate;";
+
     // collect queries
     $queries = array(
         $coordinates_sql, $areas_sql, $places_sql, $tours_sql,
-        $tours_to_coordinates_sql, $mapstops_sql, $mapstops_to_posts_sql
+        $tours_to_coordinates_sql, $mapstops_sql, $mapstops_to_posts_sql,
+        $tour_records_sql
     );
 
     // do the table update

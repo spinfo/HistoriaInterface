@@ -5,6 +5,7 @@ require_once(dirname(__FILE__) . '/../models/coordinate.php');
 require_once(dirname(__FILE__) . '/../models/places.php');
 require_once(dirname(__FILE__) . '/../models/mapstop.php');
 require_once(dirname(__FILE__) . '/../models/tour.php');
+require_once(dirname(__FILE__) . '/../models/tour_record.php');
 
 class TestHelper {
 
@@ -203,6 +204,32 @@ class TestHelper {
         }
 
         return $tour;
+    }
+
+    // make a tour record for a tour already in the database
+    public function make_tour_record($tour) {
+        $tour = Tours::instance()->get($tour->id, true, true);
+        Tours::instance()->set_related_objects_on($tour);
+
+        $record = new TourRecord();
+        $record->tour_id = $tour->id;
+        $record->area_id = $tour->area_id;
+        $record->user_id = $tour->user_id;
+        $record->name = $tour->name;
+        $record->is_active = true;
+
+        // TODO: This needs another place...
+        require_once(dirname(__FILE__) . '/../view_helper.php');
+        require_once(dirname(__FILE__) . '/../views/view.php');
+        $template_file = ViewHelper::tour_report_yaml_template();
+        $view = new View($template_file, array('tour' => $tour));
+        $record->content = $view->get_include_contents();
+
+        $record->media_url =
+            "http://example.com/" . $this->random_str() . ".gzip";
+        $record->download_size = rand(1, PHP_INT_MAX);
+
+        return $record;
     }
 
     // add three mapstops to the database for the tour

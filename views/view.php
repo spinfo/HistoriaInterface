@@ -116,6 +116,17 @@ class View {
             echo $value . PHP_EOL;
         }
     }
+
+    /**
+     * A function to return the result of rendering the view as a string.
+     *
+     * @return string   The result of rendering the view.
+     */
+    public function get_include_contents() {
+        ob_start();
+        include $this->file;
+        return ob_get_clean();
+    }
 }
 
 ?>
