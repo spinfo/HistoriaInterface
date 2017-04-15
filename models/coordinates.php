@@ -15,15 +15,9 @@ final class Coordinates extends AbstractCollection {
         $this->table = DB::table_name('coordinates');
     }
 
-    public function get($id) {
+    public function db_get($id) {
         $sql = "SELECT * FROM $this->table";
-        $row = DB::get($sql, array('id' => $id));
-
-        if(is_null($row)) {
-            return null;
-        } else {
-            return $this->instance_from_array($row);
-        }
+        return DB::get($sql, array('id' => $id));
     }
 
     protected function db_delete($coordinate) {
