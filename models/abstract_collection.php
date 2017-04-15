@@ -85,7 +85,7 @@ abstract class AbstractCollection {
      */
     public function get($id) {
         if(!is_int($id)) {
-            throw new \Exception("id is not an int: $id");
+            throw new \Exception("id empty or not an int: $id");
         }
 
         $row = $this->db_get($id);

@@ -45,9 +45,7 @@ class ToursController extends AbstractController {
         $tour = Tours::instance()->get($id, true, true);
 
         if(!empty($tour)) {
-            self::get_related_objects_for($tour);
-            // add the area data, which should always be present
-            $tour->area = Areas::instance()->get($tour->area_id);
+            Tours::instance()->set_related_objects_on($tour);
             $content = array('tour' => $tour);
             // respond with just the yaml and exit, if requested
             if($_SERVER['HTTP_CONTENT_TYPE'] === 'text/yaml') {
@@ -127,7 +125,7 @@ class ToursController extends AbstractController {
         $view = self::determine_edit_view($tour, 'edit_track');
 
         if(!empty($tour)) {
-            self::get_related_objects_for($tour);
+            Tours::instance()->set_related_objects_on($tour);
         }
         self::wrap_in_page_view($view)->render();
     }
@@ -140,7 +138,7 @@ class ToursController extends AbstractController {
         $view = self::determine_edit_view($tour, 'edit_stops');
 
         if(!empty($tour)) {
-            self::get_related_objects_for($tour);
+            Tours::instance()->set_related_objects_on($tour);
         }
         self::wrap_in_page_view($view)->render();
     }
@@ -366,24 +364,6 @@ class ToursController extends AbstractController {
             return null;
         }
         return $result;
-    }
-
-    // Get objects related to the tour and set them on it. This might be better
-    // in a model method, but is currently only needed here.
-    private static function get_related_objects_for($tour) {
-        $tour->coordinates = array();
-        foreach ($tour->coordinate_ids as $id) {
-            $tour->coordinates[] = Coordinates::instance()->get($id);
-        }
-        $tour->mapstops = array();
-        foreach ($tour->mapstop_ids as $id) {
-            $mapstop = Mapstops::instance()->get($id);
-            if(!empty($mapstop)) {
-                $mapstop->place =
-                    Places::instance()->get($mapstop->place_id);
-                $tour->mapstops[] = $mapstop;
-            }
-        }
     }
 
     private static function datetime_from_input($input) {

@@ -209,9 +209,7 @@ class DB {
         global $wpdb;
         $result = $wpdb->update($table_name, $values, array('id' => $id));
 
-        if($result == 1) {
-            return $result;
-        } else if($result == 0) {
+        if($result == 0) {
             $msg = "DB: Updating ${table_name} for id: '${id}' had no effect.";
             debug_log($msg);
         } else if($result != 1) {
@@ -227,7 +225,7 @@ class DB {
      * Replaces all placeholders in sql by the supplied values, then runs the
      * query.
      *
-     * (This is a small wrapper around wpdb->query(), adds prepartion step.)
+     * (This is a small wrapper around wpdb->query(), adds preparation step.)
      *
      * @return int|false Number of rows affected or false on error
      */
@@ -240,7 +238,7 @@ class DB {
     }
 
     /**
-     * @return int The id of the new obj of DB::BAD_ID on failure.
+     * @return int The id of the new obj or DB::BAD_ID on failure.
      */
     public static function insert($table_name, $values) {
         global $wpdb;
@@ -386,7 +384,6 @@ class DB {
                 // build an equality string from the key value pair
                 $equals[] = self::equals_str($key, $value);
                 $args[] = $value;
-
             }
         }
         // glue the equals strings together

@@ -3,7 +3,9 @@ namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/abstract_collection.php');
 require_once(dirname(__FILE__) . '/tour.php');
+require_once(dirname(__FILE__) . '/coordinates.php');
 require_once(dirname(__FILE__) . '/mapstops.php');
+require_once(dirname(__FILE__) . '/places.php');
 require_once(dirname(__FILE__) . '/../db.php');
 
 class Tours extends AbstractCollection {
@@ -225,7 +227,7 @@ class Tours extends AbstractCollection {
         if(!empty($array->area_id)) {
             $tour->area_id = intval($array->area_id);
         }
-        if(!empty($array->area_id)) {
+        if(!empty($array->user_id)) {
             $tour->user_id = intval($array->user_id);
         }
         $tour->name = strval($array->name);
@@ -315,6 +317,24 @@ class Tours extends AbstractCollection {
         $result = DB::query($sql, $mapstop_ids);
         // if any integer >= 0 is returned. the query did not error
         return (is_int($result) && $result >= 0);
+    }
+
+    // Get objects related to the tour and set them on it.
+    public function set_related_objects_on($tour) {
+        $tour->coordinates = array();
+        foreach ($tour->coordinate_ids as $id) {
+            $tour->coordinates[] = Coordinates::instance()->get($id);
+        }
+        $tour->mapstops = array();
+        foreach ($tour->mapstop_ids as $id) {
+            $mapstop = Mapstops::instance()->get($id);
+            if(!empty($mapstop)) {
+                $mapstop->place =
+                    Places::instance()->get($mapstop->place_id);
+                $tour->mapstops[] = $mapstop;
+            }
+        }
+        $tour->area = Areas::instance()->get($tour->area_id);
     }
 
     private function db_values($tour) {
