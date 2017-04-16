@@ -75,6 +75,10 @@ class UserService {
         return ($this->is_admin() || ($this->user_id() == $tour->user_id));
     }
 
+    public function user_may_publish_tours() {
+        return $this->is_admin();
+    }
+
     public function is_logged_in() {
         return !empty($this->user);
     }

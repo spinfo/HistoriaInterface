@@ -21,7 +21,7 @@
     </div>
 
     <noscript>
-        <div class="button" style="float:right">
+        <div class="shtm_button" style="float:right">
             <button type="submit">Ok</button>
         </div>
     </noscript>

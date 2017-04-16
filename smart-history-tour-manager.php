@@ -526,6 +526,35 @@ function shtm_render_tour_creator() {
                     break;
             }
             break;
+        case 'tour_record':
+            require_once( dirname(__FILE__) . '/controllers/tour_records_controller.php');
+            switch ($action) {
+                case 'index':
+                    TourRecordsController::index();
+                    break;
+                case 'view':
+                    TourRecordsController::view();
+                    break;
+                case 'new':
+                    TourRecordsController::new();
+                    break;
+                case 'create':
+                    TourRecordsController::create();
+                    break;
+                case 'deactivate':
+                    TourRecordsController::decativate();
+                    break;
+                case 'delete':
+                    TourRecordsController::delete();
+                    break;
+                case 'destroy':
+                    TourRecordsController::destroy();
+                    break;
+                default:
+                    TourRecordsController::index();
+                    break;
+            }
+            break;
         default:
             require_once( dirname(__FILE__) . '/controllers/abstract_controller.php');
             AbstractController::redirect(RouteParams::default_page());

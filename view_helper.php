@@ -94,6 +94,12 @@ class ViewHelper {
 
 
 
+    public static function index_tour_records_view() {
+        return dirname(__FILE__) . '/views/tour_record_index.php';
+    }
+
+
+
     public static function choose_current_area_template() {
         return dirname(__FILE__) . '/views/templates/choose_current_area.php';
     }

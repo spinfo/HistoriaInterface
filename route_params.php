@@ -74,6 +74,8 @@ class RouteParams {
         return $result;
     }
 
+
+    // Areas
     public static function index_areas() {
         return self::make_route('area', 'index');
     }
@@ -102,12 +104,10 @@ class RouteParams {
         return self::make_route('area', 'destroy', $id);
     }
 
+
+    // Places
     public static function index_places($area_id = null) {
-        if(empty($area_id)) {
-            return self::make_route('place', 'index');
-        } else {
-            return self::make_route('place', 'index', null, null, $area_id);
-        }
+        return self::make_route('place', 'index', null, null, $area_id);
     }
 
     public static function new_place() {
@@ -134,12 +134,10 @@ class RouteParams {
         return self::make_route('place', 'destroy', $id);
     }
 
+
+    // Tours
     public static function index_tours($area_id = null) {
-        if(empty($area_id)) {
-            return self::make_route('tour', 'index');
-        } else {
-            return self::make_route('tour', 'index', null, null, $area_id);
-        }
+        return self::make_route('tour', 'index', null, null, $area_id);
     }
 
     public static function tour_report($id) {
@@ -182,6 +180,8 @@ class RouteParams {
         return self::make_route('tour', 'destroy', $id);
     }
 
+
+    // Mapstops
     public static function new_mapstop($tour_id) {
         return self::make_route('mapstop', 'new', null, $tour_id);
     }
@@ -206,6 +206,36 @@ class RouteParams {
         return self::make_route('mapstop', 'destroy', $id);
     }
 
+
+    // Tour records
+    public static function index_tour_records($area_id = null) {
+        return self::make_route('tour_record', 'index', null, null, $area_id);
+    }
+
+    public static function view_tour_record($id) {
+        return self::make_route('tour_record', 'view', $id);
+    }
+
+    public static function new_tour_record($tour_id) {
+        return self::make_route('tour_record', 'new', null, $tour_id);
+    }
+
+    public static function create_tour_record($tour_id) {
+        return self::make_route('tour_record', 'create', null, $tour_id);
+    }
+
+    public static function deactivate_tour_record($id) {
+        return self::make_route('tour_record', 'deactivate', $id);
+    }
+
+    public static function delete_tour_record($id) {
+        return self::make_route('tour_record', 'delete', $id);
+    }
+
+    public static function destroy_tour_record($id) {
+        return self::make_route('tour_record', 'destroy', $id);
+    }
+
     /**
      * Return true if the current page has all get parameters that are in the
      * given parameter string, else false.
@@ -225,7 +255,6 @@ class RouteParams {
         }
         return $result;
     }
-
 
     public static function get_controller_value() {
         return $_GET[self::KEYS['controller']];
