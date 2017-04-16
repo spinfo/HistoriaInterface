@@ -163,11 +163,13 @@ function shtm_install() {
         content text NOT NULL,
         media_url text NOT NULL,
         download_size bigint(20) UNSIGNED NOT NULL,
+        published_at bigint(20) UNSIGNED NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id),
         KEY shtm_tour_record_area_active (area_id, is_active),
-        KEY shtm_tour_record_tour (tour_id)
+        KEY shtm_tour_record_tour (tour_id),
+        UNIQUE shtm_tour_record_unique_published_at_for_tour (tour_id, published_at)
     ) $charset_collate;";
 
     // collect queries

@@ -22,6 +22,8 @@ class TourRecordsTest extends TestCase {
         // inserting a second record with is_active = true should nonetheless
         // result in a new record with is_active set to true
         $other = $this->helper->make_tour_record($this->tour);
+        // manipulate the other's timestamp to ensure that they differ
+        $other->published_at += 1;
         $other->is_active = false;
         $other_db = $this->handle_test_insert($other, 'set inactive');
 
@@ -160,6 +162,8 @@ class TourRecordsTest extends TestCase {
             "Media url should be equal ($name).");
         $this->assert($expected->download_size === $got->download_size,
             "Download size should be equal ($name).");
+        $this->assert($expected->published_at === $got->published_at,
+            "Publish timestamps should be equal ($name).");
     }
 
 }

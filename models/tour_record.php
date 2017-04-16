@@ -40,6 +40,17 @@ class TourRecord extends AbstractModel {
     // how big the tour download would be, an int representing size in bytes
     public $download_size;
 
+    // a timestamp used to identify this tour record from other versions
+    // NOTE: We could use a timstamp from the created_at field, but this value
+    //      needs to exist before the record is persisted to the database
+    // NOTE: Duplicate combinations of tour_id and published_at are not possible
+    //      due to a unique index in the database
+    public $published_at;
+
+    public function __construct() {
+        $this->published_at = time();
+    }
+
     protected function do_validity_check() {
         $this->do_check(UserService::instance()->get_user($this->user_id),
             'user_id invalid');

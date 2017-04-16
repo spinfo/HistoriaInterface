@@ -153,6 +153,7 @@ class TourRecords extends AbstractCollection {
         $record->media_url = strval($array->media_url);
 
         $record->download_size = intval($array->download_size);
+        $record->published_at = intval($array->published_at);
     }
 
     private function db_values($record) {
@@ -163,7 +164,8 @@ class TourRecords extends AbstractCollection {
             'name' => $record->name,
             'content' => $record->content,
             'media_url' => $record->media_url,
-            'download_size' => $record->download_size
+            'download_size' => $record->download_size,
+            'published_at' => $record->published_at
         );
         // handle mysqls bool type by setting the value explicitly to 1 or 0
         if($record->is_active === true) {
