@@ -64,6 +64,9 @@ class RouteParams {
         if(!is_null($area_id)) {
             $params[self::KEYS['area_id']] = $area_id;
         }
+        if(!is_null($back_params)) {
+            $params[self::KEYS['area_id']] = $area_id;
+        }
         return self::params_to_route($params);
     }
 

@@ -542,7 +542,7 @@ function shtm_render_tour_creator() {
                     TourRecordsController::create();
                     break;
                 case 'deactivate':
-                    TourRecordsController::decativate();
+                    TourRecordsController::deactivate();
                     break;
                 case 'delete':
                     TourRecordsController::delete();
