@@ -44,20 +44,28 @@ class MessageService {
         $this->messages = array();
     }
 
-    public function add_success($message) {
-        $this->messages[] = new Message($message, self::SUCCESS);
+    public function add_success($msg_str) {
+        $this->messages[] = new Message($msg_str, self::SUCCESS);
     }
 
-    public function add_info($message) {
-        $this->messages[] = new Message($message, self::INFO);
+    public function add_info($msg_str) {
+        $this->messages[] = new Message($msg_str, self::INFO);
     }
 
-    public function add_warning($message) {
-        $this->messages[] = new Message($message, self::WARNING);
+    public function add_warning($msg_str) {
+        $this->messages[] = new Message($msg_str, self::WARNING);
     }
 
-    public function add_error($message) {
-        $this->messages[] = new Message($message, self::ERROR);
+    public function add_error($msg_str) {
+        $this->messages[] = new Message($msg_str, self::ERROR);
+    }
+
+    public function add($message) {
+        $this->messages[] = $message;
+    }
+
+    public function add_all($messages) {
+        $this->messages = array_merge($this->messages, $messages);
     }
 
     /**
