@@ -20,6 +20,10 @@ class TourRecords extends AbstractCollection {
         return DB::get($this->select_sql(), array('id' => $id));
     }
 
+    public function list_active() {
+        return $this->do_list(array('is_active' => 1));
+    }
+
     public function list_active_by_area($area_id) {
         return $this->do_list(array('is_active' => 1, 'area_id' => $area_id));
     }

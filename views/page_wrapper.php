@@ -138,9 +138,9 @@
         <?php if($this->user_service->user_may_publish_tours()): ?>
             |
             <?php if($this->route_params::is_current_page($this->route_params::index_tour_records())): ?>
-                <span class="shtm_not_a_link">Veröffentlichte Touren</span>
+                <span class="shtm_not_a_link">Veröffentlichen</span>
             <?php else: ?>
-                <a href="admin.php?<?php echo $this->route_params::index_tour_records() ?>">Veröffentlichte Touren</a>
+                <a href="admin.php?<?php echo $this->route_params::index_tour_records() ?>">Veröffentlichen</a>
             <?php endif ?>
         <?php endif ?>
     </div>

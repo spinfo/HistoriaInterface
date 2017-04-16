@@ -98,6 +98,10 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/tour_record_index.php';
     }
 
+    public static function new_tour_record_view() {
+        return dirname(__FILE__) . '/views/tour_record_new.php';
+    }
+
 
 
     public static function choose_current_area_template() {
