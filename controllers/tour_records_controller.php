@@ -164,6 +164,8 @@ class TourRecordsController extends AbstractController {
         foreach ($records as $record) {
             $area = Areas::instance()->get($record->area_id);
             $str .= "---" . PHP_EOL;
+            $str .= "id: $record->id" . PHP_EOL;
+            $str .= "version: $record->published_at" . PHP_EOL;
             $str .= "name: '$record->name'" . PHP_EOL;
             $str .= "tour_id: $record->tour_id" . PHP_EOL;
             $str .= "area_id: $record->area_id" . PHP_EOL;
