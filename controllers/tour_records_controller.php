@@ -95,8 +95,9 @@ class TourRecordsController extends AbstractController {
             if(!empty($record)) {
                 $result = TourRecords::instance()->set_inactive($record);
                 if($result) {
+                    self::update_publish_list();
                     MessageService::instance()->add_success("Tour deaktiviert");
-                    $are_id = self::determine_area_id();
+                    $area_id = self::determine_area_id();
                     self::redirect(RouteParams::index_tour_records($area_id));
                 } else {
                     $msg = "Tour konnte nicht deaktiviert werden.";
@@ -167,11 +168,11 @@ class TourRecordsController extends AbstractController {
             $str .= "id: $record->id" . PHP_EOL;
             $str .= "version: $record->published_at" . PHP_EOL;
             $str .= "name: '$record->name'" . PHP_EOL;
-            $str .= "tour_id: $record->tour_id" . PHP_EOL;
-            $str .= "area_id: $record->area_id" . PHP_EOL;
-            $str .= "area_name: '$area->name'" . PHP_EOL;
-            $str .= "media_url: '$record->media_url'" . PHP_EOL;
-            $str .= "download_size: $record->download_size" . PHP_EOL;
+            $str .= "tourId: $record->tour_id" . PHP_EOL;
+            $str .= "areaId: $record->area_id" . PHP_EOL;
+            $str .= "areaName: '$area->name'" . PHP_EOL;
+            $str .= "mediaUrl: '$record->media_url'" . PHP_EOL;
+            $str .= "downloadSize: $record->download_size" . PHP_EOL;
             $str .= "..." . PHP_EOL;
         }
         FileService::write_as_publish_list($str);
