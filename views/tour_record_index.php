@@ -5,7 +5,7 @@
 <div>
     <h2>Veröffentlichte Touren</h2>
 
-    <?php if(count($this->publishable_tours) > 0): ?>
+    <?php if(count($this->publishable_tours) > 0 && $this->user_service->user_may_publish_tours()): ?>
         <form action="admin.php?" method="get">
             <div class="shtm_form_line">
                 <input type="hidden" name="page" value="<?php echo $_GET['page'] ?>">
@@ -39,6 +39,7 @@
                 <th>id</th>
                 <th>Name</th>
                 <th>Aktiv</th>
+                <th><!-- Anzeigen --></th>
                 <th><!-- Neue Version --></th>
                 <th><!-- Nicht mehr veröffentlichen --></th>
             </tr>
@@ -49,6 +50,9 @@
                 <td><?php echo $record->id ?></td>
                 <td><?php echo $this->trim_text($record->name, 60) ?></td>
                 <td><?php echo $record->is_active ?></td>
+                <td>
+                    <a href="?<?php echo $this->route_params::view_tour_record($record->id) ?>">Anzeigen</a>
+                </td>
                 <td>
                     <?php if($this->user_service->user_may_publish_tours()): ?>
                         <a href="?<?php echo $this->route_params::new_tour_record($record->tour_id) ?>">Neue Version</a>

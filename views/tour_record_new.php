@@ -1,28 +1,20 @@
 
-
 <div>
     <div class="shtm_info_text">
-        Die Tour wurde mit folgenden Informationen veröffentlicht:
+        Die Tour würde mit den folgenden Informationen veröffentlicht werden.
     </div>
 
-    <ul>
-        <li><b>Tour-Name</b>: <?php echo $this->record->name ?></li>
-        <li><b>Gebiet</b>: <?php echo $this->area->name ?></li>
-        <li><b>Veröffentlicht von</b>: <?php echo $this->user_service->get_user($this->record->user_id)->user_login ?></li>
-        <li>
-            <b>Download</b>:<br>
-            <a href="<?php echo $this->record->media_url ?>"><?php echo $this->record->media_url ?></a>
-        </li>
-        <li>
-            <b>Download-Größe</b>: <?php printf("%.2f", ($this->record->download_size / 1000000)) ?> MB
-        </li>
-        <li>
-            <b>Inhalt</b>:
-            <xmp class="shtm_tour_report"><?php echo $this->record->content ?></xmp>
-        </li>
-    </ul>
+    <form method="get">
+        <input type="hidden" name="page" value="<?php echo $_GET['page'] ?>">
+        <input type="hidden" name="<?php echo $this->route_params::KEYS['controller'] ?>" value="tour_record">
+        <input type="hidden" name="<?php echo $this->route_params::KEYS['action'] ?>" value="create">
+        <input type="hidden" name="<?php echo $this->route_params::KEYS['tour_id'] ?>" value="<?php echo $this->record->tour_id ?>">
 
+        <div class="shtm_button">
+            <button type="submit">Jetzt veröffentlichen</button>
+        </div>
+    </form>
+
+    <?php $this->include($this->view_helper::tour_record_template()) ?>
 
 </div>
-
-

@@ -18,9 +18,6 @@ class FileServiceResponse {
     // a boolean to indicate if everything went okay
     public $ok = false;
 
-    // The created file's size in bytes if a file was created, else 0
-    public $size = 0;
-
     // All files created are collected in this array
     // NOTE: These may not exist anymore
     public $files_created = array();
@@ -82,26 +79,17 @@ class FileService {
             return self::handle_error($response, $msg);
         }
 
-        // Get the files of mediaitems linked to the tour
-        $files_to_zip = array();;
-        foreach($tour->mapstops as $mapstop) {
-            foreach($mapstop->post_ids as $post_id) {
-                $m = get_attached_media(null, $post_id);
-                foreach(get_attached_media(null, $post_id) as $medium) {
-                    $path = get_attached_file($medium->ID);
-                    if(!file_exists($path)) {
-                        $msg = "File does not exist: $medium->guid";
-                        $msg .= " (mapstop: $mapstop->id, page: $post_id)";
-                        return self::handle_error($response, $msg);
-                    }
-                    array_push($files_to_zip, $path);
-                }
-            }
+        // Get the files of mediaitems linked to the tour as first entries to
+        // zip up
+        $files_to_zip = self::get_files_for_tour($response, $tour);
+        if(!$response->ok) {
+            $msg = 'Failed to determine files for tour.';
+            return self::handle_error($response, $msg);
         }
 
         // if a tour content file already exists, it should be save to remove,
         // but make sure to log it as this should not be the case normally
-        $path = self::get_temporary_path_for_record($record, '.yaml');
+        $path = self::get_temporary_path_for_record($record, $tour->id, '.yaml');
         if(file_exists($path)) {
             debug_log("Removing previously created tour content at: $path");
             unlink($path);
@@ -121,7 +109,7 @@ class FileService {
         }
 
         // create the zip archive from all files collected so far
-        $path = self::get_temporary_path_for_record($record, '.zip');
+        $path = self::get_temporary_path_for_record($record, $tour->id, '.zip');
         if(file_exists($path)) {
             debug_log("Removing previously created tour zip at: $path");
             unlink($path);
@@ -198,6 +186,28 @@ class FileService {
         return fclose($handle);
     }
 
+    // return an array of mediaitems that belong to posts of a tour's mapstops
+    private static function get_files_for_tour($response, $tour) {
+        $result = array();
+        foreach($tour->mapstops as $mapstop) {
+            foreach($mapstop->post_ids as $post_id) {
+                $m = get_attached_media(null, $post_id);
+                foreach(get_attached_media(null, $post_id) as $medium) {
+                    $path = get_attached_file($medium->ID);
+                    if(!file_exists($path)) {
+                        $msg = "File does not exist: $medium->guid";
+                        $msg .= " (mapstop: $mapstop->id, page: $post_id)";
+                        $response->add_error($msg);
+                        return $result;
+                    }
+                    array_push($result, $path);
+                }
+            }
+        }
+        $response->ok = true;
+        return $result;
+    }
+
     /**
      * Get the tour folder below the wordpress upload dir or create it if it is
      * not present. Set errors on the response object if anything bad happens.
@@ -207,15 +217,16 @@ class FileService {
     private static function get_or_create_tour_folder($response) {
         $upload_dir = self::get_wp_upload_base_dir();
         if(!is_dir($upload_dir)) {
-            $msg = 'Failed to determine the base upload dir.';
-            $response->ok = false;
+            $response->add_error('Failed to determine the base upload dir.');
+            return false;
         }
         // the tour folder is directly below the upload folder
         $tour_folder = $upload_dir . self::TOUR_FOLDER_PATH;
         $result = wp_mkdir_p($tour_folder);
         if(!$result) {
             $msg = "Failed to get/create the tour folder at: $path";
-            $response->ok = false;
+            $response->add_error($msg);
+            return false;
         }
         $response->ok = true;
         return $tour_folder;
@@ -266,9 +277,9 @@ class FileService {
      * Remove all files that are listed as created. (Only files below /tmp or
      * below the wp-content folder can be deleted this way).
      *
-     * * @return FileServiceResponse
+     * @return FileServiceResponse
      */
-    private static function remove_files_created($response) {
+    public static function remove_files_created($response) {
         // We need to determine the wordpress upload dir and the tmp folder
         // to check the created file paths
         $ul_dir = self::get_wp_upload_base_dir();
@@ -299,9 +310,12 @@ class FileService {
         return $response;
     }
 
-    private static function get_temporary_path_for_record($record, $suffix) {
+    // a records file name depends on the published_at-field (always present)
+    // and the tour id, which might not be present on the record and thus must
+    // be given as a param
+    private static function get_temporary_path_for_record($record, $tour_id, $suffix) {
         $path = sys_get_temp_dir() . '/' . self::TOUR_PREFIX;
-        $path .= $record->tour_id . '-' . $record->published_at . $suffix;
+        $path .= $tour_id . '-' . $record->published_at . $suffix;
         return $path;
     }
 

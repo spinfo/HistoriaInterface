@@ -31,7 +31,19 @@ class TourRecordsController extends AbstractController {
     }
 
     public static function view() {
-
+        $record_id = RouteParams::get_id_value();
+        $record = TourRecords::instance()->get($record_id);
+        if(!empty($record)) {
+            $view = new View(ViewHelper::tour_record_view(), array(
+                'record' => $record,
+                'area' => Areas::instance()->get($record->area_id),
+                'show_download_url' => true
+            ));
+        } else {
+            $view = self::create_not_found_view(
+                "Keine veröffentlichte Tour für Record id: '$id'");
+        }
+        self::wrap_in_page_view($view)->render();
     }
 
     public static function new() {
@@ -43,7 +55,41 @@ class TourRecordsController extends AbstractController {
                 // setup the tour and the tour record for file creation
                 Tours::instance()->set_related_objects_on($tour);
                 $record = new TourRecord();
-                $record->tour_id = $tour_id;
+                $record->content = self::create_tour_content($tour);
+
+                // create the files to get an accurate download size
+                $response = FileService::create_files($record, $tour);
+                if($response->ok) {
+                    self::set_tour_record_values($record, $tour, $response);
+                    FileService::remove_files_created($response);
+                    $view = new View(ViewHelper::new_tour_record_view(), array(
+                        'record' => $record,
+                        'area' => $tour->area,
+                        'show_download_url' => false,
+                    ));
+                } else {
+                    MessageService::instance()->add_all($response->messages);
+                    $msg = "Tour Datei konnte nicht erstellt werden.";
+                    $view = self::create_internal_error_view($msg);
+                }
+            } else {
+                $view = self::create_not_found_view("Keine Tour mit id: '$id'");
+            }
+        } else {
+            $view = $error_view;
+        }
+        self::wrap_in_page_view($view)->render();
+    }
+
+    public static function create() {
+        $error_view = self::filter_if_user_may_not_publish();
+        if(is_null($error_view)) {
+            $tour_id = RouteParams::get_tour_id_value();
+            $tour = Tours::instance()->get($tour_id, true, true);
+            if(!empty($tour)) {
+                // setup the tour and the tour record for file creation
+                Tours::instance()->set_related_objects_on($tour);
+                $record = new TourRecord();
                 $record->content = self::create_tour_content($tour);
                 $record->is_active = true;
 
@@ -53,17 +99,12 @@ class TourRecordsController extends AbstractController {
                 if($response->ok) {
                     self::set_tour_record_values($record, $tour, $response);
                     // actually do the insert
-                    $result = TourRecords::instance()->insert($record);
-                    if($result > 0) {
+                    $new_id = TourRecords::instance()->insert($record);
+                    if($new_id > 0) {
                         MessageService::instance()->add_success(
                             "Tour veröffentlicht.");
                         self::update_publish_list();
-                        $view = new View(ViewHelper::new_tour_record_view(),
-                            array(
-                                'record' => $record,
-                                'area' => Areas::instance()->get($record->area_id)
-                            )
-                        );
+                        self::redirect(RouteParams::view_tour_record($new_id));
                     } else {
                         // remove the created file and render an error
                         unlink($response->get_last_file_created());
@@ -75,16 +116,12 @@ class TourRecordsController extends AbstractController {
                     $view = self::create_internal_error_view($msg);
                 }
             } else {
-                $view = self::create_not_found_view("Keine tour mit id: '$id'");
+                $view = self::create_not_found_view("Keine Tour mit id: '$id'");
             }
         } else {
             $view = $error_view;
         }
         self::wrap_in_page_view($view)->render();
-    }
-
-    public static function create() {
-
     }
 
     public static function deactivate() {
@@ -145,10 +182,16 @@ class TourRecordsController extends AbstractController {
         return $view->get_include_contents();
     }
 
-    // TODO: comment
+    /**
+     * Set a tour records' values (without content and is_active field) based
+     * on the tour provided and the current logged in user.
+     *
+     * @return null
+     */
     private static function set_tour_record_values($record, $tour,
         $fileservice_response)
     {
+        $record->tour_id = $tour->id;
         $record->area_id = $tour->area_id;
         $record->user_id = UserService::instance()->user_id();
         $record->name = $tour->name;

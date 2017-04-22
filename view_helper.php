@@ -98,6 +98,10 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/tour_record_index.php';
     }
 
+    public static function tour_record_view() {
+        return dirname(__FILE__) . '/views/tour_record.php';
+    }
+
     public static function new_tour_record_view() {
         return dirname(__FILE__) . '/views/tour_record_new.php';
     }
@@ -150,6 +154,10 @@ class ViewHelper {
 
     public static function tour_report_yaml_template() {
         return dirname(__FILE__) . '/views/templates/tour_report_yaml.php';
+    }
+
+    public static function tour_record_template() {
+        return dirname(__FILE__) . '/views/templates/tour_record.php';
     }
 
 
