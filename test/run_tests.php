@@ -37,7 +37,7 @@ require_once(dirname(__FILE__) . '/test_case.php');
 const UNIT_TESTS = array('places', 'areas', 'mapstops', 'tours',
     'tour_records');
 const API_TESTS = array('place_api', 'area_api', 'tour_api', 'mapstop_api',
-    'change_area_api');
+    'change_area_api', 'tour_records_api');
 
 // remove file name from args
 array_shift($argv);

@@ -41,15 +41,15 @@ class TestHelper {
     }
 
     // sets up a url for the tour creator admin page
-    public function tc_url($controller, $action, $id = null, $back_param_str = null, $area_id = null) {
+    public function tc_url($controller, $action, $id = null, $tour_id = null, $area_id = null) {
         $url = $this->config->wp_url . $this->config->tour_creator_prefix;
         $url .= '&shtm_c=' . $controller;
         $url .= '&shtm_a=' . $action;
         if(isset($id)) {
             $url .= '&shtm_id=' . $id;
         }
-        if(isset($back_param_str)) {
-            $url .= '&shtm_back_params=' . urlencode($back_param_str);
+        if(isset($tour_id)) {
+            $url .= '&shtm_tour_id=' . $tour_id;
         }
         if(isset($area_id)) {
             $url .= '&shtm_area_id=' . $area_id;
@@ -232,14 +232,20 @@ class TestHelper {
         return $record;
     }
 
-    // add three mapstops to the database for the tour
-    public function add_mapstops_to_tour($tour, $n = 3) {
+    // add n (default 3) mapstops to the database for the tour, each stop is
+    // is linked to n_posts (default: 0) new wordpress posts
+    public function add_mapstops_to_tour($tour, $n = 3, $n_posts = 0) {
         if(is_null($tour->mapstop_ids)) {
             $tour->mapstop_ids = array();
         }
         for($i = 0; $i < $n; $i++) {
             $mapstop = $this->make_mapstop();
             $mapstop->tour_id = $tour->id;
+            // create and add posts if requested
+            for($j = 0; $j < $n_posts; $j++) {
+                $post_id = $this->make_wp_post();
+                $mapstop->post_ids[] = $post_id;
+            }
             Mapstops::instance()->insert($mapstop);
             $tour->mapstop_ids[] = $mapstop->id;
         }
