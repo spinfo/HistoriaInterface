@@ -7,6 +7,10 @@
             width: 50%;
         }
 
+        .shtm_message ul {
+            list-style-type: disc inside none;
+        }
+
         .shtm_message_success {
             background-color: rgba(92, 184, 92, 0.4);
         }
@@ -58,9 +62,6 @@
         }
 
         /* input forms */
-        form.shtm_form {
-            /*width: 100%;*/
-        }
         form.shtm_form.shtm_place_form {
             width: 50px;
         }
@@ -95,7 +96,7 @@
 
         /* revert "list-style: none" from somewhere in wordpress */
         #shtm_container ul {
-            list-style: disc outside none;
+            list-style: disc inside none;
         }
 
         xmp.shtm_tour_report {
@@ -103,10 +104,6 @@
             padding: 12px;
             width: 70%;
             overflow: auto;
-            /* white-space: pre-wrap;
-            white-space: moz-pre-wrap;
-            white-space: -o-pre-wrap;
-            word-wrap: break-word;*/
         }
     -->
 </style>

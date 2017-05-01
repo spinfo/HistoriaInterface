@@ -5,6 +5,11 @@ require_once(dirname(__FILE__) . '/abstract_model.php');
 
 class Tour extends AbstractModel {
 
+    const TYPES = array(
+        'tour' => 'Spaziergang',
+        'round-tour' => 'Rundgang'
+    );
+
     public $area_id = -1;
 
     public $user_id = -1;
@@ -79,6 +84,51 @@ class Tour extends AbstractModel {
         }
     }
 
+    /**
+     * Return the human readable form this tour's type.
+     */
+    public function get_type_name() {
+       return self::determine_type_name($this->type);
+    }
+
+    /**
+     * Return the human readable form of the tour type param.
+     */
+    public static function determine_type_name($type) {
+       return self::TYPES[$type];
+    }
+
+    public function has_valid_type() {
+        return !is_null(self::TYPES[$this->type]);
+    }
+
+    /**
+     * Returns the formatted representation of the "when" tag derived from start
+     * and beginning and the format intended.
+     *
+     * @return string   Always a string. May be empty if there is no start
+     *                  datetime.
+     */
+    public function get_tag_when_formatted() {
+        $result = $this->tag_when_format($this->get_tag_when_start());
+        if(empty($result)) {
+            return "";
+        }
+
+        $end_str = $this->tag_when_format($this->get_tag_when_end());
+        if(!empty($end_str)) {
+            $result .= " - $end_str";
+        }
+        return $result;
+    }
+
+    public function tag_when_format($datetime) {
+        if(empty($datetime)) {
+            return "";
+        } else {
+            return $datetime->format('d.m.Y H:i:s');
+        }
+    }
 
     protected function do_validity_check() {
         $this->do_check(Areas::instance()->valid_id($this->area_id),

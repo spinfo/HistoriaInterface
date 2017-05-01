@@ -10,6 +10,7 @@ require_once(dirname(__FILE__) . '/../models/tour_records.php');
 require_once(dirname(__FILE__) . '/../models/tour_record.php');
 require_once(dirname(__FILE__) . '/../models/tours.php');
 require_once(dirname(__FILE__) . '/../file_service.php');
+require_once(dirname(__FILE__) . '/../publishing_check.php');
 
 class TourRecordsController extends AbstractController {
 
@@ -62,10 +63,14 @@ class TourRecordsController extends AbstractController {
                 if($response->ok) {
                     self::set_tour_record_values($record, $tour, $response);
                     FileService::remove_files_created($response);
+                    // check if the publishing would be successfull and include
+                    // failures in the view
+                    $failures = PublishingCheck::run($tour);
                     $view = new View(ViewHelper::new_tour_record_view(), array(
                         'record' => $record,
                         'area' => $tour->area,
                         'show_download_url' => false,
+                        'publishing_check_failures' => $failures,
                     ));
                 } else {
                     MessageService::instance()->add_all($response->messages);
@@ -73,7 +78,8 @@ class TourRecordsController extends AbstractController {
                     $view = self::create_internal_error_view($msg);
                 }
             } else {
-                $view = self::create_not_found_view("Keine Tour mit id: '$id'");
+                $msg = "Keine Tour mit id: '$tour_id'";
+                $view = self::create_not_found_view($msg);
             }
         } else {
             $view = $error_view;
@@ -92,6 +98,13 @@ class TourRecordsController extends AbstractController {
                 $record = new TourRecord();
                 $record->content = self::create_tour_content($tour);
                 $record->is_active = true;
+
+                // check if the publishing would be successful, if not, redirect
+                // back to route new
+                $failures = PublishingCheck::run($tour);
+                if(!empty($failures)) {
+                    self::redirect(RouteParams::new_tour_record($tour_id));
+                }
 
                 // create the files
                 $response = FileService::create_files($record, $tour);
@@ -116,7 +129,8 @@ class TourRecordsController extends AbstractController {
                     $view = self::create_internal_error_view($msg);
                 }
             } else {
-                $view = self::create_not_found_view("Keine Tour mit id: '$id'");
+                $msg = "Keine Tour mit id: '$tour_id'";
+                $view = self::create_not_found_view($msg);
             }
         } else {
             $view = $error_view;

@@ -24,7 +24,7 @@
         <tr>
             <td><?php echo $tour->id ?></td>
             <td><?php echo $this->trim_text($tour->name, 60) ?></td>
-            <td><?php echo $this->tour_type_name($tour->type) ?></td>
+            <td><?php echo $tour->get_type_name() ?></td>
             <td><?php echo $this->user_service->get_user($tour->user_id)->user_login ?></td>
             <td>
                 <?php if($this->user_service->user_may_edit_tour($tour)): ?>

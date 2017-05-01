@@ -11,7 +11,7 @@ intro: <?php $this->print_yaml($this->tour->intro) ?>
 type: <?php $this->print_yaml($this->tour->type) ?>
 walkLength: <?php $this->print_yaml($this->tour->walk_length) ?>
 duration: <?php $this->print_yaml($this->tour->duration) ?>
-tagWhen: "<?php echo $this->datetime_format($this->tour->get_tag_when_start()) . (is_null($this->tour->tag_when_end) ? '' : ' - ' . $this->datetime_format($this->tour->get_tag_when_end())) ?>"
+tagWhen: <?php echo $this->print_yaml($this->tour->get_tag_when_formatted()) ?>
 tagWhat: <?php $this->print_yaml($this->tour->tag_what) ?>
 tagWhere: <?php $this->print_yaml($this->tour->tag_where) ?>
 accessibility: <?php $this->print_yaml($this->tour->accessibility) ?>

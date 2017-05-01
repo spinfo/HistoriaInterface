@@ -72,18 +72,9 @@ class View {
         }
     }
 
-    public function tour_type_name($type) {
-        if($type == 'tour') {
-            return 'Spaziergang';
-        } else if ($type == 'round-tour') {
-            return 'Rundgang';
-        } else {
-            debug_log("Unknown tour type: $type");
-        }
-    }
-
     /**
-     * trims text to a space then adds ellipses if desired
+     * Trims text to a certain length then adds ellipses if desired
+     *
      * @param string $input text to trim
      * @param int $length in characters to trim to
      * @param bool $ellipses if ellipses (...) are to be added
