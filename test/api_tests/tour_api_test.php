@@ -34,13 +34,10 @@ function test_tour_new($con, $name) {
         "empty form field for tour name on $name");
 
     // test the area selection
-    $con->ensure_xpath("//select[@name='shtm_tour[area_id]']", 1,
-        "Should contain a selection for the tour's area id on $name");
     $areas = Areas::instance()->list_simple();
+    $select_name = 'shtm_tour[area_id]';
     foreach ($areas as $area) {
-        $xpath = "//option[@value='$area->id' and contains(text(), '$area->name')]";
-        $con->ensure_xpath($xpath, 1,
-            "Should contain an option for area: '$area->id' on $name");
+        $con->test_option($select_name, $area->name, $area->id, false, $name);
     }
 }
 test_tour_new($admin_con, 'admin');
@@ -190,12 +187,16 @@ function test_tour_update($con, $id, $post, $tour, $name) {
     if(isset($post['shtm_tour[name]'])) {
         // should have been rediract
         $con->test_redirect_param('shtm_a', 'edit');
-        // Everything we posted should reappear on the page as an input
+        // Everything we posted should reappear on the page as a form field
+        // with the new value set
         foreach ($post as $key => $value) {
-            if ($key != 'shtm_tour[intro]') {
-                $con->test_input_field($key, $value, $name);
-            } else {
+            if($key == 'shtm_tour[intro]') {
                 $con->test_textarea($key, $value, $name);
+            } elseif($key === 'shtm_tour[type]') {
+                $con->test_option($key, Tour::TYPES[$tour->type], $tour->type,
+                    true, $name);
+            } else {
+                $con->test_input_field($key, $value, $name);
             }
         }
     } else {
@@ -277,15 +278,13 @@ function test_edit_stops($con, $tour_id, $ids, $fetch = true, $name) {
     $n = count($ids);
     for($i = 1; $i < $n; $i++) {
         $id = $ids[$i - 1];
-        $name_pt = "@name='shtm_tour[mapstop_ids][$id]'";
+        $select_name = "shtm_tour[mapstop_ids][$id]";
         for($j = 1; $j < $n; $j++) {
-            $select_pt = 'not(@selected)';
+            $selected = false;
             if($i === $j) {
-                $select_pt = '@selected';
+                $selected = true;
             }
-            $xpath = "//select[$name_pt]/option[$select_pt and text() = '$j']";
-            $con->ensure_xpath($xpath, 1,
-                "Should have the right select option set ($name).");
+            $con->test_option($select_name, "$j", null, $selected, $name);
         }
     }
 }

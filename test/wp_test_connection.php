@@ -212,6 +212,30 @@ class WPTestConnection extends TestCase {
         );
     }
 
+    // tests that there is a select box with the specified name having an
+    // option with the given value and/or text
+    // The option text is checked with whitespace normalized. Other tests use
+    // simple xpath string equality.
+    // Presence of an attribute 'selected' is only tested if the param is set
+    // to true. NOTE: Else the selection attribute is ignored.
+    public function test_option($select_name, $option_text,
+        $option_value_attr = null, $is_selected = false, $test_name)
+    {
+        $opt_condition = "normalize-space() = '$option_text'";
+
+        if(!is_null($option_value_attr)) {
+            $opt_condition .= " and @value = '$option_value_attr'";
+        }
+        if($is_selected) {
+            $opt_condition .= " and @selected";
+        }
+
+        $xpath = "//select[@name = '$select_name']/option[$opt_condition]";
+
+        $this->ensure_xpath($xpath, 1,
+            "Should have correct option tag ($test_name).");
+    }
+
     public function test_not_found($url, $post, $name) {
         $this->test_fetch($url, $post, 404,
             "Should have status 404 ($name).");

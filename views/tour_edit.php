@@ -22,7 +22,19 @@
 
     <div class="shtm_form_line">
         <label for="shtm_tour_type">Typ:</label>
-        <input id="shtm_tour_type" type="text" name="shtm_tour[type]" value="<?php echo $this->tour->type ?>">
+        <select id="shtm_tour_type" name="shtm_tour[type]">
+            <?php foreach ($this->tour::TYPES as $type_key => $type_name): ?>
+                <option value="<?php echo $type_key ?>"
+                    <?php if($this->tour->type === $type_key): ?>
+                        selected>
+                    <?php else: ?>
+                        >
+                    <?php endif ?>
+
+                    <?php echo $type_name ?>
+                </option>
+            <?php endforeach ?>
+        </select>
     </div>
 
     <div class="shtm_form_line">
