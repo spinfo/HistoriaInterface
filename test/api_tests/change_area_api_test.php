@@ -22,10 +22,7 @@ function test_index_page($con, $type, $area, $name, $set_area = true) {
     $con->test_fetch($url, null, 200,
         "Should have status 200 on $tpye index ($name).");
 
-    $select = "//select[@name='shtm_area_id']";
-    $xpath = "$select/option[@value='$area->id' and @selected]";
-    $con->ensure_xpath($xpath, 1,
-        "Should have the correct area selected on $type index ($name).");
+    $con->test_option('shtm_area_id', $area->name, $area->id, true, $name);
 }
 
 // test that the new page has the area given selected
@@ -35,10 +32,8 @@ function test_new_page($con, $type, $area, $name) {
     $con->test_fetch($url, null, 200,
         "Should have status 200 on $type new ($name).");
 
-    $select = "//select[@name='shtm_${type}[area_id]']";
-    $xpath = "$select/option[@value='$area->id' and @selected]";
-    $con->ensure_xpath($xpath, 1,
-        "Should have the right area selected on $type new ($name)");
+    $select_name = "shtm_${type}[area_id]";
+    $con->test_option($select_name, $area->name, $area->id, true, $name);
 }
 
 // setup the test connections and two areas to work with

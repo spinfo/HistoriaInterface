@@ -38,10 +38,9 @@ function test_new($con, $tour, $name) {
     // all places in the tour's area should be available to a new tour
     $places = Places::instance()->list_by_area($tour->area_id);
     $con->assert(!empty($places), "Should test on an area with places.");
+    $select_name = 'shtm_mapstop[place_id]';
     foreach ($places as $p) {
-        $expr = "@value='$p->id'and contains(.,'$p->name') and not(@selected)";
-        $xp = "//select[@name='shtm_mapstop[place_id]']/option[$expr]";
-        $con->ensure_xpath($xp, 1, "Should be able to select place ($name).");
+        $con->test_option($select_name, $p->name, $p->id, false, $name);
     }
 
     // if all places are taken we should be redirected to place->new, simulate
@@ -112,9 +111,9 @@ function test_edit($con, $mapstop, $name, $do_fetch = true) {
         $name);
 
     // Test that there is a select box with the right place_id selected
-    $select_xp = "//select[@name='shtm_mapstop[place_id]']";
-    $xp = $select_xp . "/option[@value='$mapstop->place_id' and @selected]";
-    $con->ensure_xpath($xp, 1, "Should have the place_id selected ($name).");
+    $select_name = 'shtm_mapstop[place_id]';
+    $place = Places::instance()->get($mapstop->place_id);
+    $con->test_option($select_name, $place->name, $place->id, true, $name);
 
     // Test that the page contains all other eligible places as options
     $places = Mapstops::instance()->get_possible_places($mapstop);
@@ -123,8 +122,7 @@ function test_edit($con, $mapstop, $name, $do_fetch = true) {
         if($place->id == $mapstop->place_id) {
             continue;
         }
-        $xp = $select_xp . "/option[@value='$place->id' and not(@selected)]";
-        $con->ensure_xpath($xp, 1, "Should contain place as option ($name).");
+        $con->test_option($select_name, $place->name, $place->id, false, $name);
     }
 
     // Test that post_ids are given in the right order
