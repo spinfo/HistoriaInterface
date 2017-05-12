@@ -109,6 +109,33 @@ class View {
     }
 
     /**
+     * Prints a yaml block string indenting by the given level. All user
+     * supplied string included in the yaml output should use this to be printed
+     * as special characters might break parsing in the client.
+     */
+    public function print_yaml_block($str, $indicator, $indent_level) {
+        // if there are no lines we just print an empty string
+        $lines = preg_split('/$\R?^/m', $str);
+        if(empty($lines)) {
+            echo '""';
+            return;
+        }
+        // print the post in YAML's literal style using the given indent_level
+        $indent = "";
+        for($i = 0; $i < $indent_level; $i++) $indent .= "  ";
+        echo $indicator . PHP_EOL;
+        foreach ($lines as $line) {
+            echo $indent . trim($line) . PHP_EOL;
+        }
+    }
+
+    public function print_post_to_yaml($content, $indent_level) {
+        // apply wordpress shortcodes before the post content is printed as text
+        $content = do_shortcode($content);
+        $this->print_yaml_block($content, '|', $indent_level);
+    }
+
+    /**
      * A function to return the result of rendering the view as a string.
      *
      * @return string   The result of rendering the view.

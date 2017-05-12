@@ -2,19 +2,19 @@
 id: <?php $this->print_yaml($this->tour->id) ?>
 area:
   id: <?php $this->print_yaml($this->tour->area->id) ?>
-  name: <?php $this->print_yaml($this->tour->area->name) ?>
+  name: <?php $this->print_yaml_block($this->tour->area->name, '>-', 2) ?>
   point1: [<?php echo $this->tour->area->coordinate1->lat . ', ' . $this->tour->area->coordinate1->lon ?>]
   point2: [<?php echo $this->tour->area->coordinate2->lat . ', ' . $this->tour->area->coordinate2->lon ?>]
-name: <?php $this->print_yaml($this->tour->name) ?>
+name: <?php $this->print_yaml_block($this->tour->name, '>-', 1) ?>
 author: <?php $this->print_yaml($this->user_service->get_user($this->tour->user_id)->user_login) ?>
-intro: <?php $this->print_yaml($this->tour->intro) ?>
+intro: <?php $this->print_yaml_block($this->tour->intro, '|', 1) ?>
 type: <?php $this->print_yaml($this->tour->type) ?>
 walkLength: <?php $this->print_yaml($this->tour->walk_length) ?>
 duration: <?php $this->print_yaml($this->tour->duration) ?>
 tagWhen: <?php echo $this->print_yaml($this->tour->get_tag_when_formatted()) ?>
-tagWhat: <?php $this->print_yaml($this->tour->tag_what) ?>
-tagWhere: <?php $this->print_yaml($this->tour->tag_where) ?>
-accessibility: <?php $this->print_yaml($this->tour->accessibility) ?>
+tagWhat: <?php $this->print_yaml_block($this->tour->tag_what, '>-', 1) ?>
+tagWhere: <?php $this->print_yaml_block($this->tour->tag_where, '>-', 1) ?>
+accessibility: <?php $this->print_yaml_block($this->tour->accessibility, '>-', 1) ?>
 track: [<?php foreach ($this->tour->coordinates as $coord): ?>
 <?php echo "[$coord->lat, $coord->lon], " ?>
 <?php endforeach ?>
@@ -22,11 +22,11 @@ track: [<?php foreach ($this->tour->coordinates as $coord): ?>
 mapstops:
 <?php foreach ($this->tour->mapstops as $mapstop): ?>
 - id: <?php $this->print_yaml($mapstop->id) ?>
-  name: <?php $this->print_yaml($mapstop->name) ?>
-  description: <?php $this->print_yaml($mapstop->description) ?>
+  name: <?php $this->print_yaml_block($mapstop->name, '>-', 2) ?>
+  description: <?php $this->print_yaml_block($mapstop->description, '|', 2) ?>
   place:
     id: <?php $this->print_yaml($mapstop->place->id) ?>
-    name: <?php $this->print_yaml($mapstop->place->name) ?>
+    name: <?php $this->print_yaml_block($mapstop->place->name, '>-', 3) ?>
     lat: <?php $this->print_yaml($mapstop->place->coordinate->lat) ?>
     lon: <?php $this->print_yaml($mapstop->place->coordinate->lon) ?>
   pages:
@@ -36,7 +36,7 @@ mapstops:
     - id: <?php $this->print_yaml($page_post->ID) ?>
       pos: <?php $this->print_yaml(($i + 1)) ?>
       guid: <?php $this->print_yaml($page_post->guid) ?>
-      content: <?php $this->print_yaml($page_post->post_content) ?>
+      content: <?php $this->print_post_to_yaml($page_post->post_content, 4) ?>
 <?php if(count($media) > 0): ?>
       media:
 <?php foreach ($media as $mediaitem): ?>
