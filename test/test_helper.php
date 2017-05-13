@@ -195,9 +195,12 @@ class TestHelper {
         $tour->duration = rand(0, 120);
         $tour->tag_what = 'tour-test-what-' . $this->random_str();
         $tour->tag_where = 'tour-test-where-' . $this->random_str();
-        $tour->tag_when_start = $this->random_julian();
-        $tour->tag_when_end = (rand(0,1) == 0) ? null : ($tour->tag_when_start + 30);
         $tour->accessibility = 'test accessibility ' . $this->random_str();
+
+        $tour->set_tag_when_start('01.02.1803 11:12');
+        if(rand(0,1) == 0) {
+            $tour->set_tag_when_end('01.02.1803 12:13:14');
+        }
 
         for($i = 0; $i < $coordinate_amount; $i++) {
             $tour->coordinates[] = $this->random_coordinate();

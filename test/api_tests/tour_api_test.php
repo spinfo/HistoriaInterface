@@ -209,7 +209,7 @@ function test_tour_update($con, $id, $post, $tour, $name) {
     }
 
     // There should be a success message
-    $con->test_success_message('gespeichert', "normal tour update ($name).");
+    $con->test_success_message('Gespeichert!', "normal tour update ($name).");
 }
 
 // make a new tour with more coordinates

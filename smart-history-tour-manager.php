@@ -100,6 +100,8 @@ function shtm_install() {
         tag_where TEXT DEFAULT '',
         tag_when_start DECIMAL(13,6) NOT NULL DEFAULT 0.0,
         tag_when_end DECIMAL(13,6),
+        tag_when_start_format VARCHAR(64) NOT NULL,
+        tag_when_end_format VARCHAR(64) DEFAULT '',
         accessibility TEXT DEFAULT '',
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
@@ -276,6 +278,8 @@ function shtm_create_test_data() {
         'tag_where' => "Campus Universität",
         'tag_when_start' => 2449353.5,
         'tag_when_end' => 2455927.5,
+        'tag_when_start_format' => 'Y',
+        'tag_when_end_format' => 'Y',
         'accessibility' => 'barrierefrei'
     );
     $tour_id = DB::insert(Tours::instance()->table, $values);

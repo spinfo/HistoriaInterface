@@ -239,12 +239,15 @@ class Tours extends AbstractCollection {
         $tour->tag_where = strval($array->tag_where);
         if(!is_null($array->tag_when_start)) {
             $tour->tag_when_start = floatval($array->tag_when_start);
+            $tour->tag_when_start_format = strval($array->tag_when_start_format);
         }
         // end date is either a float, when explicitly given or null
         if(!is_null($array->tag_when_end)) {
             $tour->tag_when_end = floatval($array->tag_when_end);
+            $tour->tag_when_end_format = strval($array->tag_when_end_format);
         } else {
             $tour->tag_when_end = null;
+            $tour->tag_when_end_format = '';
         }
         $tour->accessibility = strval($array->accessibility);
 
@@ -338,7 +341,7 @@ class Tours extends AbstractCollection {
     }
 
     private function db_values($tour) {
-        $values = array(
+        $vals = array(
             'area_id' => intval($tour->area_id),
             'user_id' => intval($tour->user_id),
             'name' => strval($tour->name),
@@ -349,14 +352,17 @@ class Tours extends AbstractCollection {
             'tag_what' => strval($tour->tag_what),
             'tag_where' => strval($tour->tag_where),
             'tag_when_start' => floatval($tour->tag_when_start),
+            'tag_when_start_format' => strval($tour->tag_when_start_format),
             'accessibility' => strval($tour->accessibility)
         );
         if(!is_null($tour->tag_when_end)) {
-            $values['tag_when_end'] = floatval($tour->tag_when_end);
+            $vals['tag_when_end'] = floatval($tour->tag_when_end);
+            $vals['tag_when_end_format'] = strval($tour->tag_when_end_format);
         } else {
-            $values['tag_when_end'] = null;
+            $vals['tag_when_end'] = null;
+            $vals['tag_when_end_format'] = '';
         }
-        return $values;
+        return $vals;
     }
 
     // retrieve ids of all coordinates' ids joined to the tour in the database

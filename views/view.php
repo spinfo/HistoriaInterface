@@ -64,11 +64,14 @@ class View {
         return sprintf("%.6f", floatval($float));
     }
 
-    public function datetime_format($datetime) {
+    public function datetime_format($datetime, $format = null) {
         if(empty($datetime)) {
             return "";
         } else {
-            return $datetime->format('d.m.Y H:i:s');
+            if(empty($format)) {
+                $format = 'd.m.Y H:i:s';
+            }
+            return $datetime->format($format);
         }
     }
 

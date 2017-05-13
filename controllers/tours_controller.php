@@ -10,7 +10,7 @@ require_once( dirname(__FILE__) . '/../route_params.php');
 
 class ToursController extends AbstractController {
 
-    CONST TOUR_META_PARAMS = array(
+    const TOUR_META_PARAMS = array(
         'shtm_tour' => array(
             'name' => '',
             'intro' => '',
@@ -22,6 +22,14 @@ class ToursController extends AbstractController {
             'tag_when_start' => '',
             'accessibility' => '',
         )
+    );
+
+    const ALLOWED_INPUT_DTS = array(
+        'TT.MM.JJJJ HH:MM:SS',
+        'TT.MM.JJJJ HH:MM',
+        'TT.MM.JJJJ',
+        'MM.JJJJ',
+        'JJJJ'
     );
 
     public static function index() {
@@ -178,7 +186,10 @@ class ToursController extends AbstractController {
                             unset($params['tag_when_end']);
                         }
                     } catch(\Exception $e) {
-                        $msg = "Falsches Datumsformat: '$input'";
+                        $msg = sprintf('Falsches Datumsformat: %s - %s <br>',
+                            $params['tag_when_start'], $params['tag_when_end']);
+                        $msg .= 'Nutzen Sie: ';
+                        $msg .= implode(' | ', self::ALLOWED_INPUT_DTS);
                         MessageService::instance()->add_error($msg);
                         $view = self::create_view_with_exception($e, 500);
                     }
@@ -194,7 +205,7 @@ class ToursController extends AbstractController {
                 }
                 // proceed only if the view has not been set to an error view
                 if(empty($view)) {
-                    MessageService::instance()->add_success("Änderungen gespeichert!");
+                    MessageService::instance()->add_success("Gespeichert!");
                     self::redirect($back_params);
                 }
             } else {
@@ -339,50 +350,15 @@ class ToursController extends AbstractController {
                 return null;
             } else {
                 $result = $result['shtm_tour'];
-                // TODO: handle all time stuff in a util
-                // set the input start date to datetime or error
-                if(isset($result['tag_when_start'])) {
-                    $dt = self::datetime_from_input($result['tag_when_start']);
-                    if(empty($dt)) {
-                        unset($result['tag_when_start']);
-                    }
-                    $result['tag_when_start'] = $dt;
-                }
-                // set the input end date to datetime or error
+                // if there is a tag_when_end input, set it on the result
                 $end_input = $_POST['shtm_tour']['tag_when_end'];
                 if(!is_null($end_input)) {
-                    $dt = self::datetime_from_input($end_input);
-                    if(empty($dt)) {
-                        unset($result['tag_when_end']);
-                    }
-                    $result['tag_when_end'] = $dt;
+                    $result['tag_when_end'] = $end_input;
                 }
             }
         }
         if(empty($result)) {
             debug_log("Bad params in tour update.");
-            return null;
-        }
-        return $result;
-    }
-
-    private static function datetime_from_input($input) {
-        if(empty($input)) {
-            return null;
-        }
-        try {
-            $utc = new \DateTimeZone('UTC');
-            $result = \DateTime::createFromFormat('d.m.Y H:i:s', $input, $utc);
-        } catch(\Exception $e) {
-            $msg = "Falsches Datumsformat: '$input' (" . $e->getMessage() . ')';
-            $msg .= "<br>Bitte nutzen Sie das Format: 'JJJJ.MM.TT HH:MM:SS'.";
-            MessageService::instance()->add_error($msg);
-            return null;
-        }
-        if(empty($result)) {
-            $msg = "Falsches Datumsformat: '$input'.";
-            $msg .= "<br>Bitte nutzen Sie das Format: 'JJJJ.MM.TT HH:MM:SS'.";
-            MessageService::instance()->add_warning($msg);
             return null;
         }
         return $result;

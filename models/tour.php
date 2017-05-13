@@ -10,6 +10,15 @@ class Tour extends AbstractModel {
         'round-tour' => 'Rundgang'
     );
 
+    const DATETIME_FORMATS = array(
+        'd.m.Y H:i:s' => '/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2}/',
+        'd.m.Y H:i'   => '/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}/',
+        'd.m.Y'       => '/^\d{2}\.\d{2}\.\d{4}/',
+        'm.Y'         => '/^\d{2}\.\d{4}/',
+        'Y'           => '/^\d{4}/'
+    );
+
+
     public $area_id = -1;
 
     public $user_id = -1;
@@ -47,15 +56,29 @@ class Tour extends AbstractModel {
     public $tag_when_start = 0.0;
     public $tag_when_end = null;
 
+    // the julian dates are accompanied by fields for their output format
+    public $tag_when_start_format = 'd.m.Y H:i:s';
+    public $tag_when_end_format = '';
+
     // A string indicating accessibility conditions
     public $accessibility = '';
 
-    // set the start date by a datetime object
+    // set the start date by a datetime object or a string
     public function set_tag_when_start($datetime) {
-        if(empty($datetime)) {
+        if(is_string($datetime)) {
+            $result = self::determine_datetime_and_format($datetime);
+            $datetime = $result[0];
+            $format = $result[1];
+        } else {
+            $format = (array_keys(self::DATETIME_FORMATS))[0];
+        }
+
+        if($datetime instanceof \DateTime) {
+            $this->tag_when_start_format = $format;
+            $this->tag_when_start = $this->julian_date_from_datetime($datetime);
+        } else {
             throw new \Exception("Bad datetime given for start date.");
         }
-        $this->tag_when_start = $this->julian_date_from_datetime($datetime);
     }
 
     // get tag_when_start as a datetime object
@@ -67,12 +90,25 @@ class Tour extends AbstractModel {
         }
     }
 
-    // set tag_when_end date by a datetime object
+    /**
+     * set tag_when_end date by a datetime object or a string
+     * @throws Exception on bad input or any datetime conversion error.
+     */
     public function set_tag_when_end($datetime) {
-        if(empty($datetime)) {
+        if(is_string($datetime)) {
+            $result = self::determine_datetime_and_format($datetime);
+            $datetime = $result[0];
+            $format = $result[1];
+        } else {
+            $format = (array_keys(self::DATETIME_FORMATS))[0];
+        }
+
+        if($datetime instanceof \DateTime) {
+            $this->tag_when_end_format = $format;
+            $this->tag_when_end = $this->julian_date_from_datetime($datetime);
+        } else {
             throw new \Exception("Bad datetime given for end date.");
         }
-        $this->tag_when_end = $this->julian_date_from_datetime($datetime);
     }
 
     // get tag_when_end as a datetime object
@@ -85,7 +121,25 @@ class Tour extends AbstractModel {
     }
 
     /**
-     * Return the human readable form this tour's type.
+     * Takes a string and determines if it matches one of the valid formats
+     * for the tag_when attributes.
+     *
+     * @return array    An array with two elements: the datetime and it's format
+     *                  or null on error
+     */
+    private static function determine_datetime_and_format($str) {
+        foreach (self::DATETIME_FORMATS as $format => $regex) {
+            if(preg_match($regex, $str)) {
+                $utc = new \DateTimeZone('UTC');
+                $dt = \DateTime::createFromFormat($format, $str, $utc);
+                return array($dt, $format);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return the human readable form of this tour's type.
      */
     public function get_type_name() {
        return self::determine_type_name($this->type);
@@ -110,24 +164,34 @@ class Tour extends AbstractModel {
      *                  datetime.
      */
     public function get_tag_when_formatted() {
-        $result = $this->tag_when_format($this->get_tag_when_start());
+        $result = $this->tag_when_format($this->get_tag_when_start(),
+            $this->tag_when_start_format);
         if(empty($result)) {
             return "";
         }
 
-        $end_str = $this->tag_when_format($this->get_tag_when_end());
+        $end_str = $this->tag_when_format($this->get_tag_when_end(),
+            $this->tag_when_end_format);
         if(!empty($end_str)) {
             $result .= " - $end_str";
         }
         return $result;
     }
 
-    public function tag_when_format($datetime) {
+    // format a datetime given the specified format or default to a format
+    private function tag_when_format($datetime, $format) {
         if(empty($datetime)) {
             return "";
         } else {
-            return $datetime->format('d.m.Y H:i:s');
+            if(empty($format)) {
+                $format = (array_keys(self::DATETIME_FORMATS))[0];
+            }
+            return $datetime->format($format);
         }
+    }
+
+    private static function is_valid_tag_when_format($format) {
+        return in_array($format, array_keys(self::DATETIME_FORMATS));
     }
 
     protected function do_validity_check() {
@@ -166,12 +230,18 @@ class Tour extends AbstractModel {
         $this->do_check(is_float($this->tag_when_start),
             "no float value as start date");
         $this->do_check($this->tag_when_start >= 0.0, "start date < 0.0");
+        $this->do_check(
+            self::is_valid_tag_when_format($this->tag_when_start_format),
+            "invalid format given for start date");
 
         if(!is_null($this->tag_when_end)) {
             $this->do_check(is_float($this->tag_when_end),
                 "no float value as end date");
             $this->do_check($this->tag_when_start < $this->tag_when_end,
                 "start date after end date");
+            $this->do_check(
+                self::is_valid_tag_when_format($this->tag_when_end_format),
+                "invalid format given for end date");
         }
     }
 
@@ -186,9 +256,10 @@ class Tour extends AbstractModel {
 
         // set the complete fraction of the day
         $frac = $dayfrac + ($d->format('i') + ($d->format('s') / 60)) / 60 / 24;
-
         $julian_date = $julian_day + $frac;
-        return $julian_date;
+
+        // format to our db's precision and return
+        return floatval(sprintf('%.6f', $julian_date));
     }
 
     private function datetime_from_julian_date($julian_date) {

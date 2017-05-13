@@ -48,8 +48,8 @@
     </div>
 
     <div class="shtm_form_line">
-        <label for="shtm_tour_tag_whar">Was:</label>
-        <input id="shtm_tour_tag_whar" type="text" name="shtm_tour[tag_what]" value="<?php echo $this->tour->tag_what ?>">
+        <label for="shtm_tour_tag_what">Was:</label>
+        <input id="shtm_tour_tag_what" type="text" name="shtm_tour[tag_what]" value="<?php echo $this->tour->tag_what ?>">
     </div>
 
     <div class="shtm_form_line">
@@ -59,8 +59,8 @@
 
     <div class="shtm_form_line">
         <label for="shtm_tour_tag_when_start">Wann:</label>
-        <input id="shtm_tour_tag_when_start" type="text" name="shtm_tour[tag_when_start]" value="<?php echo $this->datetime_format($this->tour->get_tag_when_start()) ?>">-
-        <input id="shtm_tour_name" type="text" name="shtm_tour[tag_when_end]" value="<?php echo $this->datetime_format($this->tour->get_tag_when_end()) ?>">
+        <input id="shtm_tour_tag_when_start" type="text" name="shtm_tour[tag_when_start]" value="<?php echo $this->datetime_format($this->tour->get_tag_when_start(), $this->tour->tag_when_start_format) ?>">-
+        <input id="shtm_tour_name" type="text" name="shtm_tour[tag_when_end]" value="<?php echo $this->datetime_format($this->tour->get_tag_when_end(), $this->tour->tag_when_end_format) ?>">
     </div>
 
     <div class="shtm_form_line">

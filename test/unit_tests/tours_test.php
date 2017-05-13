@@ -339,7 +339,7 @@ class ToursTest extends TestCase {
 
     // test that the conversion to and from julian dates works
     public function test_tour_dates() {
-        // setup a few times to test
+        // setup a few times to test using the standard format
         $times = array(
             '-4713-01-01 12:00:00',
             '-1003-06-27 12:00:00',
@@ -351,23 +351,41 @@ class ToursTest extends TestCase {
         );
 
         foreach ($times as $time_str) {
-            $this->test_single_time_conversion($time_str);
+            $dt = new \DateTime($time_str, new \DateTimeZone('UTC'));
+            $this->test_single_time_conversion($dt, $time_str);
+        }
+
+        // test a few other times using direct string input in different formats
+        $times = array(
+            'd.m.Y H:i:s' => '10.04.2017 13:07:22',
+            'd.m.Y H:i'   => '10.04.2017 13:07',
+            'd.m.Y'       => '10.04.2017',
+            'm.Y'         => '04.2017',
+            'Y'           => '2017'
+        );
+
+        foreach ($times as $format => $str) {
+            $tour = $this->tours[0];
+            $tour->set_tag_when_start($str);
+            $dt = $tour->get_tag_when_start();
+
+            $this->assert($dt->format($format) === $str,
+                "String from output datetime should match input: $str.");
+            $this->assert($tour->tag_when_start_format === $format,
+                "The format detected should match the input format: $format");
         }
     }
 
-    private function test_single_time_conversion($str) {
+    private function test_single_time_conversion($in, $time_str) {
         $tour = $this->tours[0];
-        $in = new \DateTime($str, new \DateTimeZone('UTC'));
 
         $tour->set_tag_when_start($in);
-        $out = $tour->get_tag_when_start();
-        $diff = $in->diff($out);
+        $diff = $in->diff($tour->get_tag_when_start());
 
         // just sum all interval values to see if there is any diff
         $sum = $diff->y + $diff->m + $diff->d + $diff->h + $diff->i + $diff->s;
-
         $this->assert($sum === 0,
-            "There should be no time difference for input: $str");
+            "There should be no time difference for input: $time_str");
     }
 
     public function do_test() {
@@ -408,6 +426,8 @@ class ToursTest extends TestCase {
         $this->assert($got->tag_where == $expected->tag_where, "tag_where should match ($test_name).");
         $this->assert($got->tag_when_start == $expected->tag_when_start, "tag_when_start should match ($test_name).");
         $this->assert($got->tag_when_end == $expected->tag_when_end, "tag_when_end should match ($test_name).");
+        $this->assert($got->tag_when_start_format == $expected->tag_when_start_format, "tag_when_start_formats should match ($test_name).");
+        $this->assert($got->tag_when_end_format == $expected->tag_when_end_format, "tag_when_end_formats should match ($test_name).");
         $this->assert($got->accessibility == $expected->accessibility, "accessibility should match ($test_name).");
 
         if(!empty($expected->coordinate_ids)) {
