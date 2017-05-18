@@ -105,6 +105,25 @@
             width: 70%;
             overflow: auto;
         }
+
+        /* tooltips */
+        .shtm_tt_anchor > img {
+            width: 12px;
+            height: 12px;
+        }
+        .shtm_tt_anchor:hover .shtm_tt {
+            display: block;
+        }
+        .shtm_tt {
+            display: none;
+            background: white;
+            margin-left: 28px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1000;
+            width:200px;
+            border: 1px dashed black;
+        }
     -->
 </style>
 

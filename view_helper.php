@@ -160,6 +160,10 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/templates/tour_record.php';
     }
 
+    public static function tooltip_template() {
+        return dirname(__FILE__) . '/views/templates/tooltip.php';
+    }
+
 
 
     public static function map_util_js() {
@@ -172,6 +176,11 @@ class ViewHelper {
 
     public static function place_edit_map_js() {
         return dirname(__FILE__) . '/views/js/place-edit-map.js';
+    }
+
+    public static function image_url($image_file_name) {
+        // use wp function to get the plugin base path
+        return plugin_dir_url(__FILE__) . 'views/img/' . $image_file_name;
     }
 }
 

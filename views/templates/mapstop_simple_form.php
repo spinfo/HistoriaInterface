@@ -1,6 +1,17 @@
 
 <div class="shtm_form_line">
-    <label for="shtm_mapstop_place_id">Ort:</label>
+    <label for="shtm_mapstop_place_id">
+        Ort:
+        <?php $this->include($this->view_helper::tooltip_template(), array('content' => "
+            Der Ort legt die <b>geographische Position</b> dieses Stops fest.
+            <br><br>
+            Es können nur Orte ausgewählt werden, die
+            <ul>
+                <li>im selben Gebiet liegen und</li>
+                <li>nicht schon derselben Tour zugeordnet wurden.</li>
+            </ul>
+        ")) ?>
+    </label>
     <select id="shtm_mapstop_place_id" name="shtm_mapstop[place_id]">
         <?php foreach ($this->places as $place): ?>
             <option value="<?php echo $place->id ?>" <?php echo (($place->id === $this->mapstop->place_id) ? 'selected' : '') ?>>
@@ -11,7 +22,17 @@
 </div>
 
 <div class="shtm_form_line">
-    <label for="shtm_mapstop_name">Name:</label>
+    <label for="shtm_mapstop_name">
+        Name:
+        <?php
+            $img_url = $this->view_helper::image_url('mapstop-name-description.png');
+            $this->include($this->view_helper::tooltip_template(), array('content' => "
+                Name und Beschreibung des Stops erscheinen bei Klick auf den Stop-Marker
+                <br><br>
+                <img src=\"$img_url\" />
+            "))
+        ?>
+    </label>
     <input id="shtm_mapstop_name" type="text" name="shtm_mapstop[name]" value="<?php echo $this->mapstop->name ?>">
 </div>
 

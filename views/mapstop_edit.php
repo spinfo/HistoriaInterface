@@ -8,7 +8,17 @@
 
     <div class="shtm_form_line">
 
-        <label for="shtm_posts_menu">Seiten</label>
+        <label for="shtm_posts_menu">Seiten
+        <?php $this->include($this->view_helper::tooltip_template(), array('content' => '
+            Seiten enthalten die eigentlichen Informationen (Fließtext, Bilder etc.) des Tour-Stops.
+            <br><br>
+            Seiten sind <b>Wordpress-Beiträge</b>, die in der hier aufgeführten Reihenfolge angezeigt werden.
+            <br><br>
+            Damit ein Beitrag als Seite hinzugefügt werden kann, muss er als <b>Entwurf</b> gespeichert sein.
+            <br><br>
+            Der hier angezeigte <b>Titel</b> des Beitrags wird in der App ignoriert. Nur der Beitragsinhalt wird angezeigt.
+        ')) ?>
+        </label>
 
         <fieldset id="shtm_posts_menu" style="display: inline-block;">
             <?php for ($i = 1; $i <= count($this->posts); $i++): ?>
@@ -30,7 +40,7 @@
 
                     <div style="float: left">
                         <?php echo $post->post_title ?><br>
-                        <a href="<?php echo $post->guid ?>" target="_blank">&rarr;&nbsp;Zum&nbsp;Post</a>
+                        <a href="<?php echo $post->guid ?>" target="_blank">&rarr;&nbsp;Zum&nbsp;Beitrag</a>
                     </div>
 
                     <div style="clear: both"></div>

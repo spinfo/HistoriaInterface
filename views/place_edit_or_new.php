@@ -22,7 +22,17 @@
 
 
     <div class="shtm_form_line">
-        <label for="shtm_name">Name:</label>
+        <label for="shtm_name">Name:
+            <?php $this->include($this->view_helper::tooltip_template(), array('content' => '
+                Der Ortsname dient der <b>allgemeinen Identifizierung</b> des Ortes und taucht nicht direkt bei den Stops einer Tour auf.
+                <br><br>
+                Nach Möglichkeit besteht er aus:
+                <ul>
+                    <li>Straßenname und Hausnr., z.B. <b>Weidengasse 13</b></li>
+                    <li>Genaue geographische Bezeichnung, z.B. <b>Weidenpark</b></li>
+                </ul>
+            ')) ?>
+        </label>
         <input type="text" id="shtm_name" name="shtm_place[name]" value="<?php echo $this->place->name ?>">
     </div>
 
