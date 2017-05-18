@@ -371,14 +371,10 @@ register_activation_hook(__FILE__, 'SmartHistoryTourManager\shtm_install');
 register_activation_hook(__FILE__, 'SmartHistoryTourManager\shtm_create_test_data');
 
 /**
- * TOUR CREATOR
- * The Tour Creator is that part of the Smart History Manager used to create
- * tours on the site (but not to publish them).
- *
- * The Tour Creator is available for the role Contributor. By default
- * contributors have access to their own tours only.
+ * TOUR MANAGER
+ * This sets up the tour manager as an admin page
  */
-function shtm_setup_tour_creator() {
+function shtm_setup_tour_manager() {
     // title used in the menu and in the browser tab
     $title_menu = 'SmartHistory Tours';
     $title_tab = 'SmartHistory Tours';
@@ -387,10 +383,10 @@ function shtm_setup_tour_creator() {
     $capability = 'edit_posts';
 
     // Unique identifier for this menu
-    $menu_slug = 'shtm_tour_creator';
+    $menu_slug = 'shtm_tour_manager';
 
-    // the callable function used to render the tour creator
-    $render_func = 'SmartHistoryTourManager\shtm_render_tour_creator';
+    // the callable function used to render the tour manager
+    $render_func = 'SmartHistoryTourManager\shtm_render_tour_manager';
 
     // we do not set an icon or menu position for now
     $icon = "";
@@ -400,7 +396,7 @@ function shtm_setup_tour_creator() {
         $render_func, $icon, $menu_pos);
 }
 
-function shtm_render_tour_creator() {
+function shtm_render_tour_manager() {
     require_once(dirname(__FILE__) . '/route_params.php');
 
     $controller = RouteParams::get_controller_value();
@@ -571,16 +567,16 @@ function shtm_render_tour_creator() {
     //  - cf. the hook to do_output_buffer()
     ob_end_flush();
 }
-add_action('admin_menu', 'SmartHistoryTourManager\shtm_setup_tour_creator');
+add_action('admin_menu', 'SmartHistoryTourManager\shtm_setup_tour_manager');
 
 // allow redirection and setting status headers, even if wordpress wants to
 // start sending output to the browser.
 // NOTE: This will hinder performance, but we need the redirection to work.
 // NOTE: The corresponding ob_end_flush() is found at the end of
-//          shtm_render_tour_creator()
+//          shtm_render_tour_manager()
 function do_output_buffer() {
     // restrict output buffering to our plugins admin page
-    if(!empty($_GET['page']) && ($_GET['page'] == 'shtm_tour_creator')) {
+    if(!empty($_GET['page']) && ($_GET['page'] == 'shtm_tour_manager')) {
         ob_start();
     }
 }
@@ -613,6 +609,7 @@ function delete_mapstop_join($post_id) {
     DB::delete(Mapstops::instance()->join_posts_table, $where);
 }
 add_action('wp_trash_post', 'SmartHistoryTourManager\delete_mapstop_join');
+
 
 // conditionally adds the leaflet dependencies to certain admin pages
 function add_leaflet_js() {

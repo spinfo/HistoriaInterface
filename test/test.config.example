@@ -14,5 +14,4 @@ test_user_admin_pass = ""
 test_user_contributor_name = "test-contributor"
 test_user_contributor_pass = ""
 
-tour_creator_prefix = "/wp-admin/admin.php?page=shtm_tour_creator"
-tour_publisher_prefix = "/wp-admin/admin.php?page=shtm_tour_publisher"
+tour_manager_prefix = "/wp-admin/admin.php?page=shtm_tour_manager"

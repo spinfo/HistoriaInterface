@@ -40,9 +40,9 @@ class TestHelper {
         return $mysqli;
     }
 
-    // sets up a url for the tour creator admin page
+    // sets up a url for the tour manager admin page
     public function tc_url($controller, $action, $id = null, $tour_id = null, $area_id = null) {
-        $url = $this->config->wp_url . $this->config->tour_creator_prefix;
+        $url = $this->config->wp_url . $this->config->tour_manager_prefix;
         $url .= '&shtm_c=' . $controller;
         $url .= '&shtm_a=' . $action;
         if(isset($id)) {
