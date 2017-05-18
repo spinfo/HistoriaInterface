@@ -36,10 +36,14 @@ function shtm_install() {
     $table_prefix = $wpdb->prefix . "shtm_";
     $charset_collate = $wpdb->get_charset_collate();
 
+    // add the custom contributor role with file upload capability
+    $caps = get_role('contributor')->capabilities;
+    $caps['upload_files'] = true;
+    add_role('contributor-with-upload', 'Contributor with Upload', $caps);
+
     // CREATE TABLES
     // sql syntax for use with dbDelta() has specific rules, cf.:
     //      https://codex.wordpress.org/Creating_Tables_with_Plugins
-
 
     // sql for the coordinates table
     // lat/lon data type chosen according to:

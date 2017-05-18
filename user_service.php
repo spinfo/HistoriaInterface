@@ -19,7 +19,7 @@ class UserService {
 
     // the wp-roles that are interesting for us
     private static $admin_role = 'administrator';
-    private static $contributor_role = 'contributor';
+    private static $contributor_role = 'contributor-with-upload';
 
     private function __construct() {
         $this->user = wp_get_current_user();
