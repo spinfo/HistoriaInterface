@@ -8,13 +8,13 @@
 
     <div class="shtm_form_line">
 
-        <label for="shtm_posts_menu">Seiten
+        <label for="shtm_posts_menu">Beiträge
         <?php $this->include($this->view_helper::tooltip_template(), array('content' => '
-            Seiten enthalten die eigentlichen Informationen (Fließtext, Bilder etc.) des Tour-Stops.
+            Beiträge enthalten die eigentlichen Informationen (Fließtext, Bilder etc.) des Tour-Stops.
             <br><br>
-            Seiten sind <b>Wordpress-Beiträge</b>, die in der hier aufgeführten Reihenfolge angezeigt werden.
+            Die verknüpften Wordpress-Beiträge werden in der hier aufgeführten <b>Reihenfolge</b> angezeigt, wenn der Stop in der App ausgewählt wird.
             <br><br>
-            Damit ein Beitrag als Seite hinzugefügt werden kann, muss er als <b>Entwurf</b> gespeichert sein.
+            Damit ein Beitrag hinzugefügt werden kann, muss er als <b>Entwurf</b> gespeichert sein.
             <br><br>
             Der hier angezeigte <b>Titel</b> des Beitrags wird in der App ignoriert. Nur der Beitragsinhalt wird angezeigt.
         ')) ?>
@@ -51,7 +51,7 @@
     </div>
 
     <div class="shtm_form_line">
-        <label for="shtm_mapstop_add_post">Seite(n) hinzufügen:</label>
+        <label for="shtm_mapstop_add_post">Beitrag hinzufügen:</label>
 
         <div id="shtm_add_post_menu" style="display: inline-block;">
 
