@@ -190,7 +190,7 @@ class TestHelper {
         $tour->user_id = $this->get_test_user()->ID;
         $tour->name = 'Tour Test Name ' . $this->random_str();
         $tour->intro = 'Tour Test Intro ' . $this->random_str();
-        $tour->type = (rand(0,1) == 0) ? 'round-tour' : 'tour';
+        $tour->type = array_keys(Tour::TYPES)[(rand(0,3))];
         $tour->walk_length = rand(0, 2000);
         $tour->duration = rand(0, 120);
         $tour->tag_what = 'tour-test-what-' . $this->random_str();

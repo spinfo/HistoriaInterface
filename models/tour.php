@@ -7,7 +7,9 @@ class Tour extends AbstractModel {
 
     const TYPES = array(
         'tour' => 'Spaziergang',
-        'round-tour' => 'Rundgang'
+        'round-tour' => 'Rundgang',
+        'public-transport-tour' => 'ÖPNV-Tour',
+        'bike-tour' => 'Fahrrad-Tour'
     );
 
     const DATETIME_FORMATS = array(
@@ -35,7 +37,7 @@ class Tour extends AbstractModel {
 
     public $intro = '';
 
-    // whether the tour is a simple 'tour' or rather a 'round-tour'
+    // the tour type, one of the keys of self::TYPES
     public $type = 'tour';
 
     // length of the tour in meters
