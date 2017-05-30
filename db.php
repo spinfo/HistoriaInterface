@@ -156,10 +156,12 @@ class DB {
 
         if(empty($result)) {
             debug_log("DB: Could not retrieve row with: $query");
+            $wpdb->print_error();
             return null;
         } else if(count($result) != 1) {
             $count = count($result);
             debug_log("DB: Bad result count: $count for: $query).");
+            $wpdb->print_error();
             return null;
         }
         return $result[0];
@@ -216,6 +218,7 @@ class DB {
             $msg = "DB: Error updating ${table_name} for id: '${id}'";
             $msg .= " (affected rows: $result)";
             debug_log($msg);
+            $wpdb->print_error();
             return false;
         }
         return true;
@@ -244,7 +247,8 @@ class DB {
         global $wpdb;
         $result = $wpdb->insert($table_name, $values);
         if($result === false) {
-            debug_log("DB: Error inserting into ${table_name}.");
+            debug_log("DB: Error inserting into '$table_name'.");
+            $wpdb->print_error();
             return self::BAD_ID;
         }
         return $wpdb->insert_id;
@@ -275,6 +279,7 @@ class DB {
             $msg = "DB: Error deleting from $table_name with: ";
             $msg .= var_export($where, true);
             debug_log($msg);
+            $wpdb->print_error();
             return false;
         }
         return $result;

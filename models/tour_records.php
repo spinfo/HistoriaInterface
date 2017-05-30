@@ -82,9 +82,9 @@ class TourRecords extends AbstractCollection {
             $msg = "Setting the other records inactive failed.";
             return $this->rollback_bad_insert($record, $msg);
         }
-        $record->is_active = true;
 
         // collect the values and do the insert, a new tour is always active
+        $record->is_active = true;
         $values = $this->db_values($record);
         $result_id = DB::insert($this->table, $values);
 

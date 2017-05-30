@@ -166,7 +166,7 @@ function shtm_install() {
         user_id bigint(20) UNSIGNED NOT NULL,
         name text NOT NULL,
         is_active boolean NOT NULL,
-        content text NOT NULL,
+        content mediumtext NOT NULL,
         media_url text NOT NULL,
         download_size bigint(20) UNSIGNED NOT NULL,
         published_at bigint(20) UNSIGNED NOT NULL,

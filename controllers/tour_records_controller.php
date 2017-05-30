@@ -121,7 +121,7 @@ class TourRecordsController extends AbstractController {
                     } else {
                         // remove the created file and render an error
                         unlink($response->get_last_file_created());
-                        $msg = "Tour konnte nicht gespeichert werden.";
+                        $msg = "Tour Record konnte nicht gespeichert werden.";
                         $view = self::create_internal_error_view($msg);
                     }
                 } else {
