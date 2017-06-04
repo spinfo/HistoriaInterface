@@ -151,18 +151,28 @@ class TestHelper {
         return $mapstop;
     }
 
-    // create a minimal wordpress post that can be linked to a mapstop, return
-    // id or panic and fail
-    public function make_wp_post() {
-        $id = wp_insert_post(array(
-            'post_title' => 'Post for mapstop ' . $this->random_str(),
-            'post_status' => 'draft',
-            'post_author' => $this->get_test_user()->ID
-        ));
+    // create a minimal wordpress post that e.g. can be linked to a mapstop,
+    // return the post's id or panic and fail
+    public function make_wp_post($post_array = null) {
+        // setup a minimal post if no post array is provided
+        if(is_null($post_array) || !is_array($post_array)) {
+            $post_array = array(
+                'post_title' => 'Post for mapstop ' . $this->random_str(),
+                'post_status' => 'draft'
+            );
+        }
+
+        if(empty($post_array['post_author'])) {
+            $post_array['post_author'] = $this->get_test_user()->ID;
+        }
+
+        // try to insert/update the post array, simply exit on error
+        $id = wp_insert_post($post_array);
         if($id == 0 || $id instanceof WP_Error) {
-            debug_log("Could not insert new post for mapstop test;");
+            debug_log("Could not insert new post for testing.");
             exit(1);
         }
+        // add the post to the array of created posts to easily delete later
         $this->posts_created[] = $id;
         return $id;
     }

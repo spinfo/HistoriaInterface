@@ -29,6 +29,7 @@ function shtm_install() {
     require_once(dirname(__FILE__) . '/models/mapstops.php');
     require_once(dirname(__FILE__) . '/models/tours.php');
     require_once(dirname(__FILE__) . '/models/tour_records.php');
+    require_once(dirname(__FILE__) . '/post_service.php');
 
     // get the table name prefix for tables as well as the default charset
     // from wp, add our name to the prefix
@@ -40,6 +41,9 @@ function shtm_install() {
     $caps = get_role('contributor')->capabilities;
     $caps['upload_files'] = true;
     add_role('contributor-with-upload', 'Contributor with Upload', $caps);
+
+    // add the post category of the lexicon articles
+    wp_create_category(PostService::LEXICON_CATEGORY);
 
     // CREATE TABLES
     // sql syntax for use with dbDelta() has specific rules, cf.:

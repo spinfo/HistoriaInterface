@@ -4,6 +4,7 @@ namespace SmartHistoryTourManager;
 require_once( dirname(__FILE__) . '/../route_params.php');
 require_once( dirname(__FILE__) . '/../view_helper.php');
 require_once( dirname(__FILE__) . '/../user_service.php');
+require_once( dirname(__FILE__) . '/../post_service.php');
 
 /**
  * A simple solution to render html templates.
@@ -132,9 +133,8 @@ class View {
         }
     }
 
-    public function print_post_to_yaml($content, $indent_level) {
-        // apply wordpress shortcodes before the post content is printed as text
-        $content = do_shortcode($content);
+    public function print_post_to_yaml($post, $indent_level) {
+        $content = PostService::get_content_to_publish($post);
         $this->print_yaml_block($content, '|', $indent_level);
     }
 
@@ -147,6 +147,20 @@ class View {
         ob_start();
         include $this->file;
         return ob_get_clean();
+    }
+
+    /**
+     * Provides an alias for the PostService method as we can't require it from
+     * the view directly.
+     */
+    public function get_linked_lexicon_posts($posts, $recurse = false) {
+        return PostService::get_linked_lexicon_posts($posts, $recurse);
+    }
+
+    public function get_lexicon_articles_link() {
+        $url = get_admin_url(null, "edit.php");
+        $url = add_query_arg('category_name', PostService::LEXICON_CATEGORY, $url);
+        return esc_url($url);
     }
 }
 

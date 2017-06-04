@@ -70,12 +70,17 @@ class PublishingCheck {
     const EMPTY_DESCRIPTION         = "Feld 'Beschreibung' ist leer";
     const NONEXISTING_POST          = 'Enthält gelöschten Post';
 
-    const LINK_TO_WP_POST_NAME      = 'Stop-Seite #%d';
+    const LINK_TO_PAGE_POST_NAME    = 'Stop-Beitrag #%d';
 
     const EMPTY_GUID                = 'Keine guid für Post';
     const EMPTY_CONTENT             = 'Inhalt ist leer';
     const MEDIAITEM_NOT_REACHABLE   =
-        'Verlinkte Datei ist nicht unter den Attachments: <a href="%s">%s</a>';
+        'Verlinkte Datei ist nicht als Attachment erreichbar:
+            <a href="%s">%s</a>';
+
+    const LINK_TO_LEXICON_POST_NAME = 'Lexkon-Beitrag #%d';
+    const MEDIAITEM_IN_LEXICON_POST =
+        'Lexikon Artikel darf keine Medien (Audio, Video, Bilder) enthalten.';
 
     const LINK_TO_AREA_NAME         = 'Verknüpftes Gebiet #%d';
     const LINK_TO_PLACE_NAME        = 'Verknüpfter Ort #%d';
@@ -117,6 +122,9 @@ class PublishingCheck {
             $failures[] = $failure;
         }
 
+        // collect lexicon posts for later inspection
+        $lexicon_posts_by_id = array();
+
         // check the presence of tour mapstops
         if(!$tour->mapstops) {
             $failure = new PublishingCheckFailure(array(self::NO_MAPSTOPS));
@@ -147,6 +155,11 @@ class PublishingCheck {
                             $failures[] = self::make_post_failure($post, $msgs);
                         }
                     }
+                    // collect lexicon posts for later inspection
+                    $lexs = PostService::get_linked_lexicon_posts($post, true);
+                    foreach ($lexs as $lexicon_post) {
+                        $lexicon_posts_by_id[$lexicon_post->ID] = $lexicon_post;
+                    }
                 }
 
                 // check the mapstop's place
@@ -161,6 +174,14 @@ class PublishingCheck {
         $msgs = self::check_area($tour->area);
         if(!empty($msgs)) {
             $failures[] = self::make_area_failure($tour->area, $msgs);
+        }
+
+        // if the post contains lexicon articles, check those
+        foreach ($lexicon_posts_by_id as $id => $lexicon_post) {
+            $msgs = self::check_wordpress_post($lexicon_post);
+            if(!empty($msgs)) {
+                $failures[] = self::make_post_failure($lexicon_post, $msgs);
+            }
         }
 
         return $failures;
@@ -286,39 +307,32 @@ class PublishingCheck {
         $stripped = preg_replace('/\s+/', '', $post->post_content);
         $not_empty = self::check(!empty($stripped), $ms, self::EMPTY_CONTENT);
         if(!$not_empty) {
-            // do not check html attributes on an empty post
+            // do not check for mediaitems on an empty post
             return $ms;
         }
 
-        // load the post content as a html document to examine it further
-        // (errors/warnings while loading the dom are suppresed)
-        libxml_use_internal_errors(true);
-        $doc = new \DomDocument;
-        $result = $doc->loadHTML($post->post_content);
-        $dom = new \DomXPath($doc);
-        // clear internal errors, as they might clog up memory over time, then
-        // reset error handling to the default
-        libxml_clear_errors();
-        libxml_use_internal_errors(false);
-
-        // check that every image in the html appears as an attached mediaitem
-        $mediaitems = get_attached_media(null, $post->ID);
-        $img_nodes = $dom->query('//img');
-        foreach ($img_nodes as $node) {
-            $src = $node->getAttribute('src');
-            $found = false;
-            foreach ($mediaitems as $mediaitem) {
-                if($mediaitem->guid === $src) {
-                    $found = true;
-                    break;
+        // check that links to media (audio, video, images) are reachable as
+        // attached mediaitems (or in case of lexicon posts do not exist at all)
+        if(PostService::is_lexicon_post($post)) {
+            self::check(!PostService::links_to_media($post), $ms,
+                self::MEDIAITEM_IN_LEXICON_POST);
+        } else {
+            $mediaitems = get_attached_media(null, $post->ID);
+            $media_links = PostService::parse_for_media_links($post);
+            foreach ($media_links as $link) {
+                $found = false;
+                foreach ($mediaitems as $mediaitem) {
+                    if(self::urls_have_same_path($mediaitem->guid, $link)) {
+                        $found = true;
+                        break;
+                    }
+                }
+                if(!$found) {
+                    $ms[] = sprintf(self::MEDIAITEM_NOT_REACHABLE,
+                        $link, $link);
                 }
             }
-            if(!$found) {
-                $ms[] = sprintf(self::MEDIAITEM_NOT_REACHABLE, $src, $src);
-            }
         }
-
-        // TODO: Weitere Checks für: Audio, Video, Links (nur zu Lexikon)
 
         return $ms;
     }
@@ -353,7 +367,12 @@ class PublishingCheck {
     private static function make_post_failure($post, $messages) {
         $failure = new PublishingCheckFailure($messages);
         $failure->link = get_edit_post_link($post);
-        $failure->link_name = sprintf(self::LINK_TO_WP_POST_NAME, $post->ID);
+        if(PostService::is_lexicon_post($post)) {
+            $link_name_template = self::LINK_TO_LEXICON_POST_NAME;
+        } else {
+            $link_name_template = self::LINK_TO_PAGE_POST_NAME;
+        }
+        $failure->link_name = sprintf($link_name_template, $post->ID);
         return $failure;
     }
 
@@ -373,6 +392,19 @@ class PublishingCheck {
         $failure->set_link(RouteParams::edit_place($place->id));
         $failure->link_name = sprintf(self::LINK_TO_PLACE_NAME, $place->id);
         return $failure;
+    }
+
+    // helper function to check that two urls refer to the same basic resource
+    // ignoring query paramters
+    private static function urls_have_same_path($url_a, $url_b) {
+        $parts_a = parse_url($url_a);
+        $parts_b = parse_url($url_b);
+
+        $ok = true;
+        foreach(array('scheme', 'host', 'path') as $key) {
+            $ok = $ok && ($parts_a[$key] === $parts_b[$key]);
+        }
+        return $ok;
     }
 
 }

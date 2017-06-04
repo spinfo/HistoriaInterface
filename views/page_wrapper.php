@@ -146,10 +146,15 @@
         <?php endif ?>
 
         <?php if($this->route_params::is_current_page($this->route_params::index_tours())): ?>
-            <span class="shtm_not_a_link">Touren</span>
+            <span class="shtm_not_a_link">Touren</span> |
         <?php else: ?>
-            <a href="admin.php?<?php echo $this->route_params::index_tours() ?>">Touren</a>
+            <a href="admin.php?<?php echo $this->route_params::index_tours() ?>">Touren</a> |
         <?php endif ?>
+
+
+        <a href="<?php echo $this->get_lexicon_articles_link() ?>" target="_blank">
+            Lexikon-Beiträge
+        </a>
 
         <?php if($this->user_service->user_may_publish_tours()): ?>
             |

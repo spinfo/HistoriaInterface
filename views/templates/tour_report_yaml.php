@@ -1,3 +1,6 @@
+<?php
+  $posts = array();
+?>
 ---
 id: <?php $this->print_yaml($this->tour->id) ?>
 area:
@@ -31,12 +34,16 @@ mapstops:
     lon: <?php $this->print_yaml($mapstop->place->coordinate->lon) ?>
   pages:
 <?php for($i = 0; $i < count($mapstop->post_ids); $i++): ?>
-<?php $page_post = get_post($mapstop->post_ids[$i]) ?>
+<?php
+  $page_post = get_post($mapstop->post_ids[$i]);
+  // collect posts for later determination of lexicon articles
+  array_push($posts, $page_post);
+?>
 <?php $media = get_attached_media(null, $page_post->ID) ?>
     - id: <?php $this->print_yaml($page_post->ID) ?>
       pos: <?php $this->print_yaml(($i + 1)) ?>
       guid: <?php $this->print_yaml($page_post->guid) ?>
-      content: <?php $this->print_post_to_yaml($page_post->post_content, 4) ?>
+      content: <?php $this->print_post_to_yaml($page_post, 4) ?>
 <?php if(count($media) > 0): ?>
       media:
 <?php foreach ($media as $mediaitem): ?>
@@ -46,4 +53,15 @@ mapstops:
 <?php endfor // page_posts ?>
 <?php endforeach // mapstops ?>
 createdAt: <?php $this->print_yaml($this->datetime_format($this->tour->created_at)) ?>
+<?php
+  $lexicon_posts = $this->get_linked_lexicon_posts($posts, true);
+  if(count($lexicon_posts) > 0):
+?>
+lexiconEntries:
+<?php foreach ($lexicon_posts as $lex_post): ?>
+  - id: <?php $this->print_yaml($lex_post->ID) ?>
+    title: <?php $this->print_yaml_block($lex_post->post_title, '>-', 3) ?>
+    content: <?php $this->print_post_to_yaml($lex_post, 3) ?>
+<?php endforeach ?>
+<?php endif // lexicon posts are linked ?>
 ...
