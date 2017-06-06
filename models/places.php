@@ -27,8 +27,9 @@ final class Places extends AbstractCollection {
     }
 
     public function list_by_area($area_id, $offset = 0, $limit = PHP_INT_MAX) {
-        $where = array('area_id' => $area_id);
-        $rows = DB::list($this->select_sql(), $where, $offset, $limit);
+        $sql = $this->select_sql();
+        $sql .= " WHERE area_id = %d ORDER BY p.name ASC LIMIT %d OFFSET %d";
+        $rows = DB::list_by_query($sql, array($area_id, $limit, $offset));
 
         $places = array();
         foreach($rows as $count => $row) {
