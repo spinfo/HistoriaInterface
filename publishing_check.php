@@ -81,6 +81,7 @@ class PublishingCheck {
     const LINK_TO_LEXICON_POST_NAME = 'Lexkon-Beitrag #%d';
     const MEDIAITEM_IN_LEXICON_POST =
         'Lexikon Artikel darf keine Medien (Audio, Video, Bilder) enthalten.';
+    const LEXICON_POST_EMPTY_TITLE  = 'Lexikon-Titel ist leer oder fehlerhaft';
 
     const LINK_TO_AREA_NAME         = 'Verknüpftes Gebiet #%d';
     const LINK_TO_PLACE_NAME        = 'Verknüpfter Ort #%d';
@@ -307,8 +308,14 @@ class PublishingCheck {
         $stripped = preg_replace('/\s+/', '', $post->post_content);
         $not_empty = self::check(!empty($stripped), $ms, self::EMPTY_CONTENT);
         if(!$not_empty) {
-            // do not check for mediaitems on an empty post
+            // do no further checking on an empty post
             return $ms;
+        }
+
+        // on a lexicon post a valid title has to be present
+        if(PostService::is_lexicon_post($post)) {
+            self::check(!empty(PostService::get_lexicon_post_title($post)), $ms,
+                self::LEXICON_POST_EMPTY_TITLE);
         }
 
         // check that links to media (audio, video, images) are reachable as

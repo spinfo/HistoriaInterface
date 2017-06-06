@@ -15,6 +15,8 @@ class PostService {
 
     const LEXICON_CATEGORY = 'Lexikon';
 
+    const LEXICON_TITLE_PREFIX = 'Lex: ';
+
     const MEDIAITEM_XPATHS = array('//audio', '//video', '//source', '//img');
 
     /**
@@ -112,6 +114,22 @@ class PostService {
             $id = \url_to_postid($url);
         }
         return $id;
+    }
+
+    /**
+     * A lexicon post may have a title with a certain prefix. This returns the
+     * the title without that prefix.
+     *
+     * @return string
+     */
+    public static function get_lexicon_post_title($post) {
+        if(empty($post) || empty($post->post_title) ||
+            !is_string($post->post_title))
+        {
+            return "";
+        }
+        return preg_replace('/^' . self::LEXICON_TITLE_PREFIX . '/', '',
+            $post->post_title);
     }
 
     // internal function to parse a posts content

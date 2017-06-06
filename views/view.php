@@ -162,6 +162,11 @@ class View {
         $url = add_query_arg('category_name', PostService::LEXICON_CATEGORY, $url);
         return esc_url($url);
     }
+
+    public function print_lexicon_post_title($post, $indent_level) {
+        $this->print_yaml_block(PostService::get_lexicon_post_title($post),
+            '>-', 3);
+    }
 }
 
 ?>

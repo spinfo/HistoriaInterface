@@ -60,7 +60,7 @@ createdAt: <?php $this->print_yaml($this->datetime_format($this->tour->created_a
 lexiconEntries:
 <?php foreach ($lexicon_posts as $lex_post): ?>
   - id: <?php $this->print_yaml($lex_post->ID) ?>
-    title: <?php $this->print_yaml_block($lex_post->post_title, '>-', 3) ?>
+    title: <?php $this->print_lexicon_post_title($lex_post, 3) ?>
     content: <?php $this->print_post_to_yaml($lex_post, 3) ?>
 <?php endforeach ?>
 <?php endif // lexicon posts are linked ?>
