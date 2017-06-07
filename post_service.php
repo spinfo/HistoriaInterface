@@ -192,6 +192,59 @@ class PostService {
         return sprintf(self::CLIENT_LEXICON_URL_SCHEME, $post->ID);
     }
 
+    /**
+     * Retrieve all media as attachments linked to a post (accepts post id as
+     * input.
+     *
+     * @return array    An array of attachments, class WP_Post
+     */
+    public static function get_post_media($post) {
+        if(is_int($post)) {
+            $post = \get_post($post);
+        }
+        return self::_get_media($post)['found'];
+    }
+
+    /**
+     * Retrieve media urls in the post, that are not retrievable as an
+     * attachment object.
+     */
+    public static function get_bad_media_urls($post) {
+        if(is_int($post)) {
+            $post = \get_post($post);
+        }
+        return self::_get_media($post)['not_found'];
+    }
+
+    // helper function produces an array with two keys like this: array(
+    //      'found' =>
+    //          [array of attachments (class WP_Post) found for the post],
+    //      'not_found' =>
+    //          [array of media urls in the post for which nothing was found]
+    // )
+    private static function _get_media($post) {
+        $not_found_by_url = array();
+        $found_by_id = array();
+
+        $urls = self::parse_for_media_links($post);
+        foreach ($urls as $url) {
+            // remove paramters from the url before querying
+            $base = strtok($url, '?');
+            $id = \attachment_url_to_postid($base);
+            $post = \get_post($id);
+            if(!empty($post)) {
+                $found_by_id[$post->ID] = $post;
+            } else {
+                $not_found_by_url[$url] = true;
+            }
+        }
+
+        return array(
+            'found' => array_values($found_by_id),
+            'not_found' => array_keys($not_found_by_url)
+        );
+    }
+
     // helper function to aggregate lexicon posts linked to from another post
     private static function _get_linked_lexicon_posts($post, &$lexcion_posts,
         $do_recurse = false)

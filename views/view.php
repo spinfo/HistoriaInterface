@@ -163,6 +163,10 @@ class View {
         return esc_url($url);
     }
 
+    public function get_post_media($post) {
+        return PostService::get_post_media($post);
+    }
+
     public function print_lexicon_post_title($post, $indent_level) {
         $this->print_yaml_block(PostService::get_lexicon_post_title($post),
             '>-', 3);

@@ -75,8 +75,7 @@ class PublishingCheck {
     const EMPTY_GUID                = 'Keine guid für Post';
     const EMPTY_CONTENT             = 'Inhalt ist leer';
     const MEDIAITEM_NOT_REACHABLE   =
-        'Verlinkte Datei ist nicht als Attachment erreichbar:
-            <a href="%s">%s</a>';
+        'Verlinkte Datei ist nicht erreichbar: <a href="%s">%s</a>';
 
     const LINK_TO_LEXICON_POST_NAME = 'Lexkon-Beitrag #%d';
     const MEDIAITEM_IN_LEXICON_POST =
@@ -324,7 +323,10 @@ class PublishingCheck {
             self::check(!PostService::links_to_media($post), $ms,
                 self::MEDIAITEM_IN_LEXICON_POST);
         } else {
-            $mediaitems = get_attached_media(null, $post->ID);
+            // This could simply use PostService::get_bad_media_urls()
+            // it doesn't, because we need to additionally check, that the url
+            // parsed from the post and the one reported are equal
+            $mediaitems = PostService::get_post_media($post);
             $media_links = PostService::parse_for_media_links($post);
             foreach ($media_links as $link) {
                 $found = false;

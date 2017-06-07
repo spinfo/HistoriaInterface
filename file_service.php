@@ -2,6 +2,7 @@
 namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/message_service.php');
+require_once(dirname(__FILE__) . '/post_service.php');
 require_once(dirname(__FILE__) . '/views/view.php');
 require_once(dirname(__FILE__) . '/view_helper.php');
 require_once(dirname(__FILE__) . '/models/tour_records.php');
@@ -191,8 +192,9 @@ class FileService {
         $result = array();
         foreach($tour->mapstops as $mapstop) {
             foreach($mapstop->post_ids as $post_id) {
-                $m = get_attached_media(null, $post_id);
-                foreach(get_attached_media(null, $post_id) as $medium) {
+
+                $media = PostService::get_post_media($post_id);
+                foreach($media as $medium) {
                     $path = get_attached_file($medium->ID);
                     if(!file_exists($path)) {
                         $msg = "File does not exist: $medium->guid";

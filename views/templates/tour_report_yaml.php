@@ -39,7 +39,7 @@ mapstops:
   // collect posts for later determination of lexicon articles
   array_push($posts, $page_post);
 ?>
-<?php $media = get_attached_media(null, $page_post->ID) ?>
+<?php $media = $this->get_post_media($page_post) ?>
     - id: <?php $this->print_yaml($page_post->ID) ?>
       pos: <?php $this->print_yaml(($i + 1)) ?>
       guid: <?php $this->print_yaml($page_post->guid) ?>
