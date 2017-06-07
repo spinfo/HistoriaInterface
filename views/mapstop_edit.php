@@ -124,7 +124,7 @@
             container.removeChild(container.firstChild);
         }
         for(var i = 0; i < lines.length; i++) {
-            container.append(lines[i]);
+            container.appendChild(lines[i]);
         }
     };
 
@@ -144,7 +144,7 @@
         }
         // else: just clone the select box and append to the container
         var newSelect = elem.cloneNode(true);
-        container.append(newSelect);
+        container.appendChild(newSelect);
     }
 
 </script>

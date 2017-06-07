@@ -75,7 +75,7 @@ MapUtil.mapstopFromElem = function(elem) {
     var result = {
         id: elem.getAttribute('data-mapstop-id'),
         name: elem.getAttribute('data-mapstop-name'),
-        description: elem.getAttribute('data-mapstop-description'),
+        description: elem.getAttribute('data-mapstop-description')
     }
 
     var coords = MapUtil.parseCoordinates(elem);
@@ -95,7 +95,7 @@ MapUtil.create_leaflet_draw_for_single_item = function(
     type,                        // type of object to use ('polyline', 'marker', 'circle', 'polygon' or 'rectangle')
     binding,                     // A CoordinateFormBinding to update the form values
     createInputElementsCallback, // A callback function to create input form elements
-    drawOptions,                 // Options to use for the leaflet drawControl
+    drawOptions                  // Options to use for the leaflet drawControl
 ) {
     // a layer for all editable items (only one in this case)
     var editableItems = new L.FeatureGroup();

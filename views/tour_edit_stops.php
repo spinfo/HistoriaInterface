@@ -115,7 +115,7 @@
             container.removeChild(container.firstChild);
         }
         for(var i = 0; i < lines.length; i++) {
-            container.append(lines[i]);
+            container.appendChild(lines[i]);
         }
     };
 

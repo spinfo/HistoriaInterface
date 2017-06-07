@@ -144,10 +144,7 @@
         // we have to fiddle a bit with draw.js internals here, reference:
         // https://github.com/Leaflet/Leaflet.draw/blob/master/src/draw/handler/Draw.Marker.js
         var rect = new L.Draw.Rectangle(map, drawOptions.draw.rectangle);
-        // rect._startLatLng = latLngs[0];
-        // rect._drawShape(latLngs[1]);
         rect._shape = new L.Rectangle(areaBounds, MapUtil.rectangleShape());
-        // rect._shape.setBounds(areaBounds);
         rect._fireCreatedEvent();
     }
     // we are on the new view (or something went wrong), center on somewhere in
