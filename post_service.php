@@ -19,6 +19,16 @@ class PostService {
 
     const MEDIAITEM_XPATHS = array('//audio', '//video', '//source', '//img');
 
+    const HTML_TEMPLATE = '
+        <html>
+            <head>
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            </head>
+            <body>
+                %s
+            </body>
+        </html>';
+
     /**
      * Return the Lexicon posts category.
      */
@@ -223,12 +233,13 @@ class PostService {
 
     // helper function to parse a post's content into a DOM, which can be
     // evaluated for xpath expressions
-    private static function parse_dom_xpath($post_content) {
+    private static function parse_dom_xpath($html) {
+        $html = sprintf(self::HTML_TEMPLATE, $html);
         // load the post content as a html document to examine it further
         // (errors/warnings while loading the dom are suppresed)
         libxml_use_internal_errors(true);
         $doc = new \DomDocument;
-        $result = $doc->loadHTML($post_content);
+        $result = $doc->loadHTML($html);
         $dom = new \DomXPath($doc);
         // clear internal errors, as they might clog up memory over time, then
         // reset error handling to the default
