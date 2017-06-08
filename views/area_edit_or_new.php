@@ -4,7 +4,7 @@
 
 <?php $this->include($this->view_helper::area_map_template()) ?>
 
-<form action=admin.php?<?php echo $this->action_params ?> method="post"
+<form action="admin.php?<?php echo $this->action_params ?>" method="post"
     class="shtm_right_from_map shtm_form shtm_area_form">
 
     <div class="shtm_form_line">

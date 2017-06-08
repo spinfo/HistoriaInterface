@@ -14,7 +14,7 @@
         <li>Beschreibung: <?php echo $this->mapstop->description ?></li>
     </ul>
 
-    <form action=admin.php?<?php echo $this->route_params::destroy_mapstop($this->mapstop->id) ?> method="post">
+    <form action="admin.php?<?php echo $this->route_params::destroy_mapstop($this->mapstop->id) ?>" method="post">
         <div class="shtm_button">
             <button type="submit">Stop Löschen</button>
         </div>

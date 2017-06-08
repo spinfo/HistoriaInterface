@@ -15,7 +15,7 @@
         <li>Longitude: <?php echo $this->coord_format($this->place->coordinate->lon) ?></li>
     </ul>
 
-    <form action=admin.php?<?php echo $this->action_params ?> method="post">
+    <form action="admin.php?<?php echo $this->action_params ?>" method="post">
         <div class="shtm_button" id="shtm_delete_place">
             <button type="submit">Ort Löschen</button>
         </div>

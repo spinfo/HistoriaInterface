@@ -1,7 +1,7 @@
 
 <?php $this->include($this->view_helper::single_tour_header_template()) ?>
 
-<form action=admin.php?<?php echo $this->route_params::update_tour($this->tour->id) ?> method="post"
+<form action="admin.php?<?php echo $this->route_params::update_tour($this->tour->id) ?>" method="post"
     class="shtm_form">
 
     <div class="shtm_form_line">

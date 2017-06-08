@@ -14,7 +14,7 @@
         <li>Intro: <?php echo $this->trim_text($this->tour->intro, 40) ?></li>
     </ul>
 
-    <form action=admin.php?<?php echo $this->route_params::destroy_tour($this->tour->id) ?> method="post">
+    <form action="admin.php?<?php echo $this->route_params::destroy_tour($this->tour->id) ?>" method="post">
         <div class="shtm_button">
             <button type="submit">Tour Löschen</button>
         </div>

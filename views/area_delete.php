@@ -17,7 +17,7 @@
         <li>Name: <?php echo $this->area->name ?></li>
     </ul>
 
-    <form action=admin.php?<?php echo $this->route_params::destroy_area($this->area->id) ?> method="post">
+    <form action="admin.php?<?php echo $this->route_params::destroy_area($this->area->id) ?>" method="post">
         <?php if(count($this->tours) === 0): ?>
             <div class="shtm_button">
                 <button type="submit">Löschen</button>

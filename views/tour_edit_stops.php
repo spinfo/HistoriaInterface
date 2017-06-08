@@ -3,7 +3,7 @@
 
 <?php $this->include($this->view_helper::tour_map_template()) ?>
 
-<form id="shtm_mapstop_positions_form" action=admin.php?<?php echo $this->route_params::update_tour_stops($this->tour->id) ?> method="post"
+<form id="shtm_mapstop_positions_form" action="admin.php?<?php echo $this->route_params::update_tour_stops($this->tour->id) ?>" method="post"
     class="shtm_right_from_map shtm_form">
 
     <div style="margin-bottom: 12px">

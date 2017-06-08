@@ -4,7 +4,7 @@
 
 <?php $this->include($this->view_helper::place_map_template()) ?>
 
-<form action=admin.php?<?php echo $this->action_params ?> method="post"
+<form action="admin.php?<?php echo $this->action_params ?>" method="post"
     class="shtm_right_from_map shtm_form shtm_place_form">
 
     <?php if($this->route_params::is_current_page($this->route_params::new_place())): ?>
