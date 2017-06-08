@@ -125,7 +125,7 @@ abstract class AbstractController {
                     "Missing value for: '$key'");
                 return null;
             }
-            // recurse if array is found propagate null result upwards
+            // recurse if array is found, hand null result upwards
             if(is_array($value) && is_array($input[$key])) {
                 $sub_result = self::filter_params($value, $input[$key]);
                 if(is_null($sub_result)) {
@@ -136,7 +136,9 @@ abstract class AbstractController {
             }
             // for other types do a conversion
             else if(is_string($value)) {
-                $result[$key] = strval($input[$key]);
+                // Remove 'magic quotes' from strings (wordpress adds these by
+                // default, then provides the way to remove them)
+                $result[$key] = wp_unslash(strval($input[$key]));
             }
             else if(is_float($value)) {
                 $result[$key] = floatval($input[$key]);
