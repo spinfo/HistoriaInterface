@@ -10,7 +10,8 @@
     // only create the map if we are not on an edit/new page
     // (does it's own map creation)
     url = window.location.href;
-    if(!url.includes('shtm_a=edit') && !url.includes('shtm_a=new')) {
+    if(!(url.search('shtm_a=edit') > -1) && !(url.search('shtm_a=new') > -1)) {
+        console.log("Yupp, delete...");
 
         // parse the place's coordinate
         coordLatLng = MapUtil.parseCoordinates(document.getElementById('shtm_map'))[0];

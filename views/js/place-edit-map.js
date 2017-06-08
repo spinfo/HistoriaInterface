@@ -67,7 +67,7 @@ MapUtil.create_leaflet_draw_for_single_item(map, 'marker', binding,
 
 // if we are on the edit view:
 // initialize a marker from the place's latLng, center close to the place
-if(window.location.href.includes('shtm_a=edit')) {
+if(window.location.href.search('shtm_a=edit') > -1) {
     // we have to fiddle a bit with draw.js internals here, reference:
     // https://github.com/Leaflet/Leaflet.draw/blob/master/src/draw/handler/Draw.Marker.js
     var marker = new L.Draw.Marker(map, drawOptions.draw.marker);
@@ -77,7 +77,7 @@ if(window.location.href.includes('shtm_a=edit')) {
 }
 // else if we are on the new place view:
 // the coordinate represents the area's center, just zoom a bit further out
-else if(window.location.href.includes('shtm_a=new')) {
+else if(window.location.href.search('shtm_a=new') > -1) {
     map.setView(coordLatLng, 11);
 }
 // something went wrong, center on somewhere in Germany, zoom out far and log an error

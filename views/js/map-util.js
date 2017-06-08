@@ -64,7 +64,7 @@ MapUtil.parseCoordinates = function(elem) {
 
 // Format an input value according to the precision we save on coordinates
 MapUtil.formatCoordValue = function(value) {
-    return Number.parseFloat(value).toFixed(6);
+    return parseFloat(value).toFixed(6);
 }
 
 // Parse mapstop data out of a html element and return a simple object.

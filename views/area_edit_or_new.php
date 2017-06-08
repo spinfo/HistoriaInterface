@@ -140,7 +140,7 @@
         createInputElements, drawOptions);
 
     // if we are on the edit view, init rectangle to edit
-    if(window.location.href.includes('shtm_a=edit')) {
+    if(window.location.href.search('shtm_a=edit') > -1) {
         // we have to fiddle a bit with draw.js internals here, reference:
         // https://github.com/Leaflet/Leaflet.draw/blob/master/src/draw/handler/Draw.Marker.js
         var rect = new L.Draw.Rectangle(map, drawOptions.draw.rectangle);
