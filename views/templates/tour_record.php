@@ -2,7 +2,7 @@
     <li><b>Tour-Name</b>: <?php echo $this->record->name ?></li>
     <li><b>Gebiet</b>: <?php echo $this->area->name ?></li>
     <li><b>Veröffentlicht von</b>: <?php echo $this->user_service->get_user($this->record->user_id)->user_login ?></li>
-    <li><b>Veröffentlicht am</b>: <?php echo $this->datetime_format(new \DateTime($record->published_at)) ?></li>
+    <li><b>Veröffentlicht am</b>: <?php echo $this->datetime_format(DateTime::createFromFormat('U', $this->record->published_at)) ?></li>
     <?php if($this->show_download_url): ?>
         <li>
             <b>Download</b>:<br>

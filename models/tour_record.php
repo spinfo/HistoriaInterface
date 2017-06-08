@@ -48,7 +48,8 @@ class TourRecord extends AbstractModel {
     public $published_at;
 
     public function __construct() {
-        $this->published_at = time();
+        // use wordpress time to align this with the settings
+        $this->published_at = current_time('timestamp');
     }
 
     protected function do_validity_check() {
