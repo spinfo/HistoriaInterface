@@ -2,6 +2,7 @@
 namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/abstract_model.php');
+require_once(dirname(__FILE__) . '/../user_service.php');
 
 class Tour extends AbstractModel {
 
@@ -64,6 +65,10 @@ class Tour extends AbstractModel {
 
     // A string indicating accessibility conditions
     public $accessibility = '';
+
+    // The author's name is usually taken from the tour's user, but may be
+    // overwritten by this field
+    public $author = '';
 
     // set the start date by a datetime object or a string
     public function set_tag_when_start($datetime) {
@@ -156,6 +161,19 @@ class Tour extends AbstractModel {
 
     public function has_valid_type() {
         return !is_null(self::TYPES[$this->type]);
+    }
+
+    /**
+     * Returns the author name this tour should have. Either the name of this
+     * tour's user or the author field itself
+     */
+    public function get_author_name() {
+        if(empty($this->author)) {
+            $user = UserService::get_user($this->user_id);
+            return empty($user) ? '' : $user->user_login;
+        } else {
+            return $this->author;
+        }
     }
 
     /**

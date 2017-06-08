@@ -206,6 +206,7 @@ class TestHelper {
         $tour->tag_what = 'tour-test-what-' . $this->random_str();
         $tour->tag_where = 'tour-test-where-' . $this->random_str();
         $tour->accessibility = 'test accessibility ' . $this->random_str();
+        $tour->author = rand(0, 1) == 1 ? 'test-author' : '';
 
         $tour->set_tag_when_start('01.02.1803 11:12');
         if(rand(0,1) == 0) {

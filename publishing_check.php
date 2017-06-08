@@ -50,7 +50,7 @@ class PublishingCheck {
     const EMPTY_TAG_WHAT            = "Tag 'Was' ist leer.";
     const EMPTY_TAG_WHERE           = "Tag 'Wo' ist leer.";
     const EMPTY_ACCESSIBILITY       = "Feld 'Zugänglichkeit' ist leer.";
-    const EMPTY_USER_OR_USER_NAME   = 'Kein Autor(enname) für Tour.';
+    const EMPTY_USER_OR_USER_NAME   = 'Keine Autorenangabe erschließbar.';
 
 
     const LINK_TO_TOUR_TRACK_NAME   = 'Tour-Weg';
@@ -211,9 +211,7 @@ class PublishingCheck {
         self::check($condition, $ms, self::EMPTY_TAG_WHEN);
         self::check(!empty($tour->tag_what), $ms, self::EMPTY_TAG_WHAT);
         self::check(!empty($tour->tag_where), $ms, self::EMPTY_TAG_WHERE);
-
-        $author = UserService::instance()->get_user($tour->user_id);
-        self::check(!empty($author) && !empty($author->user_login), $ms,
+        self::check(!empty($tour->get_author_name()), $ms,
             self::EMPTY_USER_OR_USER_NAME);
 
         $condition = !empty($tour->accessibility);

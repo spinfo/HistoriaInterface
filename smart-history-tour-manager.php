@@ -111,6 +111,7 @@ function shtm_install() {
         tag_when_start_format VARCHAR(64) NOT NULL,
         tag_when_end_format VARCHAR(64) DEFAULT '',
         accessibility TEXT DEFAULT '',
+        author TEXT DEFAULT '',
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id)

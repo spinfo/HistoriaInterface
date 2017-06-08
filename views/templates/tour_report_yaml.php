@@ -9,7 +9,7 @@ area:
   point1: [<?php echo $this->tour->area->coordinate1->lat . ', ' . $this->tour->area->coordinate1->lon ?>]
   point2: [<?php echo $this->tour->area->coordinate2->lat . ', ' . $this->tour->area->coordinate2->lon ?>]
 name: <?php $this->print_yaml_block($this->tour->name, '>-', 1) ?>
-author: <?php $this->print_yaml($this->user_service->get_user($this->tour->user_id)->user_login) ?>
+author: <?php $this->print_yaml_block($this->tour->get_author_name(), '>-', 1) ?>
 intro: <?php $this->print_yaml_block($this->tour->intro, '|', 1) ?>
 type: <?php $this->print_yaml($this->tour->type) ?>
 walkLength: <?php $this->print_yaml($this->tour->walk_length) ?>

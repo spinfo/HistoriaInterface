@@ -79,6 +79,15 @@
         <input id="shtm_tour_accessibility" type="text" name="shtm_tour[accessibility]" value="<?php echo $this->tour->accessibility ?>">
     </div>
 
+    <div class="shtm_form_line">
+        <label for="shtm_tour_author">Autorenangabe: </label>
+        <input id="shtm_tour_author" type="text" name="shtm_tour[author]" value="<?php echo $this->tour->author ?>"
+            <?php if(empty($this->tour->author)): ?>
+                placeholder="<?php echo $this->tour->get_author_name() ?>"
+            <?php endif ?>
+        >
+    </div>
+
     <div class="shtm_button">
         <button type="submit">Speichern</button>
     </div>

@@ -251,6 +251,7 @@ class Tours extends AbstractCollection {
             $tour->tag_when_end_format = '';
         }
         $tour->accessibility = strval($array->accessibility);
+        $tour->author = strval($array->author);
 
         if(!is_null($array->coordinate_ids)) {
             $tour->coordinate_ids = array_map('intval', $array->coordinate_ids);
@@ -354,7 +355,8 @@ class Tours extends AbstractCollection {
             'tag_where' => strval($tour->tag_where),
             'tag_when_start' => floatval($tour->tag_when_start),
             'tag_when_start_format' => strval($tour->tag_when_start_format),
-            'accessibility' => strval($tour->accessibility)
+            'accessibility' => strval($tour->accessibility),
+            'author' => strval($tour->author)
         );
         if(!is_null($tour->tag_when_end)) {
             $vals['tag_when_end'] = floatval($tour->tag_when_end);

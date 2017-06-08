@@ -429,6 +429,7 @@ class ToursTest extends TestCase {
         $this->assert($got->tag_when_start_format == $expected->tag_when_start_format, "tag_when_start_formats should match ($test_name).");
         $this->assert($got->tag_when_end_format == $expected->tag_when_end_format, "tag_when_end_formats should match ($test_name).");
         $this->assert($got->accessibility == $expected->accessibility, "accessibility should match ($test_name).");
+        $this->assert($got->author == $expected->author, "author should match ($test_name).");
 
         if(!empty($expected->coordinate_ids)) {
             // test for array equality (not identity) is sufficient

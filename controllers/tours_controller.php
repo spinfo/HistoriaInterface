@@ -21,6 +21,7 @@ class ToursController extends AbstractController {
             'tag_where' => '',
             'tag_when_start' => '',
             'accessibility' => '',
+            'author' => '',
         )
     );
 

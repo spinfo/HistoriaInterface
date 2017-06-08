@@ -228,6 +228,7 @@ $post = array(
     'shtm_tour[tag_when_start]' => '06.02.1689 13:13:13',
     'shtm_tour[tag_when_end]' => '04.07.1776 07:07:07',
     'shtm_tour[accessibility]' => $tour->accessibility,
+    'shtm_tour[author]' => $tour->author
 );
 
 $track_post = array();
