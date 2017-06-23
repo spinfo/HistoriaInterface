@@ -45,6 +45,9 @@ class PostService {
         // apply wordpress shortcodes to the post content
         $content = \do_shortcode($post->post_content);
 
+        // apply the wordpress paragraph (i.e. <p>-tag) substitution
+        $content = \wpautop($content);
+
         // if the post has links to lexicon entries, replace those with the
         // lexicon url scheme used by the client
         // use the private function _parse_for..., to not introduce a circle
