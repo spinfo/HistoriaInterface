@@ -1,6 +1,8 @@
 <?php
 namespace SmartHistoryTourManager;
 
+require_once(dirname(__FILE__) . '/db.php');
+
 /**
  * WP_Post objects in the tour manager are used as:
  *  - pages of a mapstops
@@ -39,6 +41,9 @@ class PostService {
      * Any action, that should be applied to the raw html content of a post
      * before publishing is performed in here.
      *
+     * NOTE: This does some expensive stuff and might be a good place to start
+     * refactoring if performance becomes an issue in publishing tours
+     *
      * @return string
      */
     public static function get_content_to_publish($post) {
@@ -65,6 +70,16 @@ class PostService {
             }
         }
 
+        // if the post contains thumbnail urls these will be replaced with
+        // the full sized image's url
+        $urls = self::_parse_for_media_links($content);
+        foreach ($urls as $url) {
+            $new_url = self::_cleanup_thumbnail_url($url);
+            if($new_url !== $url) {
+                $content = str_replace($url, $new_url, $content);
+            }
+        }
+
         return $content;
     }
 
@@ -75,15 +90,19 @@ class PostService {
      * @return array    An array of strings with the linked mediaitem-urls
      */
     public static function parse_for_media_links($post) {
-        $dom = self::parse_dom_xpath(self::get_content_to_publish($post));
+        $content_to_publish = self::get_content_to_publish($post);
+        return self::_parse_for_media_links($content_to_publish);
+    }
+
+    // parses all media links from a piece of html
+    private static function _parse_for_media_links($html) {
+        $dom = self::parse_to_dom_xpath($html);
 
         $result = array();
-
         foreach (self::MEDIAITEM_XPATHS as $expression) {
             $urls = self::_get_attr_values($dom->query($expression), 'src');
             $result = array_merge($result, $urls);
         }
-
         return array_unique($result);
     }
 
@@ -147,7 +166,7 @@ class PostService {
 
     // internal function to parse a posts content
     private static function _parse_for_page_links($post_content) {
-        $dom = self::parse_dom_xpath($post_content);
+        $dom = self::parse_to_dom_xpath($post_content);
 
         // get '<a>' tags but not those below audio or video elements
         $anchors = $dom->query('//*[not(self::audio or self::video)]/a');
@@ -231,9 +250,12 @@ class PostService {
 
         $urls = self::parse_for_media_links($post);
         foreach ($urls as $url) {
-            // remove paramters from the url before querying
+
+            // remove any parameters from the url before querying
             $base = strtok($url, '?');
-            $id = \attachment_url_to_postid($base);
+
+            // get the id and query for  the post
+            $id = DB::get_wp_media_id($base);
             $post = \get_post($id);
             if(!empty($post)) {
                 $found_by_id[$post->ID] = $post;
@@ -246,6 +268,16 @@ class PostService {
             'found' => array_values($found_by_id),
             'not_found' => array_keys($not_found_by_url)
         );
+    }
+
+    /**
+     * This removes a token like "-300x900" from the end of a thumbnail url.
+     * Returns the url unchanged if it does not contain such a pattern
+     */
+    private static function _cleanup_thumbnail_url($url) {
+        // First regex group is the thumbnail suffix, second one the file
+        // extension. Replaces the whole match with just the extension.
+        return preg_replace("/(-[0-9]+x[0-9]+)(\.[a-zA-Z0-9]+)$/", "$2", $url);
     }
 
     // helper function to aggregate lexicon posts linked to from another post
@@ -279,9 +311,9 @@ class PostService {
     private static function _get_attr_values($node_list, $attr) {
         $result = array();
         foreach ($node_list as $node) {
-            $src = $node->getAttribute($attr);
-            if(!empty($src)) {
-                array_push($result, $src);
+            $value = $node->getAttribute($attr);
+            if(!empty($value)) {
+                array_push($result, $value);
             }
         }
         return $result;
@@ -289,7 +321,7 @@ class PostService {
 
     // helper function to parse a post's content into a DOM, which can be
     // evaluated for xpath expressions
-    private static function parse_dom_xpath($html) {
+    private static function parse_to_dom_xpath($html) {
         $html = sprintf(self::HTML_TEMPLATE, $html);
         // load the post content as a html document to examine it further
         // (errors/warnings while loading the dom are suppresed)

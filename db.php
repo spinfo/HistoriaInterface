@@ -284,6 +284,23 @@ class DB {
         }
         return $result;
     }
+
+
+    /**
+     * A custom function to retrieve the id of a mediaitem by it's url (the
+     * guid database field.)
+     *
+     * Needed because wordpress has no support for something like this. (NOTE:
+     * There is wp's attachment_url_to_postid() but it does not what we want.)
+     */
+    function get_wp_media_id($media_url) {
+        global $wpdb;
+        $sql = "SELECT ID FROM $wpdb->posts WHERE guid='%s'";
+        $result = $wpdb->get_col($wpdb->prepare($sql, $media_url ));
+        return $result[0];
+    }
+
+
     /**
      * A wrapper around wpdb->prepare(). Here just used to insert variables into
      * sql in a sane manner.
