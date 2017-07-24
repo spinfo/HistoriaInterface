@@ -121,14 +121,21 @@ class DB {
      * @param int       $offset     Offset in the table, default: 0
      * @param int       $limit      Limit of objects retrieved, default:
      *                                  PHP_INT_MAX
+     * @param string    $orederby   A string to append to an "ORDER BY" clause
+     *                                  (Note: internal use only, not escaped)
      *
      * @return array    The result of the query as an associative array
      */
     public static function list($select_sql, $where, $offset = 0,
-        $limit = PHP_INT_MAX)
+        $limit = PHP_INT_MAX, $orderby = null)
     {
         $sql = $select_sql . " ";
         $sql .= self::where_clause($where);
+
+        if(!is_null($orderby) && is_string($orderby)) {
+            $sql .= " ORDER BY $orderby";
+        }
+
         $sql .= " LIMIT %d, %d";
 
         $query = self::prepare($sql, array($offset, $limit));

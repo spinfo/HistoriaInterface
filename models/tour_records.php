@@ -185,7 +185,8 @@ class TourRecords extends AbstractCollection {
     }
 
     private function do_list($where) {
-        $rows = DB::list($this->select_sql(), $where);
+        $rows = DB::list($this->select_sql(), $where, 0, PHP_INT_MAX,
+            "published_at DESC");
 
         $result = array();
         foreach ($rows as $row) {
