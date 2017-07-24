@@ -335,9 +335,9 @@ class WPTestConnection extends TestCase {
             } else {
                 // do the requested equality check
                 if($value == $got) {
-                    $this->note_pass("$msg '$param' => '$got'.");
+                    $this->note_pass("$msg '$param' => '$value'.");
                 } else {
-                    $this->note_fail("$msg '$param' => '$got'.");
+                    $this->note_fail("$msg '$param' => '$value' (is: '$got').");
                 }
             }
             return $got;

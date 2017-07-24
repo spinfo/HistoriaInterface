@@ -1,10 +1,10 @@
 mysql_server = "localhost"
-mysql_user = "wordpress"
+mysql_user = "wordpress_sh"
 mysql_pass = ""
-mysql_db = "wordpress"
+mysql_db = "wordpress_smart_history"
 
 wp_url = "http://localhost"
-wp_load_script = "/var/www/wordpress/wp-load.php"
+wp_load_script = "/usr/share/nginx/www/wordpress-smart-history/wp-load.php"
 
 places_table = "wp_shtm_places"
 areas_table = "wp_shtm_areas"
