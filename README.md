@@ -1,4 +1,4 @@
-# HistoriaApp
+# HistoriaInterface
 
 A wordpress plugin to create, manage and host tours for the HistoriaApp for historical city tours.
 
