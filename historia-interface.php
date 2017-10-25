@@ -4,13 +4,13 @@ namespace SmartHistoryTourManager;
 require_once(dirname(__FILE__) . '/logging.php');
 
 /*
-Plugin Name: Smart History Tour Manager
-Plugin URI: http://www.example.com/no-uri-yet
-Description: A plugin to create, manage and host tours for the SmartHistory App
-Version: 0.1
+Plugin Name: HistoriaInterface
+Plugin URI: https://historia-app.de
+Description: A plugin to create, manage and host tours for the HistoriaApp.
+Version: 0.2
 Author: David Neugebauer
-Author URI: http://www.example.com
-License: All rights reserved. This is not free software (for now).
+Author URI: https://github.com/spinfo/HistoriaInterface
+License: Eclipse Public License v1.0
 */
 
 /**
@@ -385,8 +385,8 @@ register_activation_hook(__FILE__, 'SmartHistoryTourManager\shtm_create_test_dat
  */
 function shtm_setup_tour_manager() {
     // title used in the menu and in the browser tab
-    $title_menu = 'SmartHistory Tours';
-    $title_tab = 'SmartHistory Tours';
+    $title_menu = 'HistoriaInterface';
+    $title_tab = 'HistoriaInterface';
 
     // Capability available to Contributor role and above, but not to Subscriber
     $capability = 'edit_posts';
