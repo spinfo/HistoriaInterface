@@ -70,8 +70,8 @@
                     </ul>
             ")) ?>
         </label>
-        <input id="shtm_tour_tag_when_start" type="text" name="shtm_tour[tag_when_start]" value="<?php echo $this->datetime_format($this->tour->get_tag_when_start(), $this->tour->tag_when_start_format) ?>">-
-        <input id="shtm_tour_name" type="text" name="shtm_tour[tag_when_end]" value="<?php echo $this->datetime_format($this->tour->get_tag_when_end(), $this->tour->tag_when_end_format) ?>">
+        <input id="shtm_tour_tag_when_start" type="text" name="shtm_tour[tag_when_start]" value="<?php echo $this->tour->get_tag_when_start_formatted() ?>">-
+        <input id="shtm_tour_name" type="text" name="shtm_tour[tag_when_end]" value="<?php echo $this->tour->get_tag_when_end_formatted() ?>">
     </div>
 
     <div class="shtm_form_line">
