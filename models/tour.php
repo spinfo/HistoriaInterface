@@ -3,6 +3,7 @@ namespace SmartHistoryTourManager;
 
 require_once(dirname(__FILE__) . '/abstract_model.php');
 require_once(dirname(__FILE__) . '/../user_service.php');
+require_once(dirname(__FILE__) . '/../logging.php');
 
 class Tour extends AbstractModel {
 
@@ -14,11 +15,11 @@ class Tour extends AbstractModel {
     );
 
     const DATETIME_FORMATS = array(
-        'd.m.Y H:i:s' => '/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2}/',
-        'd.m.Y H:i'   => '/^\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}/',
-        'd.m.Y'       => '/^\d{2}\.\d{2}\.\d{4}/',
-        'm.Y'         => '/^\d{2}\.\d{4}/',
-        'Y'           => '/^\d{4}/'
+        'd.m.Y H:i:s' => '/^\d{2}\.\d{2}\.\d{1,4} \d{2}:\d{2}:\d{2}/',
+        'd.m.Y H:i'   => '/^\d{2}\.\d{2}\.\d{1,4} \d{2}:\d{2}/',
+        'd.m.Y'       => '/^\d{2}\.\d{2}\.\d{1,4}/',
+        'm.Y'         => '/^\d{2}\.\d{1,4}/',
+        'Y'           => '/^\d{1,4}/'
     );
 
 
@@ -184,18 +185,26 @@ class Tour extends AbstractModel {
      *                  datetime.
      */
     public function get_tag_when_formatted() {
-        $result = $this->tag_when_format($this->get_tag_when_start(),
-            $this->tag_when_start_format);
+        $result = $this->get_tag_when_start_formatted();
         if(empty($result)) {
             return "";
         }
 
-        $end_str = $this->tag_when_format($this->get_tag_when_end(),
-            $this->tag_when_end_format);
+        $end_str = $this->get_tag_when_end_formatted();
         if(!empty($end_str)) {
             $result .= " - $end_str";
         }
         return $result;
+    }
+
+    public function get_tag_when_start_formatted() {
+        return $this->tag_when_format($this->get_tag_when_start(),
+            $this->tag_when_start_format);
+    }
+
+    public function get_tag_when_end_formatted() {
+        return $this->tag_when_format($this->get_tag_when_end(),
+            $this->tag_when_end_format);
     }
 
     // format a datetime given the specified format or default to a format
@@ -206,7 +215,11 @@ class Tour extends AbstractModel {
             if(empty($format)) {
                 $format = (array_keys(self::DATETIME_FORMATS))[0];
             }
-            return $datetime->format($format);
+            // The year is handled specially to allow for less then 4 digits
+            $year = (int) $datetime->format("Y");
+            $format_with_year = preg_replace("/Y/", $year, $format);
+
+            return $datetime->format($format_with_year);
         }
     }
 

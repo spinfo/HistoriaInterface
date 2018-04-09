@@ -361,7 +361,25 @@ class ToursTest extends TestCase {
             'd.m.Y H:i'   => '10.04.2017 13:07',
             'd.m.Y'       => '10.04.2017',
             'm.Y'         => '04.2017',
-            'Y'           => '2017'
+            'Y'           => '2017',
+            // 3-digit years
+            'd.m.Y H:i:s' => '10.04.123 13:07:22',
+            'd.m.Y H:i'   => '10.04.123 13:07',
+            'd.m.Y'       => '10.04.123',
+            'm.Y'         => '04.123',
+            'Y'           => '123',
+            // 2-digit years
+            'd.m.Y H:i:s' => '10.04.33 13:07:22',
+            'd.m.Y H:i'   => '10.04.33 13:07',
+            'd.m.Y'       => '10.04.33',
+            'm.Y'         => '04.33',
+            'Y'           => '33',
+            // 1-digit years
+            'd.m.Y H:i:s' => '10.04.9 13:07:22',
+            'd.m.Y H:i'   => '10.04.9 13:07',
+            'd.m.Y'       => '10.04.9',
+            'm.Y'         => '04.9',
+            'Y'           => '9'
         );
 
         foreach ($times as $format => $str) {
@@ -369,7 +387,7 @@ class ToursTest extends TestCase {
             $tour->set_tag_when_start($str);
             $dt = $tour->get_tag_when_start();
 
-            $this->assert($dt->format($format) === $str,
+            $this->assert($tour->get_tag_when_start_formatted() === $str,
                 "String from output datetime should match input: $str.");
             $this->assert($tour->tag_when_start_format === $format,
                 "The format detected should match the input format: $format");
