@@ -56,8 +56,8 @@ function shtm_install() {
     $table_name = Coordinates::instance()->table;
     $coordinates_sql = "CREATE TABLE $table_name (
         id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-        lat decimal(8,6) NOT NULL,
-        lon decimal(9,6) NOT NULL,
+        lat decimal(10,6) NOT NULL,
+        lon decimal(10,6) NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id)
