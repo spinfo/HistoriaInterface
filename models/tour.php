@@ -11,7 +11,8 @@ class Tour extends AbstractModel {
         'tour' => 'Spaziergang',
         'round-tour' => 'Rundgang',
         'public-transport-tour' => 'ÖPNV-Tour',
-        'bike-tour' => 'Fahrrad-Tour'
+        'bike-tour' => 'Fahrrad-Tour',
+        'indoor-tour' => 'Indoor-Tour'
     );
 
     const DATETIME_FORMATS = array(

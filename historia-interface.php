@@ -101,7 +101,7 @@ function shtm_install() {
         user_id bigint(20) UNSIGNED NOT NULL,
         name TEXT DEFAULT '',
         intro TEXT DEFAULT '',
-        type ENUM('round-tour', 'tour', 'public-transport-tour', 'bike-tour') NOT NULL,
+        type ENUM('round-tour', 'tour', 'public-transport-tour', 'bike-tour', 'indoor-tour') NOT NULL,
         walk_length INT NOT NULL DEFAULT 0,
         duration INT NOT NULL DEFAULT 0,
         tag_what TEXT DEFAULT '',
