@@ -181,6 +181,10 @@ class RouteParams {
         return self::make_route('tour', 'update_stops', $id);
     }
 
+    public static function update_tour_scenes($id) {
+        return self::make_route('tour', 'update_scenes', $id);
+    }
+
     public static function delete_tour($id) {
         return self::make_route('tour', 'delete', $id);
     }
@@ -243,6 +247,23 @@ class RouteParams {
 
     public static function destroy_tour_record($id) {
         return self::make_route('tour_record', 'destroy', $id);
+    }
+
+    // Scenes
+    public static function new_scene($tour_id) {
+        return self::make_route('scene', 'new', null, $tour_id);
+    }
+
+    public static function add_scene($tour_id) {
+        return self::make_route('scene', 'add', null, $tour_id);
+    }
+
+    public static function delete_scene($id) {
+        return self::make_route('scene', 'delete', $id);
+    }
+
+    public static function destroy_scene($id) {
+        return self::make_route('scene', 'destroy', $id);
     }
 
     /**

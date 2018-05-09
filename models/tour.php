@@ -36,6 +36,9 @@ class Tour extends AbstractModel {
     public $mapstops = array();
     public $mapstop_ids = array();
 
+    public $scenes = array();
+    public $scene_ids = array();
+
     public $name = '';
 
     public $intro = '';

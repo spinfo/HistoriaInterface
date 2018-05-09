@@ -70,8 +70,16 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/tour_edit_track.php';
     }
 
+    public static function edit_tour_track_indoor_view() {
+        return dirname(__FILE__) . '/views/tour_edit_track_indoor.php';
+    }
+
     public static function edit_tour_stops_view() {
         return dirname(__FILE__) . '/views/tour_edit_stops.php';
+    }
+
+    public static function edit_tour_stops_indoor_view() {
+        return dirname(__FILE__) . '/views/tour_edit_stops_indoor.php';
     }
 
     public static function delete_tour_view() {
@@ -90,6 +98,16 @@ class ViewHelper {
 
     public static function delete_mapstop_view() {
         return dirname(__FILE__) . '/views/mapstop_delete.php';
+    }
+
+
+
+    public static function new_scene_view() {
+        return dirname(__FILE__) . '/views/scene_new.php';
+    }
+
+    public static function delete_scene_view() {
+        return dirname(__FILE__) . '/views/scene_delete.php';
     }
 
 

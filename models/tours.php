@@ -48,7 +48,7 @@ class Tours extends AbstractCollection {
      * mapstop and coordinate ids.
      * TODO: There must be some better way...
      */
-    public function get($id, $get_mapstop_ids = false, $get_coord_ids = false) {
+    public function get($id, $get_mapstop_ids = false, $get_coord_ids = false, $get_scene_ids = false) {
         $sql = "SELECT * FROM $this->table WHERE id = %d";
         $result = DB::get_by_query($sql, array($id));
 
@@ -62,6 +62,10 @@ class Tours extends AbstractCollection {
 
         if($get_coord_ids) {
             $result->coordinate_ids = $this->db_get_coordinate_ids($id);
+        }
+
+        if($get_scene_ids) {
+            $result->scene_ids = $this->db_get_scene_ids($id);
         }
 
         return $this->instance_from_array($result);
@@ -172,6 +176,16 @@ class Tours extends AbstractCollection {
             }
         }
 
+        foreach ($tour->scene_ids as $id) {
+            $scene = Scenes::instance()->get($id);
+            $result = Scenes::instance()->delete($scene);
+            if (empty($result)) {
+                $msg = "Failed to delete scene from tour";
+                DB::rollback_transaction();
+                throw new DB_Exception("Can't delete tour: $msg.");
+            }
+        }
+
         // a where condition used for some deletes
         $where_tour = array('tour_id' => $tour->id);
 
@@ -259,6 +273,9 @@ class Tours extends AbstractCollection {
         if(!is_null($array->mapstop_ids)) {
             $tour->mapstop_ids = array_map('intval', $array->mapstop_ids);
         }
+        if(!is_null($array->scene_ids)) {
+            $tour->scene_ids = array_map('intval', $array->scene_ids);
+        }
     }
 
     // TODO: Check that this really updates coordinates and does not always
@@ -324,6 +341,30 @@ class Tours extends AbstractCollection {
         return (is_int($result) && $result >= 0);
     }
 
+    public function update_scene_positions($tour_id, $scene_ids = null) {
+        if (empty($scene_ids)) return true;
+
+        $old_ids = $this->db_get_scene_ids($tour_id);
+        if (empty($old_ids)) {
+            return true;
+        }
+        if (!empty(array_diff($scene_ids, $old_ids))) {
+            debug_log("Bad input for tour's scene positions.");
+            return false;
+        }
+
+        $sql = "UPDATE " . Scenes::instance()->table;
+        $sql .= " SET position = CASE post_id";
+        for($i = 0; $i < count($scene_ids); $i++) {
+            $sql .= " WHEN %d THEN " . ($i + 1);
+        }
+        $sql .= " ELSE position END WHERE tour_id = %d";
+        //na($sql);die();
+        array_push($scene_ids, $tour_id);
+        $result = DB::query($sql, $scene_ids);
+        return (is_int($result) && $result >= 0);
+    }
+
     // Get objects related to the tour and set them on it.
     public function set_related_objects_on($tour) {
         $tour->coordinates = array();
@@ -340,6 +381,12 @@ class Tours extends AbstractCollection {
             }
         }
         $tour->area = Areas::instance()->get($tour->area_id);
+        foreach ($tour->scene_ids as $id) {
+            $scene = Scenes::instance()->get($id);
+            if (!empty($scene)) {
+                $tour->scenes[] = $scene;
+            }
+        }
     }
 
     private function db_values($tour) {
@@ -388,6 +435,17 @@ class Tours extends AbstractCollection {
         $m_ids = DB::list_by_query($sql, array($tour_id));
         foreach($m_ids as $id_result) {
             $result[] = intval($id_result->id);
+        }
+        return $result;
+    }
+
+    private function db_get_scene_ids($tour_id) {
+        $result = array();
+        $sql = "SELECT post_id FROM " . Scenes::instance()->table;
+        $sql .= " WHERE tour_id = %d ORDER BY position ASC";
+        $scene_ids = DB::list_by_query($sql, array($tour_id));
+        foreach($scene_ids as $id_result) {
+            $result[] = intval($id_result->post_id);
         }
         return $result;
     }
