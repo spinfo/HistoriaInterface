@@ -244,7 +244,7 @@ class DB {
 
         $query = self::prepare($sql, $values);
 
-        return $wpdb->query($query);;
+        return $wpdb->query($query);
     }
 
     /**
