@@ -8,6 +8,7 @@ class Scenes {
     protected static $instance = null;
 
     public $table;
+    public $join_mapstops_table;
 
     static function instance() {
         if (static::$instance == null) {
@@ -17,7 +18,8 @@ class Scenes {
     }
 
     protected function __construct() {
-        $this->table = DB::table_name('tours_to_posts');
+        $this->table = DB::table_name('scenes');
+        $this->join_mapstops_table = DB::table_name('mapstops_to_scenes');
     }
 
     public function get_all() {
@@ -30,22 +32,7 @@ class Scenes {
 
         $scenes = array();
         foreach ($posts as $post) {
-            $scene = new Scene();
-            $scene->id = $post->ID;
-            $scene->title = $post->post_title;
-            $scene->name = $post->post_name;
-            $scene->description = $post->post_content;
-            $scene->excerpt = $post->post_excerpt;
-            $scene->path = \get_attached_file($post->ID);
-            $scene->created_at = new \DateTime($post->post_date);
-            $scene->updated_at = new \DateTime($post->post_modified);
-
-            $select = "SELECT tour_id FROM $this->table";
-            $result = DB::get($select, array('post_id' => $scene->id));
-            if ($result) {
-                $scene->tour_id = (int)$result->tour_id;
-            }
-
+            $scene = $this->get($post->ID);
             $scenes[] = $scene;
             unset($scene);
         }
@@ -62,6 +49,7 @@ class Scenes {
 
         $scene = new Scene();
         $scene->id = $post->ID;
+        $scene->post_id = $post->ID;
         $scene->title = $post->post_title;
         $scene->name = $post->post_name;
         $scene->description = $post->post_content;
@@ -74,6 +62,29 @@ class Scenes {
         $result = DB::get($select, array('post_id' => $scene->id));
         if ($result) {
             $scene->tour_id = (int)$result->tour_id;
+        }
+
+        $sql = "SELECT ms.mapstop_id, ms.coordinate_id FROM " . $this->join_mapstops_table . " as ms";
+        $sql .= " INNER JOIN " . Mapstops::instance()->table . " as m";
+        $sql .= " ON m.id = ms.mapstop_id";
+        $sql .= " WHERE ms.scene_id = %d";
+        $sql .= " ORDER BY m.position ASC";
+        $result = DB::list_by_query($sql, [$scene->id]);
+        if ($result) {
+            foreach ($result as $row) {
+                $mapstop = Mapstops::instance()->get((int)$row->mapstop_id);
+                if ($mapstop) {
+                    $scene->mapstops[] = $mapstop;
+                    $scene->mapstop_ids[] = $mapstop->id;
+                }
+                if (!is_null($row->coordinate_id)) {
+                    $coordinate = Coordinates::instance()->get((int)$row->coordinate_id);
+                    if ($coordinate) {
+                        $scene->coordinates[$mapstop->id] = $coordinate;
+                        $scene->coordinate_ids[$mapstop->id] = $coordinate->id;
+                    }
+                }
+            }
         }
 
         return $scene;

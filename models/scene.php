@@ -12,6 +12,10 @@ class Scene extends AbstractModel {
     public $description = "";
     public $excerpt = "";
     public $path = "";
+    public $mapstops = [];
+    public $mapstop_ids = [];
+    public $coordinates = [];
+    public $coordinate_ids = [];
 
     protected function do_validity_check() {
         // todo

@@ -14,6 +14,7 @@ class RouteParams {
         'id' => 'shtm_id',
         'area_id' => 'shtm_area_id',
         'tour_id' => 'shtm_tour_id',
+        'scene_id' => 'shtm_scene_id',
         'back_params' => 'shtm_back_params'
     ];
 
@@ -49,7 +50,8 @@ class RouteParams {
         $action,
         $id = null,
         $tour_id = null,
-        $area_id = null)
+        $area_id = null,
+        $scene_id = null)
     {
         $params = array(
             self::KEYS['controller'] => $controller,
@@ -63,6 +65,9 @@ class RouteParams {
         }
         if(!is_null($area_id)) {
             $params[self::KEYS['area_id']] = $area_id;
+        }
+        if(!is_null($scene_id)) {
+            $params[self::KEYS['scene_id']] = $scene_id;
         }
         if(!is_null($back_params)) {
             $params[self::KEYS['area_id']] = $area_id;
@@ -195,12 +200,12 @@ class RouteParams {
 
 
     // Mapstops
-    public static function new_mapstop($tour_id) {
-        return self::make_route('mapstop', 'new', null, $tour_id);
+    public static function new_mapstop($tour_id, $scene_id = null) {
+        return self::make_route('mapstop', 'new', null, $tour_id, null, $scene_id);
     }
 
-    public static function create_mapstop($tour_id) {
-        return self::make_route('mapstop', 'create', null, $tour_id);
+    public static function create_mapstop($tour_id, $scene_id = null) {
+        return self::make_route('mapstop', 'create', null, $tour_id, null, $scene_id);
     }
 
     public static function edit_mapstop($id) {
@@ -266,6 +271,14 @@ class RouteParams {
         return self::make_route('scene', 'destroy', $id);
     }
 
+    public static function new_scene_stop($scene_id) {
+        return self::make_route('scene', 'new_stop', $scene_id);
+    }
+
+    public static function set_marker($mapstop_id, $scene_id) {
+        return self::make_route('scene', 'set_marker', $mapstop_id, null, null, $scene_id);
+    }
+
     /**
      * Return true if the current page has all get parameters that are in the
      * given parameter string, else false.
@@ -304,6 +317,10 @@ class RouteParams {
 
     public static function get_area_id_value() {
         return intval($_GET[self::KEYS['area_id']]);
+    }
+
+    public static function get_sene_id_value() {
+        return intval($_GET[self::KEYS['scene_id']]);
     }
 
     public static function get_back_params_value() {

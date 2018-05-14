@@ -8,6 +8,7 @@ require_once(dirname(__FILE__) . '/../views/view.php');
 require_once(dirname(__FILE__) . '/../models/mapstops.php');
 require_once(dirname(__FILE__) . '/../models/mapstop.php');
 require_once(dirname(__FILE__) . '/../models/tours.php');
+require_once(dirname(__FILE__) . '/../models/scenes.php');
 
 class MapstopsController extends AbstractController {
 
@@ -24,11 +25,22 @@ class MapstopsController extends AbstractController {
         $tour_id = RouteParams::get_tour_id_value();
         $tour = Tours::instance()->get($tour_id);
 
+        $scene_id = RouteParams::get_sene_id_value();
+        $scene = null;
+        if ($scene_id > 0) {
+            $scene = Scenes::instance()->get($scene_id);
+        }
+
         $error_view = self::filter_if_tour_not_editable($tour);
         if(empty($error_view)) {
             $mapstop = new Mapstop();
             $mapstop->tour_id = $tour->id;
-            $places = Mapstops::instance()->get_possible_places($mapstop);
+
+            if ($tour->type === 'indoor-tour') {
+                $places = Places::instance()->list_by_area($tour->area_id);
+            } else {
+                $places = Mapstops::instance()->get_possible_places($mapstop);
+            }
 
             // if there are no places to link to the tour, write a message and
             // redirect to place->new
@@ -42,6 +54,7 @@ class MapstopsController extends AbstractController {
             $view = new View(ViewHelper::new_mapstop_view(), array(
                 'mapstop' => $mapstop,
                 'places' => $places,
+                'scene' => $scene
             ));
         } else {
             $view = $error_view;
@@ -54,6 +67,12 @@ class MapstopsController extends AbstractController {
         $tour_id = RouteParams::get_tour_id_value();
         $tour = Tours::instance()->get($tour_id);
 
+        $scene_id = RouteParams::get_sene_id_value();
+        $scene = null;
+        if ($scene_id > 0) {
+            $scene = Scenes::instance()->get($scene_id);
+        }
+
         $error_view = self::filter_if_tour_not_editable($tour);
         if(empty($error_view)) {
             // get the params to update
@@ -63,7 +82,7 @@ class MapstopsController extends AbstractController {
                 $mapstop = new Mapstop();
                 Mapstops::instance()->update_values($mapstop, $params);
                 $mapstop->tour_id = $tour->id;
-                $view = self::handle_insert_or_update($mapstop, $tour);
+                $view = self::handle_insert_or_update($mapstop, $tour, $scene);
             } else {
                 $view = self::create_bad_request_view("Bad input for mapstop.");
             }
@@ -171,7 +190,7 @@ class MapstopsController extends AbstractController {
      * @return View     A view for the error encountered on error. Should not
      *                  return at all on success (redirects to edit route).
      */
-    private static function handle_insert_or_update($mapstop, $tour) {
+    private static function handle_insert_or_update($mapstop, $tour, $scene = null) {
         // check that the place id is correct
         $place = Places::instance()->get($mapstop->place_id);
         if($place->area_id != $tour->area_id) {
@@ -181,6 +200,16 @@ class MapstopsController extends AbstractController {
         // do the save
         $result = Mapstops::instance()->save($mapstop);
         if(!is_null($result)) {
+            if ($scene) {
+                $result = DB::insert(DB::table_name('mapstops_to_scenes'), [
+                    'mapstop_id' => $mapstop->id,
+                    'scene_id' => $scene->id,
+                ]);
+                if (is_null($result)) {
+                    MessageService::instance()->add_model_messages($mapstop);
+                    return self::create_bad_request_view("Nicht gespeichert");
+                }
+            }
             MessageService::instance()->add_success('Gespeichert');
             self::redirect(RouteParams::edit_mapstop($mapstop->id));
         } else {

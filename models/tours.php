@@ -317,11 +317,16 @@ class Tours extends AbstractCollection {
             $mapstop_ids = $old_ids;
         }
         // Complain and return if the update assumes different ids.
+        /**
+         * Had to be deactivated to enable scenes with partial mapstops.
+         */
+        /*
         if(!empty(array_diff($old_ids, $mapstop_ids)) ||
             !empty(array_diff($mapstop_ids, $old_ids))) {
             debug_log("Bad input for tour's mapstop positions.");
             return false;
         }
+        */
         // if there are no old ids, no update is necessary
         if(empty($old_ids)) {
             return true;
@@ -359,7 +364,6 @@ class Tours extends AbstractCollection {
             $sql .= " WHEN %d THEN " . ($i + 1);
         }
         $sql .= " ELSE position END WHERE tour_id = %d";
-        //na($sql);die();
         array_push($scene_ids, $tour_id);
         $result = DB::query($sql, $scene_ids);
         return (is_int($result) && $result >= 0);

@@ -198,15 +198,28 @@ function shtm_install() {
     // sql for joining posts / scenes to tours
     $table_name = Scenes::instance()->table;
     $scenes_sql = "CREATE TABLE $table_name (
-          `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-          `tour_id` bigint(20) unsigned NOT NULL,
-          `post_id` bigint(20) unsigned NOT NULL,
-          `position` smallint(5) unsigned NOT NULL,
-          `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-          PRIMARY KEY (`id`),
-          UNIQUE KEY `shtm_tours_to_posts_unique_post_id` (`post_id`),
-          KEY `shtm_tours_to_posts_tour_position` (`tour_id`,`position`)
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `tour_id` bigint(20) unsigned NOT NULL,
+        `post_id` bigint(20) unsigned NOT NULL,
+        `position` smallint(5) unsigned NOT NULL,
+        `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `shtm_scenes_unique_post_id` (`post_id`),
+        KEY `shtm_scenes_tour_position` (`tour_id`,`position`)
+    ) $charset_collate;";
+
+    // sql for joining mapstops to scenes with a coordinate
+    $table_name = Scenes::instance()->join_mapstops_table;
+    $scenes_sql = "CREATE TABLE $table_name (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `mapstop_id` bigint(20) unsigned NOT NULL,
+        `scene_id` bigint(20) NOT NULL,
+        `coordinate_id` bigint(20) unsigned DEFAULT NULL,
+        `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `mapstop_id` (`mapstop_id`,`scene_id`)
     ) $charset_collate;";
 
     // collect queries
@@ -610,6 +623,12 @@ function shtm_render_tour_manager() {
                     break;
                 case 'destroy':
                     ScenesController::destroy();
+                    break;
+                case 'new_stop':
+                    ScenesController::new_stop();
+                    break;
+                case 'set_marker':
+                    ScenesController::set_marker();
                     break;
             }
             break;

@@ -39,7 +39,7 @@ class ScenesController extends AbstractController {
         self::wrap_in_page_view($view)->render();
     }
 
-    public function add() {
+    public static function add() {
         $tour_id = RouteParams::get_tour_id_value();
         $tour = Tours::instance()->get($tour_id, false, false, true);
 
@@ -59,6 +59,68 @@ class ScenesController extends AbstractController {
         }
         debug_log("view: " . var_export($view, true));
         self::wrap_in_page_view($view)->render();
+    }
+
+    public static function new_stop() {
+        $id = RouteParams::get_id_value();
+        $scene = Scenes::instance()->get($id);
+        $tour = Tours::instance()->get($scene->tour_id, true, true, true);
+
+        $error_view = self::filter_if_not_editable($scene, $id);
+        if(is_null($error_view)) {
+            $view = new View(ViewHelper::add_scene_stop(), array(
+                'scene' => $scene,
+                'tour' => $tour
+            ));
+        } else {
+            $view = $error_view;
+        }
+
+        if(!empty($tour)) {
+            Tours::instance()->set_related_objects_on($tour);
+        }
+
+        self::wrap_in_page_view($view)->render();
+    }
+
+    public static function set_marker() {
+        $id = RouteParams::get_id_value();
+        $mapstop = Mapstops::instance()->get($id);
+        $scene_id = RouteParams::get_sene_id_value();
+        $scene = Scenes::instance()->get($scene_id);
+
+        try {
+            $new_coordinate = new Coordinate();
+            $new_coordinate->reference = "scene";
+            $new_coordinate->lat = floatval($_POST['x']);
+            $new_coordinate->lon = floatval($_POST['y']);
+            $result = Coordinates::instance()->save($new_coordinate);
+            if(empty($result)) {
+                throw new DB_Exception('Fehler in Coordinates');
+            }
+
+            DB::delete(Scenes::instance()->join_mapstops_table, [
+                'mapstop_id' => $mapstop->id,
+                'scene_id' => $scene->id
+            ]);
+
+            $result = DB::insert(Scenes::instance()->join_mapstops_table, [
+                'mapstop_id' => $mapstop->id,
+                'scene_id' => $scene->id,
+                'coordinate_id' => $new_coordinate->id
+            ]);
+            if (is_null($result)) {
+                throw new DB_Exception('Fehler in join table');
+            }
+
+            MessageService::instance()->add_success('Marker erfolgreich gesetzt.');
+            self::redirect(RouteParams::new_scene_stop($scene->id));
+        }
+        catch (DB_Exception $e) {
+            $msg = 'Marker konnte nicht gesetzt werden (' . $e->getMessage() . ')';
+            MessageService::instance()->add_error($msg);
+            self::redirect(RouteParams::new_scene_stop($scene->id));
+        }
     }
 
     public static function delete() {

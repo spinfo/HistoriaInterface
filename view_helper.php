@@ -110,6 +110,14 @@ class ViewHelper {
         return dirname(__FILE__) . '/views/scene_delete.php';
     }
 
+    public static function add_scene_stop() {
+        return dirname(__FILE__) . '/views/scene_add_stop.php';
+    }
+
+    public static function save_scene_marker() {
+        return dirname(__FILE__) . '/views/scene_save_marker.php';
+    }
+
 
 
     public static function index_tour_records_view() {

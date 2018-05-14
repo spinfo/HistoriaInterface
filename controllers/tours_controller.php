@@ -52,7 +52,7 @@ class ToursController extends AbstractController {
     public function report() {
         // attempt to get the the tour to display the report on
         $id = RouteParams::get_id_value();
-        $tour = Tours::instance()->get($id, true, true);
+        $tour = Tours::instance()->get($id, true, true, true);
 
         if(!empty($tour)) {
             Tours::instance()->set_related_objects_on($tour);
@@ -427,10 +427,15 @@ class ToursController extends AbstractController {
             }
         }
         // the arrays should be equal (disregarding positions)
+        /**
+         * Had to be deactivated to enable scenes with partial mapstops.
+         */
+        /*
         if(!empty(array_diff($tour->mapstop_ids, $new_mapstop_ids)) ||
             !empty(array_diff($new_mapstop_ids, $tour->mapstop_ids)) ) {
             $error = true;
         }
+        */
         return ($error) ? false : $new_mapstop_ids;
     }
 
