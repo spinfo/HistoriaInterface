@@ -97,13 +97,18 @@ class MapstopsController extends AbstractController {
         // attempt to get the mapstop in question
         $id = RouteParams::get_id_value();
         $mapstop = Mapstops::instance()->get($id);
+        $tour = Tours::instance()->get($mapstop->tour_id);
 
         // determine if the mapstop may be edited
         $error_view = self::filter_if_not_editable($mapstop, $id);
         if(is_null($error_view)) {
             $available_posts = UserService::instance()->get_available_posts();
             $posts = UserService::instance()->get_posts($mapstop->post_ids);
-            $places = Mapstops::instance()->get_possible_places($mapstop);
+            if ($tour->type === 'indoor-tour') {
+                $places = Places::instance()->list_by_area($tour->area_id);
+            } else {
+                $places = Mapstops::instance()->get_possible_places($mapstop);
+            }
             $view = new View(ViewHelper::edit_mapstop_view(), array(
                 'mapstop' => $mapstop,
                 'posts' => $posts,
