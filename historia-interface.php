@@ -606,7 +606,7 @@ function check_session_messages() {
         unset($_SESSION['shtm_messages']);
     }
 }
-add_action('init', 'SmartHistoryTourManager\check_session_messages');
+add_action('admin_menu', 'SmartHistoryTourManager\check_session_messages');
 
 
 // if a post is put into the trash we might need to delete mapstop joins
