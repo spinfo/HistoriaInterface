@@ -56,13 +56,15 @@ class PublishingCheck {
     const LINK_TO_TOUR_TRACK_NAME   = 'Tour-Weg';
 
     const EMPTY_TRACK               = 'Kein Tour-Weg vorhanden';
+    const EMPTY_SCENES              = 'Keine Tour-Szenen vorhanden';
     const INVALID_COORDINATE        = 'Ungültiger Koordinatenwert';
+    const INVALID_SCENE             = 'Ungültige Szene';
 
 
     const LINK_TO_MAPSTOPS_NAME     = 'Tour-Stops';
 
     const NO_MAPSTOPS               = 'Keine Tour-Stops';
-
+    const MAPSTOP_WITHOUT_COORDINATE = 'Mapstop hat keine Coordinaten';
 
     const LINK_TO_MAPSTOP_NAME      = 'Tour-Stop #%d';
 
@@ -113,13 +115,23 @@ class PublishingCheck {
             $failures[] = $failure;
         }
 
-        // check the tour track
-        $messages = self::check_tour_track($tour->coordinates);
-        if(!empty($messages)) {
-            $failure = new PublishingCheckFailure($messages);
-            $failure->set_link(RouteParams::edit_tour_track($tour->id));
-            $failure->link_name = self::LINK_TO_TOUR_TRACK_NAME;
-            $failures[] = $failure;
+        if ($tour->type === 'indoor-tour') {
+            $messages = self::check_tour_scenes($tour->scenes);
+            if (!empty($messages)) {
+                $failure = new PublishingCheckFailure($messages);
+                $failure->set_link(RouteParams::edit_tour_stops($tour->id));
+                $failure->link_name = self::LINK_TO_MAPSTOPS_NAME;
+                $failures[] = $failure;
+            }
+        } else {
+            // check the tour track
+            $messages = self::check_tour_track($tour->coordinates);
+            if (!empty($messages)) {
+                $failure = new PublishingCheckFailure($messages);
+                $failure->set_link(RouteParams::edit_tour_track($tour->id));
+                $failure->link_name = self::LINK_TO_TOUR_TRACK_NAME;
+                $failures[] = $failure;
+            }
         }
 
         // collect lexicon posts for later inspection
@@ -233,6 +245,20 @@ class PublishingCheck {
         if($has_track) {
             foreach ($coordinates as $c) {
                 self::check_coordinate($c, $ms);
+            }
+        }
+
+        return $ms;
+    }
+
+    // todo : add description
+    private static function check_tour_scenes($scenes) {
+        $ms = array();
+
+        $has_scene = self::check(!empty($scenes), $ms, self::EMPTY_TRACK);
+        if($has_scene) {
+            foreach ($scenes as $scene) {
+                self::check_scene($scene, $ms);
             }
         }
 
@@ -357,6 +383,21 @@ class PublishingCheck {
     private static function check_coordinate($c, &$ms) {
         self::check($c->has_valid_latitude(), $ms, self::INVALID_COORDINATE);
         self::check($c->has_valid_longitude(), $ms, self::INVALID_COORDINATE);
+    }
+
+    /**
+     * Checks scene if valid, adds error message to message array if not.
+     *
+     * @param $scene
+     * @param $ms
+     */
+    private static function check_scene($scene, &$ms) {
+        self::check($scene->is_valid(), $ms, self::INVALID_SCENE);
+
+        // check if every mapstop has set a coordinate
+        foreach ($scene->mapstops as $mapstop) {
+            self::check(isset($scene->coordinates[$mapstop->id]), $ms, self::MAPSTOP_WITHOUT_COORDINATE);
+        }
     }
 
     // convenience function to construct a PublishingCheckFailure from a

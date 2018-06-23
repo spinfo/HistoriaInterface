@@ -21,7 +21,7 @@ class TourRecordsController extends AbstractController {
         $area_id = self::determine_area_id();
         $records = TourRecords::instance()->list_active_by_area($area_id);
         $areas = Areas::instance()->list_simple();
-        $publishable_tours = Tours::instance()->list_by_area($are_id);
+        $publishable_tours = Tours::instance()->list_by_area($area_id);
         $view = new View(ViewHelper::index_tour_records_view(), array(
             'records' => $records,
             'areas_list' => $areas,
@@ -51,7 +51,7 @@ class TourRecordsController extends AbstractController {
         $error_view = self::filter_if_user_may_not_publish();
         if(is_null($error_view)) {
             $tour_id = RouteParams::get_tour_id_value();
-            $tour = Tours::instance()->get($tour_id, true, true);
+            $tour = Tours::instance()->get($tour_id, true, true, true);
             if(!empty($tour)) {
                 // setup the tour and the tour record for file creation
                 Tours::instance()->set_related_objects_on($tour);
@@ -91,7 +91,7 @@ class TourRecordsController extends AbstractController {
         $error_view = self::filter_if_user_may_not_publish();
         if(is_null($error_view)) {
             $tour_id = RouteParams::get_tour_id_value();
-            $tour = Tours::instance()->get($tour_id, true, true);
+            $tour = Tours::instance()->get($tour_id, true, true, true);
             if(!empty($tour)) {
                 // setup the tour and the tour record for file creation
                 Tours::instance()->set_related_objects_on($tour);

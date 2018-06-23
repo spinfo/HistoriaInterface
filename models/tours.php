@@ -6,6 +6,7 @@ require_once(dirname(__FILE__) . '/tour.php');
 require_once(dirname(__FILE__) . '/coordinates.php');
 require_once(dirname(__FILE__) . '/mapstops.php');
 require_once(dirname(__FILE__) . '/places.php');
+require_once(dirname(__FILE__) . '/scenes.php');
 require_once(dirname(__FILE__) . '/../db.php');
 require_once(dirname(__FILE__) . '/../post_service.php');
 

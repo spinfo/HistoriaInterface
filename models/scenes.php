@@ -54,9 +54,9 @@ class Scenes {
         $scene->name = $post->post_name;
         $scene->description = $post->post_content;
         $scene->excerpt = $post->post_excerpt;
-        $scene->path = \get_attached_file($post->ID);
         $scene->created_at = new \DateTime($post->post_date);
         $scene->updated_at = new \DateTime($post->post_modified);
+        $scene->src = wp_get_attachment_image_src($post->ID, [960, 720])[0];
 
         $select = "SELECT tour_id FROM $this->table";
         $result = DB::get($select, array('post_id' => $scene->id));

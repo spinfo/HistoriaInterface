@@ -126,11 +126,13 @@ class ScenesController extends AbstractController {
     public static function delete() {
         $id = RouteParams::get_id_value();
         $scene = Scenes::instance()->get($id);
+        $tour = Tours::instance()->get($scene->tour_id);
 
         $error_view = self::filter_if_not_editable($scene, $id);
         if(is_null($error_view)) {
             $view = new View(ViewHelper::delete_scene_view(), array(
                 'scene' => $scene,
+                'tour' => $tour,
             ));
         } else {
             $view = $error_view;
