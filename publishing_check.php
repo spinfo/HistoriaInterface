@@ -251,7 +251,12 @@ class PublishingCheck {
         return $ms;
     }
 
-    // todo : add description
+    /**
+     * Check the tour scene structure and content. Return error message on any issue.
+     *
+     * @param $scenes
+     * @return array
+     */
     private static function check_tour_scenes($scenes) {
         $ms = array();
 
