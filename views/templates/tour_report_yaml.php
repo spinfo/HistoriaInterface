@@ -60,6 +60,7 @@ scenes:
   description: <?php $this->print_yaml_block($mapstop->description, '|', 2) ?>
   excerpt: <?php $this->print_yaml_block($mapstop->excerpt, '|', 2) ?>
   src: <?php $this->print_yaml_block($scene->src, '>-', 2) ?>
+  raw: <?php $this->print_yaml_block($scene->raw, '>-', 2) ?>
   mapstops:
 <?php foreach ($scene->mapstops as $mapstop): ?>
   - id: <?php $this->print_yaml($mapstop->id) ?>

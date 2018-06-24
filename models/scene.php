@@ -13,6 +13,7 @@ class Scene extends AbstractModel {
     public $description = "";
     public $excerpt = "";
     public $src = "";
+    public $raw = "";
     public $mapstops = [];
     public $mapstop_ids = [];
     public $coordinates = [];
