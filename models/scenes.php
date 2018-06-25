@@ -57,7 +57,6 @@ class Scenes {
         $scene->created_at = new \DateTime($post->post_date);
         $scene->updated_at = new \DateTime($post->post_modified);
         $scene->src = wp_get_attachment_image_src($post->ID, [960, 720])[0];
-        $scene->raw = base64_encode(file_get_contents(get_attached_file($post->ID)));
 
         $select = "SELECT tour_id FROM $this->table";
         $result = DB::get($select, array('post_id' => $scene->id));

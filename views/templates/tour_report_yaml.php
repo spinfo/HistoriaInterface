@@ -23,8 +23,9 @@ track: [<?php foreach ($this->tour->coordinates as $coord): ?>
 <?php endforeach ?>
 ]
 mapstops:
-<?php foreach ($this->tour->mapstops as $mapstop): ?>
+<?php foreach ($this->tour->mapstops as $pos => $mapstop): ?>
 - id: <?php $this->print_yaml($mapstop->id) ?>
+  pos: <?php $this->print_yaml($pos + 1) ?>
   name: <?php $this->print_yaml_block($mapstop->name, '>-', 2) ?>
   description: <?php $this->print_yaml_block($mapstop->description, '|', 2) ?>
   place:
@@ -53,14 +54,14 @@ mapstops:
 <?php endfor // page_posts ?>
 <?php endforeach // mapstops ?>
 scenes:
-<?php foreach ($this->tour->scenes as $scene): ?>
+<?php foreach ($this->tour->scenes as $pos => $scene): ?>
 - id: <?php $this->print_yaml($scene->id) ?>
+  pos: <?php $this->print_yaml($pos + 1) ?>
   name: <?php $this->print_yaml_block($scene->name, '>-', 2) ?>
   title: <?php $this->print_yaml_block($scene->title, '>-', 2) ?>
   description: <?php $this->print_yaml_block($mapstop->description, '|', 2) ?>
   excerpt: <?php $this->print_yaml_block($mapstop->excerpt, '|', 2) ?>
   src: <?php $this->print_yaml_block($scene->src, '>-', 2) ?>
-  raw: <?php $this->print_yaml_block($scene->raw, '>-', 2) ?>
   mapstops:
 <?php foreach ($scene->mapstops as $mapstop): ?>
   - id: <?php $this->print_yaml($mapstop->id) ?>
