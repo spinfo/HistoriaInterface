@@ -7,10 +7,8 @@ services:
       - historia-mysql
     hostname: historia-wordpress
     container_name: historia-wordpress
-    #image: wordpress:4.9.4-php7.1-apache
     build: ./
     image: historia:wordpress
-    #restart: always
     ports:
       - 8000:80
     environment:
@@ -18,12 +16,12 @@ services:
       WORDPRESS_DB_HOST: historia-mysql
     volumes:
       - ../:/var/www/html/wp-content/plugins/HistoriaInterface
+      - ~/Dropbox/Data/historia/uploads:/var/www/html/wp-content/uploads
 
   historia-mysql:
     hostname: historia-mysql
     container_name: historia-mysql
     image: mysql:5.7
-    #restart: always
     ports:
       - 3308:3306
     environment:
