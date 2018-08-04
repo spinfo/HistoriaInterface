@@ -131,8 +131,8 @@ class Scenes {
             $taken[] = $obj->id;
         }
 
-        $scenes = array_filter($scenes, function ($p) use ($scenes, $taken) {
-            return !in_array($p->id, $taken);
+        $scenes = array_filter($scenes, function ($p) use ($scenes, $taken, $tour) {
+            return $p->description === "tour#" . $tour->id && !in_array($p->id, $taken);
         });
         return $scenes;
     }
