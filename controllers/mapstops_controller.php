@@ -36,7 +36,7 @@ class MapstopsController extends AbstractController {
             $mapstop = new Mapstop();
             $mapstop->tour_id = $tour->id;
 
-            if ($tour->type === 'indoor-tour') {
+            if ($tour->is_indoor()) {
                 $places = Places::instance()->list_by_area($tour->area_id);
             } else {
                 $places = Mapstops::instance()->get_possible_places($mapstop);
@@ -104,7 +104,7 @@ class MapstopsController extends AbstractController {
         if(is_null($error_view)) {
             $available_posts = UserService::instance()->get_available_posts();
             $posts = UserService::instance()->get_posts($mapstop->post_ids);
-            if ($tour->type === 'indoor-tour') {
+            if ($tour->is_indoor()) {
                 $places = Places::instance()->list_by_area($tour->area_id);
             } else {
                 $places = Mapstops::instance()->get_possible_places($mapstop);

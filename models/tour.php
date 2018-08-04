@@ -12,7 +12,7 @@ class Tour extends AbstractModel {
         'round-tour' => 'Rundgang',
         'public-transport-tour' => 'ÖPNV-Tour',
         'bike-tour' => 'Fahrrad-Tour',
-        'indoor-tour' => 'Indoor-Tour'
+        'indoor-tour' => 'Katalog-Tour'
     );
 
     const DATETIME_FORMATS = array(
@@ -318,10 +318,7 @@ class Tour extends AbstractModel {
         return $dt;
     }
 
+    public function is_indoor() {
+        return $this->type === 'indoor-tour';
+    }
 }
-
-
-
-
-
-?>

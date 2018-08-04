@@ -132,7 +132,7 @@ class ToursController extends AbstractController {
         $id = RouteParams::get_id_value();
         $tour = Tours::instance()->get($id, true, true, true);
 
-        if ($tour->type === 'indoor-tour') {
+        if ($tour->is_indoor()) {
             $view = self::determine_edit_view($tour, 'edit_track_indoor');
         } else {
             $view = self::determine_edit_view($tour, 'edit_track');
@@ -149,7 +149,7 @@ class ToursController extends AbstractController {
         $id = RouteParams::get_id_value();
         $tour = Tours::instance()->get($id, true, true, true);
 
-        if ($tour->type === 'indoor-tour') {
+        if ($tour->is_indoor()) {
             $view = self::determine_edit_view($tour, 'edit_stops_indoor');
         } else {
             $view = self::determine_edit_view($tour, 'edit_stops');

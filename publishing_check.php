@@ -115,7 +115,7 @@ class PublishingCheck {
             $failures[] = $failure;
         }
 
-        if ($tour->type === 'indoor-tour') {
+        if ($tour->is_indoor()) {
             $messages = self::check_tour_scenes($tour->scenes);
             if (!empty($messages)) {
                 $failure = new PublishingCheckFailure($messages);
