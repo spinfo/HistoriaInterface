@@ -90,11 +90,17 @@ class ScenesController extends AbstractController {
         $scene = Scenes::instance()->get($scene_id);
 
         try {
-            $new_coordinate = new Coordinate();
-            $new_coordinate->reference = "scene";
-            $new_coordinate->lat = floatval($_POST['x']);
-            $new_coordinate->lon = floatval($_POST['y']);
-            $result = Coordinates::instance()->save($new_coordinate);
+            $coordinate = new Coordinate();
+            $result = Coordinates::instance()->get_by_mapstop_id($mapstop->id);
+            if(!empty($result)) {
+                $coordinate->id = intval($result->id);
+                $coordinate->created_at = $result->created_at;
+                $coordinate->updated_at = $result->updated_at;
+            }
+            $coordinate->reference = "scene";
+            $coordinate->lat = floatval($_POST['x']);
+            $coordinate->lon = floatval($_POST['y']);
+            $result = Coordinates::instance()->save($coordinate);
             if(empty($result)) {
                 throw new DB_Exception('Fehler in Coordinates');
             }
@@ -107,7 +113,7 @@ class ScenesController extends AbstractController {
             $result = DB::insert(Scenes::instance()->join_mapstops_table, [
                 'mapstop_id' => $mapstop->id,
                 'scene_id' => $scene->id,
-                'coordinate_id' => $new_coordinate->id
+                'coordinate_id' => $coordinate->id
             ]);
             if (is_null($result)) {
                 throw new DB_Exception('Fehler in join table');
