@@ -211,7 +211,7 @@ function shtm_install() {
 
     // sql for joining mapstops to scenes with a coordinate
     $table_name = Scenes::instance()->join_mapstops_table;
-    $scenes_sql = "CREATE TABLE $table_name (
+    $mapstops_to_scenes_sql = "CREATE TABLE $table_name (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `mapstop_id` bigint(20) unsigned NOT NULL,
         `scene_id` bigint(20) NOT NULL,
@@ -226,7 +226,7 @@ function shtm_install() {
     $queries = array(
         $coordinates_sql, $areas_sql, $places_sql, $tours_sql,
         $tours_to_coordinates_sql, $mapstops_sql, $mapstops_to_posts_sql,
-        $tour_records_sql, $scenes_sql
+        $tour_records_sql, $scenes_sql, $mapstops_to_scenes_sql
     );
 
     // do the table update
