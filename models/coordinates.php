@@ -31,6 +31,14 @@ final class Coordinates extends AbstractCollection {
         return DB::get($sql, array('mapstop_id' => $mapstop_id));
     }
 
+    public function delete_by_mapstop_id($mapstop_id) {
+        $coordinate = $this->get_by_mapstop_id($mapstop_id);
+        if ($coordinate) {
+            return $this->db_delete($coordinate);
+        }
+        return true;
+    }
+
     protected function db_delete($coordinate) {
         $row_count = DB::delete_single($this->table, $coordinate->id);
         if($row_count != 1) {

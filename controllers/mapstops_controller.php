@@ -158,11 +158,18 @@ class MapstopsController extends AbstractController {
         $id = RouteParams::get_id_value();
         $mapstop = Mapstops::instance()->get($id);
 
+        $scene_id = RouteParams::get_sene_id_value();
+        $scene = null;
+        if ($scene_id > 0) {
+            $scene = Scenes::instance()->get($scene_id);
+        }
+
         // determine if the mapstop may be edited
         $error_view = self::filter_if_not_editable($mapstop, $id);
         if(is_null($error_view)) {
             $view = new View(ViewHelper::delete_mapstop_view(), array(
                 'mapstop' => $mapstop,
+                'scene' => $scene
             ));
         } else {
             $view = $error_view;
@@ -175,15 +182,29 @@ class MapstopsController extends AbstractController {
         $id = RouteParams::get_id_value();
         $mapstop = Mapstops::instance()->get($id);
 
+        $scene_id = RouteParams::get_sene_id_value();
+        $scene = null;
+        if ($scene_id > 0) {
+            $scene = Scenes::instance()->get($scene_id);
+        }
+
         // determine if the mapstop may be edited
         $error_view = self::filter_if_not_editable($mapstop, $id);
         if(is_null($error_view)) {
             // attempt to delete
             try {
+                if ($scene) {
+                    Coordinates::instance()->delete_by_mapstop_id($mapstop->id);
+                }
+
                 $result = Mapstops::instance()->delete($mapstop);
                 if(!is_null($result)) {
                     MessageService::instance()->add_success("Stop gelöscht.");
-                    $params = RouteParams::edit_tour_stops($mapstop->tour_id);
+                    if ($scene) {
+                        $params = RouteParams::new_scene_stop($scene->id);
+                    } else {
+                        $params = RouteParams::edit_tour_stops($mapstop->tour_id);
+                    }
                     self::redirect($params);
                 } else {
                     $msg = "Ein unbekannter Fehler ist aufgetreten.";
@@ -221,9 +242,12 @@ class MapstopsController extends AbstractController {
                     MessageService::instance()->add_model_messages($mapstop);
                     return self::create_bad_request_view("Nicht gespeichert");
                 }
+                MessageService::instance()->add_success('Gespeichert');
+                self::redirect(RouteParams::edit_mapstop($mapstop->id, $scene->id));
+            } else {
+                MessageService::instance()->add_success('Gespeichert');
+                self::redirect(RouteParams::edit_mapstop($mapstop->id));
             }
-            MessageService::instance()->add_success('Gespeichert');
-            self::redirect(RouteParams::edit_mapstop($mapstop->id));
         } else {
             MessageService::instance()->add_model_messages($mapstop);
             return self::create_bad_request_view("Nicht gespeichert");

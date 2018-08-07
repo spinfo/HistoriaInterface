@@ -14,7 +14,15 @@
         <li>Beschreibung: <?php echo $this->mapstop->description ?></li>
     </ul>
 
-    <form action="admin.php?<?php echo $this->route_params::destroy_mapstop($this->mapstop->id) ?>" method="post">
+    <?php
+    if ($this->scene) {
+        $url = $this->route_params::destroy_mapstop($this->mapstop->id, $this->scene->id);
+    } else {
+        $url = $this->route_params::destroy_mapstop($this->mapstop->id);
+    }
+    ?>
+
+    <form action="admin.php?<?php echo $url ?>" method="post">
         <div class="shtm_button">
             <button type="submit">Stop Löschen</button>
         </div>

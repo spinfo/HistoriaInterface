@@ -216,12 +216,12 @@ class RouteParams {
         return self::make_route('mapstop', 'update', $id);
     }
 
-    public static function delete_mapstop($id) {
-        return self::make_route('mapstop', 'delete', $id);
+    public static function delete_mapstop($id, $scene_id = null) {
+        return self::make_route('mapstop', 'delete', $id, null, null, $scene_id);
     }
 
-    public static function destroy_mapstop($id) {
-        return self::make_route('mapstop', 'destroy', $id);
+    public static function destroy_mapstop($id, $scene_id = null) {
+        return self::make_route('mapstop', 'destroy', $id, null, null, $scene_id);
     }
 
 

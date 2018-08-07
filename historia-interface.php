@@ -211,6 +211,7 @@ function shtm_install() {
 
     // sql for joining mapstops to scenes with a coordinate
     $table_name = Scenes::instance()->join_mapstops_table;
+    $scenes_table = Scenes::instance()->table;
     $mapstops_to_scenes_sql = "CREATE TABLE $table_name (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `mapstop_id` bigint(20) unsigned NOT NULL,
@@ -220,6 +221,8 @@ function shtm_install() {
         `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`),
         UNIQUE KEY `mapstop_id` (`mapstop_id`,`scene_id`)
+        CONSTRAINT wp_shtm_mapstops_to_scenes_ibfk_1 FOREIGN KEY (mapstop_id) REFERENCES $mapstops_table(id) ON DELETE CASCADE
+        CONSTRAINT wp_shtm_mapstops_to_scenes_ibfk_2 FOREIGN KEY (scene_id) REFERENCES $scenes_table(id) ON DELETE CASCADE
     ) $charset_collate;";
 
     // collect queries

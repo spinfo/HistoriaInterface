@@ -45,7 +45,7 @@
                     <div style="float: left;">
                         <b><?php echo $mapstop->name ?></b>&nbsp;<a href="javascript:activate(<?php echo $mapstop->id ?>)">Markierung setzen</a>&nbsp;
                         |&nbsp;<a href="admin.php?<?php echo $this->route_params::edit_mapstop($mapstop->id, $this->scene->id) ?>">Bearbeiten</a>&nbsp;
-                        |&nbsp;<a href="admin.php?<?php echo $this->route_params::delete_mapstop($mapstop->id) ?>">Löschen</a><br>
+                        |&nbsp;<a href="admin.php?<?php echo $this->route_params::delete_mapstop($mapstop->id, $this->scene->id) ?>">Löschen</a><br>
                         <?php echo $mapstop->description ?><br>
                     </div>
 
