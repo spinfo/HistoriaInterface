@@ -99,6 +99,12 @@ class MapstopsController extends AbstractController {
         $mapstop = Mapstops::instance()->get($id);
         $tour = Tours::instance()->get($mapstop->tour_id);
 
+        $scene_id = RouteParams::get_sene_id_value();
+        $scene = null;
+        if ($scene_id > 0) {
+            $scene = Scenes::instance()->get($scene_id);
+        }
+
         // determine if the mapstop may be edited
         $error_view = self::filter_if_not_editable($mapstop, $id);
         if(is_null($error_view)) {
@@ -114,6 +120,7 @@ class MapstopsController extends AbstractController {
                 'posts' => $posts,
                 'available_posts' => $available_posts,
                 'places' => $places,
+                'scene' => $scene
             ));
         } else {
             $view = $error_view;

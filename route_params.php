@@ -208,8 +208,8 @@ class RouteParams {
         return self::make_route('mapstop', 'create', null, $tour_id, null, $scene_id);
     }
 
-    public static function edit_mapstop($id) {
-        return self::make_route('mapstop', 'edit', $id);
+    public static function edit_mapstop($id, $scene_id = null) {
+        return self::make_route('mapstop', 'edit', $id, null, null, $scene_id);
     }
 
     public static function update_mapstop($id) {

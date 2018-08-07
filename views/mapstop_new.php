@@ -2,7 +2,7 @@
 <?php $this->include($this->view_helper::single_mapstop_header_template()) ?>
 
 <?php
-    if (1) {
+    if ($this->scene) {
         $url = $this->route_params::create_mapstop($this->mapstop->tour_id, $this->scene->id);
     } else {
         $url = $this->route_params::create_mapstop($this->mapstop->tour_id);

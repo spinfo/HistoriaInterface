@@ -22,8 +22,14 @@
 
     <?php endif ?>
 
-    <a href="admin.php?<?php echo $this->route_params::edit_tour_stops($this->mapstop->tour_id) ?>">
-        zur Tour
-    </a>
+    <?php if($this->scene): ?>
+        <a href="admin.php?<?php echo $this->route_params::new_scene_stop($this->scene->id) ?>">
+            zur Scene
+        </a>
+    <?php else: ?>
+        <a href="admin.php?<?php echo $this->route_params::edit_tour_stops($this->mapstop->tour_id) ?>">
+            zur Tour
+        </a>
+    <?php endif ?>
 
 </div>
