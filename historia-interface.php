@@ -217,6 +217,7 @@ function shtm_install() {
         `mapstop_id` bigint(20) unsigned NOT NULL,
         `scene_id` bigint(20) NOT NULL,
         `coordinate_id` bigint(20) unsigned DEFAULT NULL,
+        `type` enum('info','route') NOT NULL,
         `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
         `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`),

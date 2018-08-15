@@ -74,6 +74,7 @@ class Scenes {
             foreach ($result as $row) {
                 $mapstop = Mapstops::instance()->get((int)$row->mapstop_id);
                 if ($mapstop) {
+                    $mapstop = Mapstops::instance()->fetch_type_for_mapstop($mapstop);
                     $scene->mapstops[] = $mapstop;
                     $scene->mapstop_ids[] = $mapstop->id;
                 }

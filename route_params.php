@@ -182,8 +182,8 @@ class RouteParams {
         return self::make_route('tour', 'update', $id);
     }
 
-    public static function update_tour_stops($id) {
-        return self::make_route('tour', 'update_stops', $id);
+    public static function update_tour_stops($id, $scene_id = null) {
+        return self::make_route('tour', 'update_stops', $id, null, null, $scene_id);
     }
 
     public static function update_tour_scenes($id) {
@@ -212,8 +212,8 @@ class RouteParams {
         return self::make_route('mapstop', 'edit', $id, null, null, $scene_id);
     }
 
-    public static function update_mapstop($id) {
-        return self::make_route('mapstop', 'update', $id);
+    public static function update_mapstop($id, $scene_id = null) {
+        return self::make_route('mapstop', 'update', $id, null, null, $scene_id);
     }
 
     public static function delete_mapstop($id, $scene_id = null) {

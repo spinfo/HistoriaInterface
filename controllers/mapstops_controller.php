@@ -16,7 +16,8 @@ class MapstopsController extends AbstractController {
         'shtm_mapstop' => array(
             'place_id' => 0,
             'name' => '',
-            'description' => ''
+            'description' => '',
+            'type' => ''
         )
     );
 
@@ -103,6 +104,7 @@ class MapstopsController extends AbstractController {
         $scene = null;
         if ($scene_id > 0) {
             $scene = Scenes::instance()->get($scene_id);
+            $mapstop = Mapstops::instance()->fetch_type_for_mapstop($mapstop);
         }
 
         // determine if the mapstop may be edited
@@ -133,6 +135,12 @@ class MapstopsController extends AbstractController {
         $id = RouteParams::get_id_value();
         $mapstop = Mapstops::instance()->get($id);
 
+        $scene_id = RouteParams::get_sene_id_value();
+        $scene = null;
+        if ($scene_id > 0) {
+            $scene = Scenes::instance()->get($scene_id);
+        }
+
         // determine if the mapstop may be edited
         $error_view = self::filter_if_not_editable($mapstop, $id);
         if(is_null($error_view)) {
@@ -143,7 +151,7 @@ class MapstopsController extends AbstractController {
                 $params['tour_id'] = $mapstop->tour_id;
                 Mapstops::instance()->update_values($mapstop, $params);
                 $tour = Tours::instance()->get($mapstop->tour_id);
-                $view = self::handle_insert_or_update($mapstop, $tour);
+                $view = self::handle_insert_or_update($mapstop, $tour, $scene);
             } else {
                 $view = self::create_bad_request_view("Bad input for mapstop.");
             }
@@ -234,10 +242,20 @@ class MapstopsController extends AbstractController {
         $result = Mapstops::instance()->save($mapstop);
         if(!is_null($result)) {
             if ($scene) {
-                $result = DB::insert(DB::table_name('mapstops_to_scenes'), [
-                    'mapstop_id' => $mapstop->id,
-                    'scene_id' => $scene->id,
-                ]);
+                if ($mapstop->id === -1) {
+                    $result = DB::insert(DB::table_name('mapstops_to_scenes'), [
+                        'mapstop_id' => $mapstop->id,
+                        'scene_id' => $scene->id,
+                        'type' => $mapstop->type
+                    ]);
+                } else {
+                    $result = DB::update_where(DB::table_name('mapstops_to_scenes'), [
+                        'type' => $mapstop->type
+                    ], [
+                        'mapstop_id' => $mapstop->id,
+                        'scene_id' => $scene->id
+                    ]);
+                }
                 if (is_null($result)) {
                     MessageService::instance()->add_model_messages($mapstop);
                     return self::create_bad_request_view("Nicht gespeichert");

@@ -232,6 +232,48 @@ class DB {
     }
 
     /**
+     * @param $table_name
+     * @param $values
+     * @param $where
+     * @return bool
+     */
+    public static function update_where($table_name, $values, $where) {
+        global $wpdb;
+        $result = $wpdb->update($table_name, $values, $where);
+
+        if($result == 0) {
+            $msg = "DB: Updating ${table_name} for where: '" . var_dump($where, 1) . "' had no effect.";
+            debug_log($msg);
+        } else if($result != 1) {
+            $msg = "DB: Error updating ${table_name} for where: '" . var_dump($where, 1) . "'";
+            $msg .= " (affected rows: $result)";
+            debug_log($msg);
+            $wpdb->print_error();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param $table_name
+     * @param $values
+     * @return bool
+     */
+    public static function replace($table_name, $values) {
+        global $wpdb;
+        $result = $wpdb->replace($table_name, $values);
+
+        if($result === false) {
+            $msg = "DB: Error for replace on ${table_name} with values " . print_r($values, 1);
+            debug_log($msg);
+            $wpdb->print_error();
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Replaces all placeholders in sql by the supplied values, then runs the
      * query.
      *

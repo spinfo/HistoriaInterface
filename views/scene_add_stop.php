@@ -9,7 +9,7 @@
 
 </div>
 
-<form id="shtm_mapstop_positions_form" action="admin.php?<?php echo $this->route_params::update_tour_stops($this->scene->tour_id) ?>" method="post"
+<form id="shtm_mapstop_positions_form" action="admin.php?<?php echo $this->route_params::update_tour_stops($this->scene->tour_id, $this->scene->id) ?>" method="post"
       class="shtm_form">
 
     <div class="">
@@ -38,7 +38,10 @@
                     </div>
                     <?php
                         if (isset($this->scene->coordinates[$mapstop->id])) {
-                            $coordinates[$i] = $this->scene->coordinates[$mapstop->id];
+                            $coordinates[$i] = [
+                                'coordinate' => $this->scene->coordinates[$mapstop->id],
+                                'mapstop' => $mapstop,
+                            ];
                         }
                     ?>
 
@@ -78,9 +81,11 @@
     sprite.onload = function () {
         context.drawImage(sprite, 0, 0, sprite.width, sprite.height);
 
-        <?php foreach ($coordinates as $key => $coordinate): ?>
+        <?php foreach ($coordinates as $key => $arr): ?>
+            <?php $coordinate = $arr['coordinate'] ?>
+            <?php $mapstop = $arr['mapstop'] ?>
             var text = "<?php echo $key ?>";
-            var point = new Point(<?php echo $coordinate->lat ?>, <?php echo $coordinate->lon ?>);
+            var point = new Point(<?php echo $coordinate->lat ?>, <?php echo $coordinate->lon ?>, "<?php echo $mapstop->type ?>");
             markOnImage(point, text);
         <?php endforeach; ?>
     };
@@ -108,21 +113,26 @@
         post(url, point);
     }
 
-    function Point(x, y) {
+    function Point(x, y, type) {
         this.x = x;
         this.y = y;
+        this.type = type || 'info';
     }
+
+    var sources = {};
+    sources.info = "<?php echo $this->view_helper::image_url('stop_marker_info.png') ?>";
+    sources.route = "<?php echo $this->view_helper::image_url('stop_marker_route.png') ?>";
 
     function markOnImage(point, text) {
         var marker = new Image();
-        marker.src = "http://www.clker.com/cliparts/M/A/1/v/2/L/blue-marker-th.png";
+        marker.src = sources[point.type];
         marker.width = 40;
         marker.height = 38;
         marker.onload = function () {
-            context.drawImage(marker, point.x - marker.width / 2, point.y - marker.height, marker.width, marker.height);
+            context.drawImage(marker, point.x - marker.width, point.y - marker.height, marker.width, marker.height);
             if (typeof text !== "undefined") {
                 context.font = "bold 15pt Courier";
-                context.fillText(text, point.x - 6, point.y - marker.height / 2);
+                context.fillText(text, point.x - marker.width / 3 * 2 + 1, point.y - marker.height / 3 * 1);
             }
         };
     }

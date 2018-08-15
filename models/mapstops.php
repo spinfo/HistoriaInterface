@@ -158,6 +158,7 @@ class Mapstops extends AbstractCollection {
         $mapstop->place_id = intval($array->place_id);
         $mapstop->name = strval($array->name);
         $mapstop->description = strval($array->description);
+        $mapstop->type = strval($array->type);
 
         if(is_array($array->post_ids)) {
             $mapstop->post_ids = array_map('intval', $array->post_ids);
@@ -259,6 +260,22 @@ class Mapstops extends AbstractCollection {
         }
     }
 
+    /**
+     * @param $mapstop
+     * @return bool
+     * @throws DB_Exception
+     */
+    public function fetch_type_for_mapstop($mapstop) {
+        $select = "SELECT type FROM " . Scenes::instance()->join_mapstops_table;
+        $result = DB::get($select, array('mapstop_id' => $mapstop->id));
+
+        if(is_null($result) || !property_exists($result, 'type')) {
+            debug_log("Bad type lookup for mapstop_id: '$mapstop->id'");
+            return false;
+        }
+        $mapstop->type = $result->type;
+        return $mapstop;
+    }
 }
 
 ?>

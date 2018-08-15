@@ -234,6 +234,12 @@ class ToursController extends AbstractController {
         $id = RouteParams::get_id_value();
         $tour = Tours::instance()->get($id, true, false, true);
 
+        $scene_id = RouteParams::get_sene_id_value();
+        $scene = null;
+        if ($scene_id > 0) {
+            $scene = Scenes::instance()->get($scene_id);
+        }
+
         // if the tour itself is not editale, abort
         $error_view = self::filter_if_not_editable($tour);
         if(is_null($error_view)) {
@@ -242,7 +248,11 @@ class ToursController extends AbstractController {
                 $result = Tours::instance()->update_mapstop_positions($tour->id, $ids);
                 if($result != false) {
                     MessageService::instance()->add_success("Positionen übernommen");
-                    self::redirect(RouteParams::edit_tour_stops($tour->id));
+                    if ($scene) {
+                        self::redirect(RouteParams::new_scene_stop($scene->id));
+                    } else {
+                        self::redirect(RouteParams::edit_tour_stops($tour->id));
+                    }
                 } else {
                     $error_view = self::create_bad_request_view("Ungültiger Input");
                 }
