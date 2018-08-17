@@ -219,9 +219,13 @@ class TourRecordsController extends AbstractController {
     private static function update_publish_list() {
         $records = TourRecords::instance()->list_active();
         $str = "";
+        $yaml = "";
+        $yamlv2 = "";
         foreach ($records as $record) {
             $area = Areas::instance()->get($record->area_id);
-            $str .= "---" . PHP_EOL;
+            $tour = Tours::instance()->get($record->tour_id);
+
+            $str = "---" . PHP_EOL;
             $str .= "id: $record->id" . PHP_EOL;
             $str .= "version: $record->published_at" . PHP_EOL;
             $str .= "name: '$record->name'" . PHP_EOL;
@@ -231,8 +235,14 @@ class TourRecordsController extends AbstractController {
             $str .= "mediaUrl: '$record->media_url'" . PHP_EOL;
             $str .= "downloadSize: $record->download_size" . PHP_EOL;
             $str .= "..." . PHP_EOL;
+
+            $yamlv2 .= $str;
+            if (!$tour->is_indoor()) {
+                $yaml .= $str;
+            }
         }
-        FileService::write_as_publish_list($str);
+        FileService::write_as_publish_list($yaml);
+        FileService::write_as_publish_list_v2($yamlv2);
     }
 
 }
