@@ -23,9 +23,8 @@ track: [<?php foreach ($this->tour->coordinates as $coord): ?>
 <?php endforeach ?>
 ]
 mapstops:
-<?php foreach ($this->tour->mapstops as $pos => $mapstop): ?>
+<?php foreach ($this->tour->mapstops as $mapstop): ?>
 - id: <?php $this->print_yaml($mapstop->id) ?>
-  pos: <?php $this->print_yaml($pos + 1) ?>
   name: <?php $this->print_yaml_block($mapstop->name, '>-', 2) ?>
   description: <?php $this->print_yaml_block($mapstop->description, '|', 2) ?>
   place:
