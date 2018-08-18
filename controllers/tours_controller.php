@@ -437,15 +437,12 @@ class ToursController extends AbstractController {
             }
         }
         // the arrays should be equal (disregarding positions)
-        /**
-         * Had to be deactivated to enable scenes with partial mapstops.
-         */
-        /*
-        if(!empty(array_diff($tour->mapstop_ids, $new_mapstop_ids)) ||
-            !empty(array_diff($new_mapstop_ids, $tour->mapstop_ids)) ) {
-            $error = true;
+        if(!$tour->is_indoor()) {
+            if (!empty(array_diff($tour->mapstop_ids, $new_mapstop_ids)) ||
+                !empty(array_diff($new_mapstop_ids, $tour->mapstop_ids))) {
+                $error = true;
+            }
         }
-        */
         return ($error) ? false : $new_mapstop_ids;
     }
 

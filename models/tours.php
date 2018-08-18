@@ -318,16 +318,14 @@ class Tours extends AbstractCollection {
             $mapstop_ids = $old_ids;
         }
         // Complain and return if the update assumes different ids.
-        /**
-         * Had to be deactivated to enable scenes with partial mapstops.
-         */
-        /*
-        if(!empty(array_diff($old_ids, $mapstop_ids)) ||
-            !empty(array_diff($mapstop_ids, $old_ids))) {
-            debug_log("Bad input for tour's mapstop positions.");
-            return false;
+        $tour = Tours::instance()->get($tour_id);
+        if(!$tour->is_indoor()) {
+            if (!empty(array_diff($old_ids, $mapstop_ids)) ||
+                !empty(array_diff($mapstop_ids, $old_ids))) {
+                debug_log("Bad input for tour's mapstop positions.");
+                return false;
+            }
         }
-        */
         // if there are no old ids, no update is necessary
         if(empty($old_ids)) {
             return true;
