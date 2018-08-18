@@ -221,6 +221,18 @@ class FileService {
                 }
             }
         }
+        if ($tour->is_indoor()) {
+            foreach($tour->scenes as $scene) {
+                $path = get_attached_file($scene->post_id);
+                if(!file_exists($path)) {
+                    $msg = "File does not exist: $scene->src";
+                    $msg .= " (scene: $scene->id, page: $scene->post_id)";
+                    $response->add_error($msg);
+                    return $result;
+                }
+                array_push($result, $path);
+            }
+        }
         $response->ok = true;
         return $result;
     }
