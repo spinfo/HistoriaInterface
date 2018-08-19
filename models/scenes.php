@@ -139,7 +139,42 @@ class Scenes {
     }
 
     public function delete($scene) {
-        return DB::delete($this->table, array('post_id' => $scene->id));
+        DB::start_transaction();
+
+        foreach ($scene->coordinates as $coordinate) {
+            $result = Coordinates::instance()->delete($coordinate);
+            if (empty($result)) {
+                $msg = "Failed to delete coordinate from scene";
+                DB::rollback_transaction();
+                throw new DB_Exception("Can't delete coordinate: $msg.");
+            }
+        }
+
+        foreach ($scene->mapstops as $mapstop) {
+            $result = Mapstops::instance()->delete($mapstop);
+            if (empty($result)) {
+                $msg = "Failed to delete mapstop from scene";
+                DB::rollback_transaction();
+                throw new DB_Exception("Can't delete mapstop: $msg.");
+            }
+        }
+
+        $result = DB::delete($this->join_mapstops_table, array('scene_id' => $scene->id));
+        if (empty($result)) {
+            $msg = "Failed to delete scene from " . $this->join_mapstops_table;
+            DB::rollback_transaction();
+            throw new DB_Exception("Can't delete entry: $msg.");
+        }
+
+        $result = DB::delete($this->table, array('post_id' => $scene->id));
+        if (!$result) {
+            DB::rollback_transaction();
+            throw new DB_Exception("Can't delete scene with id " . $scene->id);
+        }
+
+        DB::commit_transaction();
+        $scene->id = DB::BAD_ID;
+        return $scene;
     }
 
     private function db_next_position($tour_id) {
