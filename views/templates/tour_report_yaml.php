@@ -64,6 +64,7 @@ scenes:
   mapstops:
 <?php foreach ($scene->mapstops as $mapstop): ?>
   - id: <?php $this->print_yaml($mapstop->id) ?>
+    type: <?php $this->print_yaml($mapstop->type) ?>
 <?php endforeach; // mapstops ?>
   coordinates:
 <?php foreach ($scene->coordinates as $mapstopId => $coordinate): ?>
