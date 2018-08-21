@@ -27,8 +27,8 @@ class Mapstop extends AbstractModel {
     public $post_ids = array();
 
     const TYPES = array(
-        'info' => 'Info',
-        'route' => 'Route',
+        'info' => 'Inhalt',
+        'route' => 'Tour-Weg',
     );
 
     public $type = "";
