@@ -121,9 +121,13 @@ abstract class AbstractController {
             // if the other array does not have the key, there is no need for
             // further checks
             if(!isset($input[$key])) {
+                /*
                 MessageService::instance()->add_error(
                     "Missing value for: '$key'");
                 return null;
+                */
+                // set default instead
+                $input[$key] = $value;
             }
             // recurse if array is found, hand null result upwards
             if(is_array($value) && is_array($input[$key])) {

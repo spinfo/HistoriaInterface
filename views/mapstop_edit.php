@@ -1,7 +1,15 @@
 
 <?php $this->include($this->view_helper::single_mapstop_header_template()) ?>
 
-<form action="admin.php?<?php echo $this->route_params::update_mapstop($this->mapstop->id) ?>" method="post"
+<?php
+    if ($this->scene) {
+        $url = $this->route_params::update_mapstop($this->mapstop->id, $this->scene->id);
+    } else {
+        $url = $this->route_params::update_mapstop($this->mapstop->id);
+    }
+?>
+
+<form action="admin.php?<?php echo $url ?>" method="post"
     class="shtm_form">
 
     <?php $this->include($this->view_helper::mapstop_simple_form_template(), array('mapstop' => $this->mapstop, 'places' => $this->places)) ?>

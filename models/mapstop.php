@@ -26,6 +26,13 @@ class Mapstop extends AbstractModel {
 
     public $post_ids = array();
 
+    const TYPES = array(
+        'info' => 'Inhalt',
+        'route' => 'Tour-Weg',
+    );
+
+    public $type = "";
+
     protected function do_validity_check() {
         $this->do_check(Tours::instance()->valid_id($this->tour_id),
             'tour_id invalid');

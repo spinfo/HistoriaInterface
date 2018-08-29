@@ -187,6 +187,21 @@ class FileService {
         return fclose($handle);
     }
 
+    public static function write_as_publish_list_v2($str) {
+        // get the tour folder name using a new response
+        $response = new FileServiceResponse();
+        $base_path = self::get_or_create_tour_folder($response);
+        if(!$response->ok) {
+            return null;
+        }
+        // simply write everything to file
+        $path = $base_path . '/tours.v2.yaml';
+        $handle = fopen($path, 'w');
+        $result = fwrite($handle, $str);
+        debug_log("Wrote $result bytes to $path");
+        return fclose($handle);
+    }
+
     // return an array of mediaitems that belong to posts of a tour's mapstops
     private static function get_files_for_tour($response, $tour) {
         $result = array();
@@ -204,6 +219,18 @@ class FileService {
                     }
                     array_push($result, $path);
                 }
+            }
+        }
+        if ($tour->is_indoor()) {
+            foreach($tour->scenes as $scene) {
+                $path = get_attached_file($scene->post_id);
+                if(!file_exists($path)) {
+                    $msg = "File does not exist: $scene->src";
+                    $msg .= " (scene: $scene->id, page: $scene->post_id)";
+                    $response->add_error($msg);
+                    return $result;
+                }
+                array_push($result, $path);
             }
         }
         $response->ok = true;

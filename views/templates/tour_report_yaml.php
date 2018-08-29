@@ -52,6 +52,29 @@ mapstops:
 <?php endif // media exist ?>
 <?php endfor // page_posts ?>
 <?php endforeach // mapstops ?>
+scenes:
+<?php foreach ($this->tour->scenes as $pos => $scene): ?>
+- id: <?php $this->print_yaml($scene->id) ?>
+  pos: <?php $this->print_yaml($pos + 1) ?>
+  name: <?php $this->print_yaml_block($scene->name, '>-', 2) ?>
+  title: <?php $this->print_yaml_block($scene->title, '>-', 2) ?>
+  description: <?php $this->print_yaml_block($mapstop->description, '|', 2) ?>
+  excerpt: <?php $this->print_yaml_block($mapstop->excerpt, '|', 2) ?>
+  src: <?php $this->print_yaml_block($scene->src, '>-', 2) ?>
+  mapstops:
+<?php foreach ($scene->mapstops as $mapstop): ?>
+  - id: <?php $this->print_yaml($mapstop->id) ?>
+    type: <?php $this->print_yaml($mapstop->type) ?>
+<?php endforeach; // mapstops ?>
+  coordinates:
+<?php foreach ($scene->coordinates as $mapstopId => $coordinate): ?>
+  - id: <?php $this->print_yaml($coordinate->id) ?>
+    x: <?php $this->print_yaml($coordinate->lat) ?>
+    y: <?php $this->print_yaml($coordinate->lon) ?>
+    mapstop:
+      id: <?php $this->print_yaml($mapstopId) ?>
+<?php endforeach; // coorindates ?>
+<?php endforeach; // scenes ?>
 createdAt: <?php $this->print_yaml($this->datetime_format($this->tour->created_at)) ?>
 <?php
   $lexicon_posts = $this->get_linked_lexicon_posts($posts, true);

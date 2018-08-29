@@ -38,6 +38,10 @@ class View {
         return $this->args[$name];
     }
 
+    public function __set($name, $value) {
+        $this->args[$name] = $value;
+    }
+
     public function render() {
         include $this->file;
     }

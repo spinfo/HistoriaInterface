@@ -6,6 +6,7 @@ require_once( dirname(__FILE__) . '/../views/view.php');
 require_once( dirname(__FILE__) . '/../models/areas.php');
 require_once( dirname(__FILE__) . '/../models/tour.php');
 require_once( dirname(__FILE__) . '/../models/tours.php');
+require_once( dirname(__FILE__) . '/../models/scenes.php');
 require_once( dirname(__FILE__) . '/../route_params.php');
 
 class ToursController extends AbstractController {
@@ -51,7 +52,7 @@ class ToursController extends AbstractController {
     public function report() {
         // attempt to get the the tour to display the report on
         $id = RouteParams::get_id_value();
-        $tour = Tours::instance()->get($id, true, true);
+        $tour = Tours::instance()->get($id, true, true, true);
 
         if(!empty($tour)) {
             Tours::instance()->set_related_objects_on($tour);
@@ -129,9 +130,13 @@ class ToursController extends AbstractController {
     public static function edit_track() {
         // attempt to get the tour to edit
         $id = RouteParams::get_id_value();
-        $tour = Tours::instance()->get($id, true, true);
+        $tour = Tours::instance()->get($id, true, true, true);
 
-        $view = self::determine_edit_view($tour, 'edit_track');
+        if ($tour->is_indoor()) {
+            $view = self::determine_edit_view($tour, 'edit_track_indoor');
+        } else {
+            $view = self::determine_edit_view($tour, 'edit_track');
+        }
 
         if(!empty($tour)) {
             Tours::instance()->set_related_objects_on($tour);
@@ -142,9 +147,13 @@ class ToursController extends AbstractController {
     public static function edit_stops() {
         // attempt to get the tour to edit
         $id = RouteParams::get_id_value();
-        $tour = Tours::instance()->get($id, true, true);
+        $tour = Tours::instance()->get($id, true, true, true);
 
-        $view = self::determine_edit_view($tour, 'edit_stops');
+        if ($tour->is_indoor()) {
+            $view = self::determine_edit_view($tour, 'edit_stops_indoor');
+        } else {
+            $view = self::determine_edit_view($tour, 'edit_stops');
+        }
 
         if(!empty($tour)) {
             Tours::instance()->set_related_objects_on($tour);
@@ -158,7 +167,7 @@ class ToursController extends AbstractController {
     public static function update() {
         // get the tour to update
         $id = RouteParams::get_id_value();
-        $tour = Tours::instance()->get($id, true, true);
+        $tour = Tours::instance()->get($id, true, true, true);
 
         // if the tour itself is not editale, abort
         $view = null;
@@ -223,7 +232,13 @@ class ToursController extends AbstractController {
     public static function update_stops() {
         // get the tour to update
         $id = RouteParams::get_id_value();
-        $tour = Tours::instance()->get($id, true);
+        $tour = Tours::instance()->get($id, true, false, true);
+
+        $scene_id = RouteParams::get_sene_id_value();
+        $scene = null;
+        if ($scene_id > 0) {
+            $scene = Scenes::instance()->get($scene_id);
+        }
 
         // if the tour itself is not editale, abort
         $error_view = self::filter_if_not_editable($tour);
@@ -233,7 +248,33 @@ class ToursController extends AbstractController {
                 $result = Tours::instance()->update_mapstop_positions($tour->id, $ids);
                 if($result != false) {
                     MessageService::instance()->add_success("Positionen übernommen");
-                    self::redirect(RouteParams::edit_tour_stops($tour->id));
+                    if ($scene) {
+                        self::redirect(RouteParams::new_scene_stop($scene->id));
+                    } else {
+                        self::redirect(RouteParams::edit_tour_stops($tour->id));
+                    }
+                } else {
+                    $error_view = self::create_bad_request_view("Ungültiger Input");
+                }
+            } else {
+                $error_view = self::create_bad_request_view("Ungültiger Input");
+            }
+        }
+        self::wrap_in_page_view($error_view)->render();
+    }
+
+    public static function update_scenes() {
+        $id = RouteParams::get_id_value();
+        $tour = Tours::instance()->get($id, true, false, true);
+
+        $error_view = self::filter_if_not_editable($tour);
+        if(is_null($error_view)) {
+            $ids = self::get_scene_ids_from_input_for($tour);
+            if($ids != false) {
+                $result = Tours::instance()->update_scene_positions($tour->id, $ids);
+                if($result != false) {
+                    MessageService::instance()->add_success("Positionen übernommen");
+                    self::redirect(RouteParams::edit_tour_track($tour->id));
                 } else {
                     $error_view = self::create_bad_request_view("Ungültiger Input");
                 }
@@ -263,7 +304,7 @@ class ToursController extends AbstractController {
     public static function destroy() {
         // attempt to get the tour by id
         $id = RouteParams::get_id_value();
-        $tour = Tours::instance()->get($id, true, true);
+        $tour = Tours::instance()->get($id, true, true, true);
         // filter for basic errors
         $error_view = self::filter_if_not_editable($tour);
         if(is_null($error_view)) {
@@ -306,8 +347,12 @@ class ToursController extends AbstractController {
             $file = ViewHelper::edit_tour_view();
         } else if($action == 'edit_track') {
             $file = ViewHelper::edit_tour_track_view();
+        } else if($action == 'edit_track_indoor') {
+            $file = ViewHelper::edit_tour_track_indoor_view();
         } else if($action == 'edit_stops') {
             $file = ViewHelper::edit_tour_stops_view();
+        } else if($action == 'edit_stops_indoor') {
+            $file = ViewHelper::edit_tour_stops_indoor_view();
         }
         // return the view with 'tour' and 'area' set
         return new View($file, array(
@@ -392,11 +437,35 @@ class ToursController extends AbstractController {
             }
         }
         // the arrays should be equal (disregarding positions)
-        if(!empty(array_diff($tour->mapstop_ids, $new_mapstop_ids)) ||
-            !empty(array_diff($new_mapstop_ids, $tour->mapstop_ids)) ) {
-            $error = true;
+        if(!$tour->is_indoor()) {
+            if (!empty(array_diff($tour->mapstop_ids, $new_mapstop_ids)) ||
+                !empty(array_diff($new_mapstop_ids, $tour->mapstop_ids))) {
+                $error = true;
+            }
         }
         return ($error) ? false : $new_mapstop_ids;
+    }
+
+    function get_scene_ids_from_input_for($tour) {
+        if(!isset($_POST['shtm_tour']['scene_ids'])) {
+            return false;
+        }
+        $new_scene_ids = array();
+        foreach ($_POST['shtm_tour']['scene_ids'] as $id => $position) {
+            $pos = intval($position);
+            if($pos > 0 && $pos <= count($tour->scene_ids)) {
+                $new_scene_ids[$pos - 1] = $id;
+            } else {
+                $error = true;
+                break;
+            }
+        }
+        // the arrays should be equal (disregarding positions)
+        if(!empty(array_diff($tour->scene_ids, $new_scene_ids)) ||
+            !empty(array_diff($new_scene_ids, $tour->scene_ids)) ) {
+            $error = true;
+        }
+        return ($error) ? false : $new_scene_ids;
     }
 
 }

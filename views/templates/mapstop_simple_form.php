@@ -40,3 +40,18 @@
     <label for="shtm_mapstop_description">Beschreibung:</label>
     <textarea id="shtm_mapstop_description" type="text" name="shtm_mapstop[description]" cols="35" rows="2"><?php echo $this->mapstop->description ?></textarea>
 </div>
+
+<?php if ($this->scene): ?>
+    <div class="shtm_form_line">
+        <label for="shtm_mapstop_type">
+            Typ:
+        </label>
+        <select id="shtm_mapstop_type" name="shtm_mapstop[type]">
+            <?php foreach ($this->mapstop::TYPES as $key => $value): ?>
+                <option value="<?php echo $key ?>" <?php echo (($key === $this->mapstop->type) ? 'selected' : '') ?>>
+                    <?php echo $value ?>
+                </option>
+            <?php endforeach ?>
+        </select>
+    </div>
+<?php endif; ?>

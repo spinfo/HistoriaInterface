@@ -13,7 +13,11 @@
         <?php if($this->route_params::is_current_page($this->route_params::delete_mapstop($this->mapstop->id))): ?>
             <span class="shtm_not_a_link">Löschen</span>
         <?php else: ?>
-            <a href="admin.php?<?php echo $this->route_params::delete_mapstop($this->mapstop->id) ?>">Löschen</a>
+            <?php if($this->scene): ?>
+                <a href="admin.php?<?php echo $this->route_params::delete_mapstop($this->mapstop->id, $this->scene->id) ?>">Löschen</a>
+            <?php else: ?>
+                <a href="admin.php?<?php echo $this->route_params::delete_mapstop($this->mapstop->id) ?>">Löschen</a>
+            <?php endif ?>
         <?php endif ?> |
 
     <?php else: ?>
@@ -22,8 +26,14 @@
 
     <?php endif ?>
 
-    <a href="admin.php?<?php echo $this->route_params::edit_tour_stops($this->mapstop->tour_id) ?>">
-        zur Tour
-    </a>
+    <?php if($this->scene): ?>
+        <a href="admin.php?<?php echo $this->route_params::new_scene_stop($this->scene->id) ?>">
+            zur Scene
+        </a>
+    <?php else: ?>
+        <a href="admin.php?<?php echo $this->route_params::edit_tour_stops($this->mapstop->tour_id) ?>">
+            zur Tour
+        </a>
+    <?php endif ?>
 
 </div>

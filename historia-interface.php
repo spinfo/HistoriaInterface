@@ -21,6 +21,18 @@ License: Eclipse Public License v1.0
 global $shtm_db_version;
 $shtm_db_version = '0.1';
 
+function na($o) {
+    echo "<pre>";
+    if (is_array($o)) {
+        print_r($o);
+    } else if (is_object($o)) {
+        var_export($o);
+    } else {
+        var_dump($o);
+    }
+    echo "</pre>";
+}
+
 function shtm_install() {
     // require these here because they are not always all relevant
     require_once(dirname(__FILE__) . '/models/areas.php');
@@ -56,8 +68,8 @@ function shtm_install() {
     $table_name = Coordinates::instance()->table;
     $coordinates_sql = "CREATE TABLE $table_name (
         id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-        lat decimal(8,6) NOT NULL,
-        lon decimal(9,6) NOT NULL,
+        lat decimal(10,6) NOT NULL,
+        lon decimal(10,6) NOT NULL,
         created_at timestamp DEFAULT now(),
         updated_at timestamp DEFAULT now() ON UPDATE now(),
         PRIMARY KEY  (id)
@@ -101,7 +113,7 @@ function shtm_install() {
         user_id bigint(20) UNSIGNED NOT NULL,
         name TEXT DEFAULT '',
         intro TEXT DEFAULT '',
-        type ENUM('round-tour', 'tour', 'public-transport-tour', 'bike-tour') NOT NULL,
+        type ENUM('round-tour', 'tour', 'public-transport-tour', 'bike-tour', 'indoor-tour') NOT NULL,
         walk_length INT NOT NULL DEFAULT 0,
         duration INT NOT NULL DEFAULT 0,
         tag_what TEXT DEFAULT '',
@@ -183,11 +195,42 @@ function shtm_install() {
         UNIQUE shtm_tour_record_unique_published_at_for_tour (tour_id, published_at)
     ) $charset_collate;";
 
+    // sql for joining posts / scenes to tours
+    $table_name = Scenes::instance()->table;
+    $scenes_sql = "CREATE TABLE $table_name (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `tour_id` bigint(20) unsigned NOT NULL,
+        `post_id` bigint(20) unsigned NOT NULL,
+        `position` smallint(5) unsigned NOT NULL,
+        `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `shtm_scenes_unique_post_id` (`post_id`),
+        KEY `shtm_scenes_tour_position` (`tour_id`,`position`)
+    ) $charset_collate;";
+
+    // sql for joining mapstops to scenes with a coordinate
+    $table_name = Scenes::instance()->join_mapstops_table;
+    $scenes_table = Scenes::instance()->table;
+    $mapstops_to_scenes_sql = "CREATE TABLE $table_name (
+        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `mapstop_id` bigint(20) unsigned NOT NULL,
+        `scene_id` bigint(20) NOT NULL,
+        `coordinate_id` bigint(20) unsigned DEFAULT NULL,
+        `type` enum('info','route') NOT NULL,
+        `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`id`),
+        UNIQUE KEY `mapstop_id` (`mapstop_id`,`scene_id`)
+        CONSTRAINT wp_shtm_mapstops_to_scenes_ibfk_1 FOREIGN KEY (mapstop_id) REFERENCES $mapstops_table(id) ON DELETE CASCADE
+        CONSTRAINT wp_shtm_mapstops_to_scenes_ibfk_2 FOREIGN KEY (scene_id) REFERENCES $scenes_table(id) ON DELETE CASCADE
+    ) $charset_collate;";
+
     // collect queries
     $queries = array(
         $coordinates_sql, $areas_sql, $places_sql, $tours_sql,
         $tours_to_coordinates_sql, $mapstops_sql, $mapstops_to_posts_sql,
-        $tour_records_sql
+        $tour_records_sql, $scenes_sql, $mapstops_to_scenes_sql
     );
 
     // do the table update
@@ -212,6 +255,7 @@ function shtm_create_test_data() {
     require_once(dirname(__FILE__) . '/models/places.php');
     require_once(dirname(__FILE__) . '/models/mapstops.php');
     require_once(dirname(__FILE__) . '/models/tours.php');
+    require_once(dirname(__FILE__) . '/models/scenes.php');
     require_once(dirname(__FILE__) . '/user_service.php');
     require_once(dirname(__FILE__) . '/db.php');
 
@@ -500,6 +544,9 @@ function shtm_render_tour_manager() {
                 case 'update_stops':
                     ToursController::update_stops();
                     break;
+                case 'update_scenes':
+                    ToursController::update_scenes();
+                    break;
                 case 'delete':
                     ToursController::delete();
                     break;
@@ -563,6 +610,29 @@ function shtm_render_tour_manager() {
                     break;
                 default:
                     TourRecordsController::index();
+                    break;
+            }
+            break;
+        case 'scene':
+            require_once( dirname(__FILE__) . '/controllers/scenes_controller.php');
+            switch ($action) {
+                case 'new':
+                    ScenesController::new();
+                    break;
+                case 'add':
+                    ScenesController::add();
+                    break;
+                case 'delete':
+                    ScenesController::delete();
+                    break;
+                case 'destroy':
+                    ScenesController::destroy();
+                    break;
+                case 'new_stop':
+                    ScenesController::new_stop();
+                    break;
+                case 'set_marker':
+                    ScenesController::set_marker();
                     break;
             }
             break;

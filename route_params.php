@@ -14,6 +14,7 @@ class RouteParams {
         'id' => 'shtm_id',
         'area_id' => 'shtm_area_id',
         'tour_id' => 'shtm_tour_id',
+        'scene_id' => 'shtm_scene_id',
         'back_params' => 'shtm_back_params'
     ];
 
@@ -49,7 +50,8 @@ class RouteParams {
         $action,
         $id = null,
         $tour_id = null,
-        $area_id = null)
+        $area_id = null,
+        $scene_id = null)
     {
         $params = array(
             self::KEYS['controller'] => $controller,
@@ -63,6 +65,9 @@ class RouteParams {
         }
         if(!is_null($area_id)) {
             $params[self::KEYS['area_id']] = $area_id;
+        }
+        if(!is_null($scene_id)) {
+            $params[self::KEYS['scene_id']] = $scene_id;
         }
         if(!is_null($back_params)) {
             $params[self::KEYS['area_id']] = $area_id;
@@ -177,8 +182,12 @@ class RouteParams {
         return self::make_route('tour', 'update', $id);
     }
 
-    public static function update_tour_stops($id) {
-        return self::make_route('tour', 'update_stops', $id);
+    public static function update_tour_stops($id, $scene_id = null) {
+        return self::make_route('tour', 'update_stops', $id, null, null, $scene_id);
+    }
+
+    public static function update_tour_scenes($id) {
+        return self::make_route('tour', 'update_scenes', $id);
     }
 
     public static function delete_tour($id) {
@@ -191,28 +200,28 @@ class RouteParams {
 
 
     // Mapstops
-    public static function new_mapstop($tour_id) {
-        return self::make_route('mapstop', 'new', null, $tour_id);
+    public static function new_mapstop($tour_id, $scene_id = null) {
+        return self::make_route('mapstop', 'new', null, $tour_id, null, $scene_id);
     }
 
-    public static function create_mapstop($tour_id) {
-        return self::make_route('mapstop', 'create', null, $tour_id);
+    public static function create_mapstop($tour_id, $scene_id = null) {
+        return self::make_route('mapstop', 'create', null, $tour_id, null, $scene_id);
     }
 
-    public static function edit_mapstop($id) {
-        return self::make_route('mapstop', 'edit', $id);
+    public static function edit_mapstop($id, $scene_id = null) {
+        return self::make_route('mapstop', 'edit', $id, null, null, $scene_id);
     }
 
-    public static function update_mapstop($id) {
-        return self::make_route('mapstop', 'update', $id);
+    public static function update_mapstop($id, $scene_id = null) {
+        return self::make_route('mapstop', 'update', $id, null, null, $scene_id);
     }
 
-    public static function delete_mapstop($id) {
-        return self::make_route('mapstop', 'delete', $id);
+    public static function delete_mapstop($id, $scene_id = null) {
+        return self::make_route('mapstop', 'delete', $id, null, null, $scene_id);
     }
 
-    public static function destroy_mapstop($id) {
-        return self::make_route('mapstop', 'destroy', $id);
+    public static function destroy_mapstop($id, $scene_id = null) {
+        return self::make_route('mapstop', 'destroy', $id, null, null, $scene_id);
     }
 
 
@@ -243,6 +252,31 @@ class RouteParams {
 
     public static function destroy_tour_record($id) {
         return self::make_route('tour_record', 'destroy', $id);
+    }
+
+    // Scenes
+    public static function new_scene($tour_id) {
+        return self::make_route('scene', 'new', null, $tour_id);
+    }
+
+    public static function add_scene($tour_id) {
+        return self::make_route('scene', 'add', null, $tour_id);
+    }
+
+    public static function delete_scene($id) {
+        return self::make_route('scene', 'delete', $id);
+    }
+
+    public static function destroy_scene($id) {
+        return self::make_route('scene', 'destroy', $id);
+    }
+
+    public static function new_scene_stop($scene_id) {
+        return self::make_route('scene', 'new_stop', $scene_id);
+    }
+
+    public static function set_marker($mapstop_id, $scene_id) {
+        return self::make_route('scene', 'set_marker', $mapstop_id, null, null, $scene_id);
     }
 
     /**
@@ -283,6 +317,10 @@ class RouteParams {
 
     public static function get_area_id_value() {
         return intval($_GET[self::KEYS['area_id']]);
+    }
+
+    public static function get_sene_id_value() {
+        return intval($_GET[self::KEYS['scene_id']]);
     }
 
     public static function get_back_params_value() {

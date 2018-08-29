@@ -11,7 +11,8 @@ class Tour extends AbstractModel {
         'tour' => 'Spaziergang',
         'round-tour' => 'Rundgang',
         'public-transport-tour' => 'ÖPNV-Tour',
-        'bike-tour' => 'Fahrrad-Tour'
+        'bike-tour' => 'Fahrrad-Tour',
+        'indoor-tour' => 'Katalog-Tour'
     );
 
     const DATETIME_FORMATS = array(
@@ -34,6 +35,9 @@ class Tour extends AbstractModel {
     // the tour's mapstops as array or mapstop ids
     public $mapstops = array();
     public $mapstop_ids = array();
+
+    public $scenes = array();
+    public $scene_ids = array();
 
     public $name = '';
 
@@ -314,10 +318,7 @@ class Tour extends AbstractModel {
         return $dt;
     }
 
+    public function is_indoor() {
+        return $this->type === 'indoor-tour';
+    }
 }
-
-
-
-
-
-?>

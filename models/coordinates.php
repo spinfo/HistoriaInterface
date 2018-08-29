@@ -11,13 +11,32 @@ final class Coordinates extends AbstractCollection {
 
     public $table;
 
+    public $join_scenes_table;
+
     protected function __construct() {
         $this->table = DB::table_name('coordinates');
+        $this->join_scenes_table = DB::table_name('mapstops_to_scenes');
     }
 
     public function db_get($id) {
         $sql = "SELECT * FROM $this->table";
         return DB::get($sql, array('id' => $id));
+    }
+
+    public function get_by_mapstop_id($mapstop_id) {
+        $sql = "SELECT c.* FROM $this->table as c
+          INNER JOIN $this->join_scenes_table as t2
+          ON t2.coordinate_id = c.id
+        ";
+        return DB::get($sql, array('mapstop_id' => $mapstop_id));
+    }
+
+    public function delete_by_mapstop_id($mapstop_id) {
+        $coordinate = $this->get_by_mapstop_id($mapstop_id);
+        if ($coordinate) {
+            return $this->db_delete($coordinate);
+        }
+        return true;
     }
 
     protected function db_delete($coordinate) {
