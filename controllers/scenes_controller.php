@@ -105,15 +105,11 @@ class ScenesController extends AbstractController {
                 throw new DB_Exception('Fehler in Coordinates');
             }
 
-            DB::delete(Scenes::instance()->join_mapstops_table, [
-                'mapstop_id' => $mapstop->id,
-                'scene_id' => $scene->id
-            ]);
-
-            $result = DB::insert(Scenes::instance()->join_mapstops_table, [
+            $result = DB::update_where(Scenes::instance()->join_mapstops_table, [
+                'coordinate_id' => $coordinate->id
+            ], [
                 'mapstop_id' => $mapstop->id,
                 'scene_id' => $scene->id,
-                'coordinate_id' => $coordinate->id
             ]);
             if (is_null($result)) {
                 throw new DB_Exception('Fehler in join table');
