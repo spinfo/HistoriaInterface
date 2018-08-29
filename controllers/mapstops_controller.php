@@ -238,18 +238,19 @@ class MapstopsController extends AbstractController {
             $msg = "Ort liegt nicht im Tour-Gebiet.";
             return self::create_bad_request_view($msg);
         }
+        $is_new = $mapstop->id == DB::BAD_ID;
         // do the save
         $result = Mapstops::instance()->save($mapstop);
         if(!is_null($result)) {
             if ($scene) {
-                if ($mapstop->id === -1) {
-                    $result = DB::insert(DB::table_name('mapstops_to_scenes'), [
+                if ($is_new) {
+                    $result = DB::insert(Scenes::instance()->join_mapstops_table, [
                         'mapstop_id' => $mapstop->id,
                         'scene_id' => $scene->id,
                         'type' => $mapstop->type
                     ]);
                 } else {
-                    $result = DB::update_where(DB::table_name('mapstops_to_scenes'), [
+                    $result = DB::update_where(Scenes::instance()->join_mapstops_table, [
                         'type' => $mapstop->type
                     ], [
                         'mapstop_id' => $mapstop->id,
