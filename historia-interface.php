@@ -7,7 +7,7 @@ require_once(dirname(__FILE__) . '/logging.php');
 Plugin Name: HistoriaInterface
 Plugin URI: https://historia-app.de
 Description: A plugin to create, manage and host tours for the HistoriaApp.
-Version: 0.2
+Version: 0.3
 Author: David Neugebauer
 Author URI: https://github.com/spinfo/HistoriaInterface
 License: Eclipse Public License v1.0
