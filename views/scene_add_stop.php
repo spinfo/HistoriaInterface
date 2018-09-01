@@ -120,8 +120,8 @@
     }
 
     var sources = {};
-    sources.info = "<?php echo $this->view_helper::image_url('stop_marker_info.png') ?>";
-    sources.route = "<?php echo $this->view_helper::image_url('stop_marker_route.png') ?>";
+    sources.info = "<?php echo $this->view_helper::image_url('stop_marker_blue.png') ?>";
+    sources.route = "<?php echo $this->view_helper::image_url('stop_marker_gray.png') ?>";
 
     function markOnImage(point, text) {
         var marker = new Image();
