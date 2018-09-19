@@ -18,7 +18,7 @@ class Logging {
         if(is_null($prefix)) {
             $prefix = "DEBUG";
         }
-
+        $msg = self::ensure_string_description($msg);
         $msg = "$prefix: $msg" . PHP_EOL;
 
         if(self::$output == self::TO_STDOUT) {
@@ -26,6 +26,13 @@ class Logging {
         } else {
             self::log_to_file($msg, self::DEBUG_LOG_FILE);
         }
+    }
+
+    private static function ensure_string_description($input) {
+        if(!is_string($input)) {
+            return var_export($input, true);
+        }
+        return $input;
     }
 
     private static function log_to_file($msg, $path) {
