@@ -139,13 +139,10 @@ class Scenes {
     }
 
     public function delete($scene) {
-        DB::start_transaction();
-
         foreach ($scene->coordinates as $coordinate) {
             $result = Coordinates::instance()->delete($coordinate);
             if ($result === false) {
                 $msg = "Failed to delete coordinate from scene";
-                DB::rollback_transaction();
                 throw new DB_Exception("Can't delete coordinate: $msg.");
             }
         }
@@ -154,7 +151,6 @@ class Scenes {
             $result = Mapstops::instance()->delete($mapstop);
             if ($result === false) {
                 $msg = "Failed to delete mapstop from scene";
-                DB::rollback_transaction();
                 throw new DB_Exception("Can't delete mapstop: $msg.");
             }
         }
@@ -162,17 +158,14 @@ class Scenes {
         $result = DB::delete($this->join_mapstops_table, array('scene_id' => $scene->id));
         if ($result === false) {
             $msg = "Failed to delete scene from " . $this->join_mapstops_table;
-            DB::rollback_transaction();
             throw new DB_Exception("Can't delete entry: $msg.");
         }
 
         $result = DB::delete($this->table, array('post_id' => $scene->id));
         if ($result === false) {
-            DB::rollback_transaction();
             throw new DB_Exception("Can't delete scene with id " . $scene->id);
         }
 
-        DB::commit_transaction();
         $scene->id = DB::BAD_ID;
         return $scene;
     }

@@ -688,7 +688,17 @@ function delete_mapstop_join($post_id) {
     DB::delete(Mapstops::instance()->join_posts_table, $where);
 }
 add_action('wp_trash_post', 'SmartHistoryTourManager\delete_mapstop_join');
+// also delete scene data connected to the post
+function delete_scene_data_with($post_id) {
+    require_once(dirname(__FILE__) . '/db.php');
+    require_once(dirname(__FILE__) . '/models/scenes.php');
 
+    // select scene where post_id
+    $scene = Scenes::instance()->get($post_id);
+    // delete scene and related data
+    Scenes::instance()->delete($scene);
+}
+add_action('wp_trash_post', 'SmartHistoryTourManager\delete_scene_data_with');
 
 // conditionally adds the leaflet dependencies to certain admin pages
 function add_leaflet_js() {
