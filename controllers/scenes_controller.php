@@ -86,7 +86,7 @@ class ScenesController extends AbstractController {
     public static function set_marker() {
         $id = RouteParams::get_id_value();
         $mapstop = Mapstops::instance()->get($id);
-        $scene_id = RouteParams::get_sene_id_value();
+        $scene_id = RouteParams::get_scene_id_value();
         $scene = Scenes::instance()->get($scene_id);
 
         try {

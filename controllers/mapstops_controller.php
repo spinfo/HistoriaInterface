@@ -26,7 +26,7 @@ class MapstopsController extends AbstractController {
         $tour_id = RouteParams::get_tour_id_value();
         $tour = Tours::instance()->get($tour_id);
 
-        $scene_id = RouteParams::get_sene_id_value();
+        $scene_id = RouteParams::get_scene_id_value();
         $scene = null;
         if ($scene_id > 0) {
             $scene = Scenes::instance()->get($scene_id);
@@ -68,7 +68,7 @@ class MapstopsController extends AbstractController {
         $tour_id = RouteParams::get_tour_id_value();
         $tour = Tours::instance()->get($tour_id);
 
-        $scene_id = RouteParams::get_sene_id_value();
+        $scene_id = RouteParams::get_scene_id_value();
         $scene = null;
         if ($scene_id > 0) {
             $scene = Scenes::instance()->get($scene_id);
@@ -100,7 +100,7 @@ class MapstopsController extends AbstractController {
         $mapstop = Mapstops::instance()->get($id);
         $tour = Tours::instance()->get($mapstop->tour_id);
 
-        $scene_id = RouteParams::get_sene_id_value();
+        $scene_id = RouteParams::get_scene_id_value();
         $scene = null;
         if ($scene_id > 0) {
             $scene = Scenes::instance()->get($scene_id);
@@ -135,7 +135,7 @@ class MapstopsController extends AbstractController {
         $id = RouteParams::get_id_value();
         $mapstop = Mapstops::instance()->get($id);
 
-        $scene_id = RouteParams::get_sene_id_value();
+        $scene_id = RouteParams::get_scene_id_value();
         $scene = null;
         if ($scene_id > 0) {
             $scene = Scenes::instance()->get($scene_id);
@@ -166,7 +166,7 @@ class MapstopsController extends AbstractController {
         $id = RouteParams::get_id_value();
         $mapstop = Mapstops::instance()->get($id);
 
-        $scene_id = RouteParams::get_sene_id_value();
+        $scene_id = RouteParams::get_scene_id_value();
         $scene = null;
         if ($scene_id > 0) {
             $scene = Scenes::instance()->get($scene_id);
@@ -190,7 +190,7 @@ class MapstopsController extends AbstractController {
         $id = RouteParams::get_id_value();
         $mapstop = Mapstops::instance()->get($id);
 
-        $scene_id = RouteParams::get_sene_id_value();
+        $scene_id = RouteParams::get_scene_id_value();
         $scene = null;
         if ($scene_id > 0) {
             $scene = Scenes::instance()->get($scene_id);

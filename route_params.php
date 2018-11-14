@@ -319,7 +319,7 @@ class RouteParams {
         return intval($_GET[self::KEYS['area_id']]);
     }
 
-    public static function get_sene_id_value() {
+    public static function get_scene_id_value() {
         return intval($_GET[self::KEYS['scene_id']]);
     }
 
