@@ -50,6 +50,9 @@ class Areas extends AbstractCollection {
             $area = $this->instance_from_array($row);
             $areas[] = $area;
         }
+        usort($areas, function($a1, $a2) {
+            return strcmp(strtoupper($a1->name), strtoupper($a2->name));
+        });
         return $areas;
     }
 
