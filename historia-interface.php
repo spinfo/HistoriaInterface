@@ -215,7 +215,7 @@ function shtm_install() {
     $mapstops_to_scenes_sql = "CREATE TABLE $table_name (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `mapstop_id` bigint(20) unsigned NOT NULL,
-        `scene_id` bigint(20) NOT NULL,
+        `scene_id` bigint(20) unsigned NOT NULL,
         `coordinate_id` bigint(20) unsigned DEFAULT NULL,
         `type` enum('info','route') NOT NULL,
         `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
