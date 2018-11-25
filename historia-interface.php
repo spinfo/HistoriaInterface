@@ -7,7 +7,7 @@ require_once(dirname(__FILE__) . '/logging.php');
 Plugin Name: HistoriaInterface
 Plugin URI: https://historia-app.de
 Description: A plugin to create, manage and host tours for the HistoriaApp.
-Version: 0.2
+Version: 0.3
 Author: David Neugebauer
 Author URI: https://github.com/spinfo/HistoriaInterface
 License: Eclipse Public License v1.0
@@ -718,7 +718,6 @@ function add_leaflet_js() {
 
     if($is_script_page) {
         // add the script
-        // TODO: remove '-src' from js url
         $url = esc_url_raw('https://unpkg.com/leaflet@1.0.3/dist/leaflet.js');
         wp_enqueue_script('shtm-leaflet-script', $url);
 
@@ -727,8 +726,6 @@ function add_leaflet_js() {
         wp_enqueue_style('shtm-leaflet-style', $url);
 
         // add leaflet draw style and js
-        // TODO: add leaflet as dependency
-        // TODO: remove '-src' from js url
         wp_enqueue_style('shtm-leaflet-draw-style',
             'https://unpkg.com/leaflet-draw@0.4.9/dist/leaflet.draw.css');
         wp_enqueue_script('shtm-leaflet-draw-script',
@@ -736,5 +733,6 @@ function add_leaflet_js() {
     }
 }
 add_action('admin_enqueue_scripts', 'SmartHistoryTourManager\add_leaflet_js');
+
 
 ?>

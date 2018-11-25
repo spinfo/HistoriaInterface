@@ -219,7 +219,8 @@ class ToursController extends AbstractController {
                     self::redirect($back_params);
                 }
             } else {
-                $view = self::create_bad_request_view("Ungültiger Input");
+                $view = self::create_bad_request_view(
+                    "Ungültiger Input: Fehledende update Parameter");
             }
         } else {
             $view = $error_view;
@@ -254,10 +255,12 @@ class ToursController extends AbstractController {
                         self::redirect(RouteParams::edit_tour_stops($tour->id));
                     }
                 } else {
-                    $error_view = self::create_bad_request_view("Ungültiger Input");
+                    $error_view = self::create_bad_request_view(
+                        "Mapstop-Positionen konnten nicht gespeichert werden.");
                 }
             } else {
-                $error_view = self::create_bad_request_view("Ungültiger Input");
+                $error_view = self::create_bad_request_view(
+                    "Ungültiger Input: Keine mapstop ids auslesbar.");
             }
         }
         self::wrap_in_page_view($error_view)->render();
@@ -276,10 +279,12 @@ class ToursController extends AbstractController {
                     MessageService::instance()->add_success("Positionen übernommen");
                     self::redirect(RouteParams::edit_tour_track($tour->id));
                 } else {
-                    $error_view = self::create_bad_request_view("Ungültiger Input");
+                    $error_view = self::create_bad_request_view(
+                        "Positionen der Szenen konnten nicht gespeichert werden");
                 }
             } else {
-                $error_view = self::create_bad_request_view("Ungültiger Input");
+                $error_view = self::create_bad_request_view(
+                    "Keine Szenen ids auslesbar.");
             }
         }
         self::wrap_in_page_view($error_view)->render();
@@ -448,6 +453,7 @@ class ToursController extends AbstractController {
 
     function get_scene_ids_from_input_for($tour) {
         if(!isset($_POST['shtm_tour']['scene_ids'])) {
+            debug_log("No scene ids in post values.");
             return false;
         }
         $new_scene_ids = array();
@@ -457,6 +463,7 @@ class ToursController extends AbstractController {
                 $new_scene_ids[$pos - 1] = $id;
             } else {
                 $error = true;
+                debug_log("Bad scene id position: " . $pos);
                 break;
             }
         }
@@ -464,6 +471,7 @@ class ToursController extends AbstractController {
         if(!empty(array_diff($tour->scene_ids, $new_scene_ids)) ||
             !empty(array_diff($new_scene_ids, $tour->scene_ids)) ) {
             $error = true;
+            debug_log("Scene ids are not equal.");
         }
         return ($error) ? false : $new_scene_ids;
     }

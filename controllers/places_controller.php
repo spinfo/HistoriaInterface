@@ -70,24 +70,25 @@ class PlacesController extends AbstractController {
         $place_params = self::get_place_params();
         $area_id = intval($_POST['shtm_place']['area_id']);
         $view = null;
-        if(!empty($place_params) && Areas::instance()->valid_id($area_id)) {
-            $place = $places->create($place_params);
-            $place->area_id = $area_id;
-            $place->user_id = UserService::instance()->user_id();
-            $result = $places->save($place);
-            if(empty($result)) {
-                MessageService::instance()->add_error("Ort nicht erstellt.");
-                MessageService::instance()->add_model_messages($place);
-            } else {
-                MessageService::instance()->add_success("Ort erstellt!");
-                self::redirect(RouteParams::edit_place($place->id));
+        if(!empty($place_params)) {
+            if (Areas::instance()->valid_id($area_id)) {
+                $place = $places->create($place_params);
+                $place->area_id = $area_id;
+                $place->user_id = UserService::instance()->user_id();
+                $result = $places->save($place);
+                if(empty($result)) {
+                    MessageService::instance()->add_error("Ort nicht erstellt.");
+                    MessageService::instance()->add_model_messages($place);
+                } else {
+                    MessageService::instance()->add_success("Ort erstellt!");
+                    self::redirect(RouteParams::edit_place($place->id));
+                }
+            }
+            else {
+                $view = self::create_bad_request_view("Invalid area id: '$area_id'.");
             }
         } else {
-            if(!Areas::instance()->valid_id($area_id)) {
-                $msg = "Invalid area id: '$area_id'.";
-                MessageService::instance()->add_error($msg);
-            }
-            $view = self::create_bad_request_view("Ungültiger Input");
+            $view = self::create_bad_request_view("No place params given.");
         }
 
         self::wrap_in_page_view($view)->render();
@@ -142,7 +143,7 @@ class PlacesController extends AbstractController {
                     MessageService::instance()->add_success("Änderungen gespeichert!");
                     self::redirect(RouteParams::edit_place($place->id));
                 } else {
-                    $view = self::create_bad_request_view("Ungültiger Input.");
+                    $view = self::create_bad_request_view("No place params given.");
                 }
             }
         }
