@@ -9,7 +9,7 @@
         <div class="shtm_form_line" style="margin-bottom: 7px">
 
             <div style="width: 150px; float: left; margin-right: 5px;">
-                <?php echo wp_get_attachment_image($scene->id); ?>
+                <?php echo wp_get_attachment_image($scene->post_id); ?>
             </div>
 
             <div style="float: left">

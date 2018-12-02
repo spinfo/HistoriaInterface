@@ -59,7 +59,7 @@ class Scenes {
         $scene->src = basename(get_attached_file($post->ID));
 
         $select = "SELECT tour_id FROM $this->table";
-        $result = DB::get($select, array('post_id' => $scene->id));
+        $result = DB::get($select, array('post_id' => $scene->post_id));
         if ($result) {
             $scene->tour_id = (int)$result->tour_id;
         }
@@ -104,7 +104,7 @@ class Scenes {
             DB::start_transaction();
             $result = DB::insert($this->table, array(
                 'tour_id' => $scene->tour_id,
-                'post_id' => $scene->id,
+                'post_id' => $scene->post_id,
                 'position' => $position,
             ));
             if(!$result || $result == DB::BAD_ID) {
@@ -161,7 +161,7 @@ class Scenes {
             throw new DB_Exception("Can't delete entry: $msg.");
         }
 
-        $result = DB::delete($this->table, array('post_id' => $scene->id));
+        $result = DB::delete($this->table, array('id' => $scene->id));
         if ($result === false) {
             throw new DB_Exception("Can't delete scene with id " . $scene->id);
         }

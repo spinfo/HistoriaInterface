@@ -69,7 +69,7 @@
 </form>
 
 <script>
-    var imageData = JSON.parse('<?php echo json_encode(wp_get_attachment_image_src($this->scene->id, [960, 720])); ?>');
+    var imageData = JSON.parse('<?php echo json_encode(wp_get_attachment_image_src($this->scene->post_id, [960, 720])); ?>');
     var canvas = document.getElementById("scene_canvas");
     var context = canvas.getContext('2d');
     var sprite = new Image();
