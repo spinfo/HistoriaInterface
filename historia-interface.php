@@ -429,8 +429,8 @@ register_activation_hook(__FILE__, 'SmartHistoryTourManager\shtm_create_test_dat
  */
 function shtm_setup_tour_manager() {
     // title used in the menu and in the browser tab
-    $title_menu = 'HistoriaInterface';
-    $title_tab = 'HistoriaInterface';
+    $title_menu = 'StadtsprachenApp';
+    $title_tab = 'StadtsprachenApp';
 
     // Capability available to Contributor role and above, but not to Subscriber
     $capability = 'edit_posts';
