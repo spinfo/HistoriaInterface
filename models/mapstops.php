@@ -117,6 +117,7 @@ class Mapstops extends AbstractCollection {
             $mapstop->tour_id, null);
 
         if(($result === 1) && $result_reorder) {
+            DB::delete(Scenes::instance()->join_mapstops_table, array('mapstop_id' => $mapstop->id));
             DB::commit_transaction();
             $mapstop->id = DB::BAD_ID;
             $mapstop->post_ids = null;
