@@ -448,7 +448,7 @@ class Tours extends AbstractCollection {
         $sql .= " WHERE tour_id = %d ORDER BY position ASC";
         $scene_ids = DB::list_by_query($sql, array($tour_id));
         foreach($scene_ids as $id_result) {
-            $result[] = intval($id_result->post_id);
+            $result[] = intval($id_result->id);
         }
         return $result;
     }
