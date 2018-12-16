@@ -7,7 +7,6 @@ class Scene extends AbstractModel {
 
     public $id = -1;
     public $tour_id = -1;
-    public $post_id = -1;
     public $name = "";
     public $title = "";
     public $description = "";
