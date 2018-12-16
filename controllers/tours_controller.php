@@ -235,7 +235,7 @@ class ToursController extends AbstractController {
         $id = RouteParams::get_id_value();
         $tour = Tours::instance()->get($id, true, false, true);
 
-        $scene_id = RouteParams::get_sene_id_value();
+        $scene_id = RouteParams::get_scene_id_value();
         $scene = null;
         if ($scene_id > 0) {
             $scene = Scenes::instance()->get($scene_id);
