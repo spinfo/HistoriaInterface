@@ -223,10 +223,10 @@ class FileService {
         }
         if ($tour->is_indoor()) {
             foreach($tour->scenes as $scene) {
-                $path = get_attached_file($scene->post_id);
+                $path = get_attached_file($scene->id);
                 if(!file_exists($path)) {
                     $msg = "File does not exist: $scene->src";
-                    $msg .= " (scene: $scene->id, page: $scene->post_id)";
+                    $msg .= " (scene: $scene->id, page: $scene->id)";
                     $response->add_error($msg);
                     return $result;
                 }

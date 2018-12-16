@@ -25,7 +25,7 @@
                 </div>
 
                 <div style="width: 150px; float: left; margin-right: 5px;">
-                    <?php echo wp_get_attachment_image($scene->post_id); ?>
+                    <?php echo wp_get_attachment_image($scene->id); ?>
                 </div>
 
                 <div style="float: left">

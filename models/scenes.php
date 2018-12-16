@@ -49,7 +49,6 @@ class Scenes {
 
         $scene = new Scene();
         $scene->id = $post->ID;
-        $scene->post_id = $post->ID;
         $scene->title = $post->post_title;
         $scene->name = $post->post_name;
         $scene->description = $post->post_content;
@@ -59,7 +58,7 @@ class Scenes {
         $scene->src = basename(get_attached_file($post->ID));
 
         $select = "SELECT tour_id FROM $this->table";
-        $result = DB::get($select, array('post_id' => $scene->post_id));
+        $result = DB::get($select, array('id' => $scene->id));
         if ($result) {
             $scene->tour_id = (int)$result->tour_id;
         }
@@ -104,7 +103,7 @@ class Scenes {
             DB::start_transaction();
             $result = DB::insert($this->table, array(
                 'tour_id' => $scene->tour_id,
-                'post_id' => $scene->post_id,
+                'id' => $scene->id,
                 'position' => $position,
             ));
             if(!$result || $result == DB::BAD_ID) {
@@ -125,7 +124,7 @@ class Scenes {
         $tour = Tours::instance()->get($tour->id, false, false, true);
         $scenes = $this->get_all();
 
-        $sql = "SELECT post_id as id FROM " . Scenes::instance()->table;
+        $sql = "SELECT id FROM " . Scenes::instance()->table;
         $result = DB::list_by_query($sql);
         $taken = array();
         foreach ($result as $obj) {
