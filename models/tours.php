@@ -358,7 +358,7 @@ class Tours extends AbstractCollection {
         }
 
         $sql = "UPDATE " . Scenes::instance()->table;
-        $sql .= " SET position = CASE post_id";
+        $sql .= " SET position = CASE id";
         for($i = 0; $i < count($scene_ids); $i++) {
             $sql .= " WHEN %d THEN " . ($i + 1);
         }
@@ -444,7 +444,7 @@ class Tours extends AbstractCollection {
 
     private function db_get_scene_ids($tour_id) {
         $result = array();
-        $sql = "SELECT post_id FROM " . Scenes::instance()->table;
+        $sql = "SELECT id FROM " . Scenes::instance()->table;
         $sql .= " WHERE tour_id = %d ORDER BY position ASC";
         $scene_ids = DB::list_by_query($sql, array($tour_id));
         foreach($scene_ids as $id_result) {

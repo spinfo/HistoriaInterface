@@ -106,7 +106,7 @@ class Scenes {
                 'id' => $scene->id,
                 'position' => $position,
             ));
-            if(!$result || $result == DB::BAD_ID) {
+            if($result == DB::BAD_ID) {
                 DB::rollback_transaction();
                 throw new DB_Exception("Could not insert valid place.");
             }
