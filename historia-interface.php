@@ -198,14 +198,12 @@ function shtm_install() {
     // sql for joining posts / scenes to tours
     $table_name = Scenes::instance()->table;
     $scenes_sql = "CREATE TABLE $table_name (
-        `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `id` bigint(20) unsigned NOT NULL,
         `tour_id` bigint(20) unsigned NOT NULL,
-        `post_id` bigint(20) unsigned NOT NULL,
         `position` smallint(5) unsigned NOT NULL,
         `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
         `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (`id`),
-        UNIQUE KEY `shtm_scenes_unique_post_id` (`post_id`),
         KEY `shtm_scenes_tour_position` (`tour_id`,`position`)
     ) $charset_collate;";
 
@@ -215,7 +213,7 @@ function shtm_install() {
     $mapstops_to_scenes_sql = "CREATE TABLE $table_name (
         `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `mapstop_id` bigint(20) unsigned NOT NULL,
-        `scene_id` bigint(20) NOT NULL,
+        `scene_id` bigint(20) unsigned NOT NULL,
         `coordinate_id` bigint(20) unsigned DEFAULT NULL,
         `type` enum('info','route') NOT NULL,
         `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

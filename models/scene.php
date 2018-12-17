@@ -7,7 +7,6 @@ class Scene extends AbstractModel {
 
     public $id = -1;
     public $tour_id = -1;
-    public $post_id = -1;
     public $name = "";
     public $title = "";
     public $description = "";
@@ -22,7 +21,7 @@ class Scene extends AbstractModel {
 
     protected function do_validity_check() {
         $this->do_check(Tours::instance()->valid_id($this->tour_id), 'Invalid tour_id');
-        $this->do_check($this->post_id > 0, 'Invalid post_id');
+        $this->do_check($this->id > 0, 'Invalid id');
         $this->do_check(!empty($this->name), 'Scenes has no name');
         $this->do_check(!empty($this->title), 'Scenes has no title');
         //$this->do_check(!empty($this->description), 'Scenes has no description');
