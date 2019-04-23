@@ -133,8 +133,18 @@ class View {
         for($i = 0; $i < $indent_level; $i++) $indent .= "  ";
         echo $indicator . PHP_EOL;
         foreach ($lines as $line) {
-            echo $indent . trim($line) . PHP_EOL;
+            $print_line = $this->strip_control_characters(trim($line));
+            echo $indent . $print_line . PHP_EOL;
         }
+    }
+
+    /**
+     * Strip all chars that are in the unicode control character class from a
+     * string (except for unix newlines) and return the string.
+     */
+    private function strip_control_characters($str) {
+        // if a newline can be captured it is replaced by itself, else "$1" = ""
+        return preg_replace("/(\x0A)|[[:cntrl:]]/", "$1", $str);
     }
 
     public function print_post_to_yaml($post, $indent_level) {
