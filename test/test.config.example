@@ -1,17 +1,24 @@
-mysql_server = "localhost"
-mysql_user = "wordpress_sh"
-mysql_pass = ""
-mysql_db = "wordpress_smart_history"
+
+# Credentials to use for the test db
+mysql_server = "historia-mysql"
+mysql_user = "root"
+mysql_pass = "example"
+mysql_db = "wordpress"
 
 wp_url = "http://localhost"
-wp_load_script = "/usr/share/nginx/www/wordpress-smart-history/wp-load.php"
+wp_load_script = "/var/www/html/wp-load.php"
+
+# Two users with these credentials need to exist
+# in the wordpress test instance defined above.
+# One needs admin credentials, the other needs
+# the role 'contributor_with_upload'.
+test_user_admin_name = "test-admin"
+test_user_admin_pass = "test-admin"
+
+test_user_contributor_name = "test-contributor"
+test_user_contributor_pass = "test-contributor"
 
 places_table = "wp_shtm_places"
 areas_table = "wp_shtm_areas"
-
-test_user_admin_name = "test-admin"
-test_user_admin_pass = ""
-test_user_contributor_name = "test-contributor"
-test_user_contributor_pass = ""
 
 tour_manager_prefix = "/wp-admin/admin.php?page=shtm_tour_manager"
