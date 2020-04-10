@@ -1,4 +1,4 @@
-FROM wordpress:4.9-php7.1-apache
+FROM wordpress:5.4.0-php7.3-apache
 
 RUN apt-get update && apt-get install -y libzip-dev && pecl install zlib zip
 
