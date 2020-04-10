@@ -89,7 +89,6 @@ final class Places extends AbstractCollection {
         DB::rollback_transaction();
     }
 
-    // TODO: Some error handling, as transaction...
     protected function db_update($place) {
         DB::start_transaction();
 

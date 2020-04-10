@@ -476,7 +476,7 @@ class DB {
         } else if(is_float($value)) {
             $placeholder ="%f";
         } else {
-            throw new DB_Exception("DB: Bad value in WHERE of unknown type.");
+            throw new DB_Exception("DB: Bad value in WHERE of unknown type: $value");
         }
         return "$key = $placeholder";
     }
